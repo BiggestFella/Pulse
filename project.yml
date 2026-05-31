@@ -15,19 +15,25 @@ targets:
     sources: [Pulse]
     settings:
       base:
-        INFOPLIST_FILE: Pulse/Resources/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse
-        GENERATE_INFOPLIST_FILE: NO
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
   PulseTests:
     type: bundle.unit-test
     platform: iOS
     sources: [PulseTests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: Pulse
   PulseUITests:
     type: bundle.ui-testing
     platform: iOS
     sources: [PulseUITests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: Pulse
 schemes:
