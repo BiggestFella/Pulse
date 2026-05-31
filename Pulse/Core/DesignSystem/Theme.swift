@@ -20,8 +20,8 @@ final class Theme {
     var surface: Color { Color(hex: t.surface) }
     var surface2: Color { Color(hex: t.surface2) }
     var ink: Color { Color(hex: t.ink) }
-    var inkSoft: Color { Color(hex: t.ink).opacity(0.62) }
-    var inkFaint: Color { Color(hex: t.ink).opacity(0.16) }
+    var inkSoft: Color { Color(hex: t.ink).opacity(palette.inkSoftOpacity) }
+    var inkFaint: Color { Color(hex: t.ink).opacity(palette.inkFaintOpacity) }
     var accent: Color { Color(hex: t.accent) }
     var accentDeep: Color { Color(hex: t.accentDeep) }
     var accent2: Color { Color(hex: t.accent2) }
@@ -31,6 +31,8 @@ final class Theme {
     let spacing: [CGFloat] = [4, 8, 10, 12, 14, 18, 24]
     let radiusCard: CGFloat = 16
     let radiusPill: CGFloat = 999
+    let radiusSheet: CGFloat = 26
+    let radiusChip: CGFloat = 10
 }
 
 extension Color {
