@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Two-column hero composition: a giant Oswald numeral (col 1, spans both rows),
-/// a Geist Mono eyebrow + a bold Hanken sub-label (col 2). Used on accent cards,
-/// so the numeral defaults to `onAccent`. Pass `failure: true` to render `∞`.
+/// Single-row hero composition: a giant Oswald numeral (col 1) alongside a
+/// vertical stack of a Geist Mono eyebrow + a bold Hanken sub-label (col 2).
+/// Used on accent cards, so the numeral defaults to `onAccent`.
+/// Pass `failure: true` to render `∞`.
 struct Lockup: View {
     let value: String          // the numeral, e.g. "7"
     var top: String = ""       // eyebrow (Geist Mono), defaults to accent2
@@ -33,7 +34,7 @@ struct Lockup: View {
                     .fixedSize()
                     .gridCellAnchor(.topLeading)
                     .gridCellColumns(1)
-                    // span both rows: place the col-2 stack alongside via a VStack cell
+                    // place the col-2 VStack alongside in the same single GridRow
                 VStack(alignment: .leading, spacing: 0) {
                     Text(top)
                         .pulseStyle(.eyebrow)

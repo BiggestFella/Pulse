@@ -5,13 +5,12 @@ import SwiftUI
 /// re-skins the whole app instantly with NO background animation (AC3/AC12).
 struct PaletteView: View {
     @Environment(Theme.self) private var theme
-    private var model: PaletteModel { PaletteModel(theme: theme) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("PALETTE").pulseStyle(.eyebrow).foregroundStyle(theme.inkSoft)
             HStack(spacing: 12) {
-                ForEach(model.available, id: \.self) { palette in
+                ForEach(Palette.allCases, id: \.self) { palette in
                     swatch(palette)
                 }
             }
@@ -21,11 +20,11 @@ struct PaletteView: View {
     }
 
     private func swatch(_ palette: Palette) -> some View {
-        let isSelected = model.selected == palette
+        let isSelected = theme.palette == palette
         let tokens = palette.tokens
         return Button {
             // No withAnimation — instant re-skin (AC3).
-            model.select(palette)
+            theme.palette = palette
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: theme.radiusChip)

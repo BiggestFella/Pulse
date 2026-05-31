@@ -24,6 +24,7 @@ struct SheetChrome<Content: View>: View {
                 Spacer()
                 Button(action: onClose) { Text("✕") }
                     .buttonStyle(IconButtonStyle())
+                    .accessibilityLabel("Close")
                     .accessibilityIdentifier("sheet-close")
             }
             .padding(.horizontal, 18)
