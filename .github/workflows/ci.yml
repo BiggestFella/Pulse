@@ -5,15 +5,25 @@ on:
     branches: [main]
 jobs:
   build-test:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate project
         run: xcodegen generate
       - name: Build & test
         run: |
+          # Pick whatever iPhone simulator the runner image actually has,
+          # rather than pinning a model/OS that drifts between images.
+          DEVICE_ID=$(xcrun simctl list devices available \
+            | grep -E 'iPhone' | head -1 \
+            | grep -oE '[0-9A-Fa-f-]{36}')
+          echo "Using simulator: $DEVICE_ID"
           xcodebuild -project Pulse.xcodeproj -scheme Pulse \
-            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             clean test
