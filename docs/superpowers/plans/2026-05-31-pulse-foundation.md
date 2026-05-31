@@ -222,7 +222,7 @@ options:
     iOS: "17.0"
 settings:
   base:
-    SWIFT_VERSION: "5.9"
+    SWIFT_VERSION: "5"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
@@ -388,7 +388,7 @@ Run:
 ```bash
 xcodegen generate
 xcodebuild -project Pulse.xcodeproj -scheme Pulse \
-  -destination 'platform=iOS Simulator,name=iPhone 15' build
+  -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 Expected: `BUILD SUCCEEDED`.
 
@@ -439,7 +439,7 @@ final class PaletteTests: XCTestCase {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 15' test`
+Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 17' test`
 Expected: FAIL — `Palette` undefined.
 
 - [ ] **Step 3: Write `Pulse/Core/DesignSystem/Palette.swift`**
@@ -538,7 +538,7 @@ extension Color {
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
-Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 15' test`
+Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 17' test`
 Expected: PASS (PaletteTests green).
 
 - [ ] **Step 6: Commit**
@@ -579,7 +579,7 @@ final class WorkoutModelsTests: XCTestCase {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 15' test`
+Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 17' test`
 Expected: FAIL — `SetSpec` / `SetType` undefined.
 
 - [ ] **Step 3: Write `Pulse/Core/Models/WorkoutModels.swift`**
@@ -654,7 +654,7 @@ struct WorkoutSession: Codable, Equatable, Identifiable {
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 15' test`
+Run: `xcodebuild -project Pulse.xcodeproj -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 17' test`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -798,7 +798,7 @@ jobs:
       - name: Build & test
         run: |
           xcodebuild -project Pulse.xcodeproj -scheme Pulse \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
             clean test
 ```
 

@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PULSE — design system</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ──────────────────────────────────────────────────────────────
+   PULSE — tokens
+   ────────────────────────────────────────────────────────────── */
+:root{
+  --ff-display:"Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --ff-body:"Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --ff-stat:"Oswald", "Impact", "Arial Narrow", sans-serif;
+  --ff-mono:"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px;
+  --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px; --s-10:128px;
+
+  --r-pill:999px;
+  --r-card:28px;
+  --r-tile:24px;
+  --r-button:999px;
+  --r-tag:8px;
+
+  /* Default to DEEP (the signature look from the inspo) */
+  --bg:#0B0B0E;
+  --surface:#17171B;
+  --surface-2:#23232A;
+  --ink:#FFFFFF;
+  --ink-soft:rgba(255,255,255,.62);
+  --ink-faint:rgba(255,255,255,.16);
+  --accent:#FF2A2A;
+  --accent-deep:#B81C1C;
+  --accent-2:#00B7FF;
+  --accent-2-deep:#0080B3;
+  --on-accent:#FFFFFF;
+  --grain-opacity:.06;
+}
+
+.is-heat, [data-theme="heat"]{
+  --bg:#FFEAD2; --surface:#FFF7EE; --surface-2:#FFDBB0;
+  --ink:#1A0F08; --ink-soft:rgba(26,15,8,.62); --ink-faint:rgba(26,15,8,.18);
+  --accent:#FF3D14; --accent-deep:#B72400;
+  --accent-2:#1A0F08; --accent-2-deep:#000;
+  --on-accent:#FFF7EE;
+  --grain-opacity:.18;
+}
+.is-volt, [data-theme="volt"]{
+  --bg:#D6FF1F; --surface:#0E0E10; --surface-2:#B8DD12;
+  --ink:#0E0E10; --ink-soft:rgba(14,14,16,.66); --ink-faint:rgba(14,14,16,.20);
+  --accent:#FF2A6D; --accent-deep:#B8004A;
+  --accent-2:#00C2FF; --accent-2-deep:#0087B3;
+  --on-accent:#FFFFFF;
+  --grain-opacity:.10;
+}
+.is-deep, [data-theme="deep"]{
+  --bg:#0B0B0E; --surface:#17171B; --surface-2:#23232A;
+  --ink:#FFFFFF; --ink-soft:rgba(255,255,255,.62); --ink-faint:rgba(255,255,255,.16);
+  --accent:#FF2A2A; --accent-deep:#B81C1C;
+  --accent-2:#00B7FF; --accent-2-deep:#0080B3;
+  --on-accent:#FFFFFF;
+  --grain-opacity:.06;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--ff-body);
+  font-size:16px;
+  line-height:1.5;
+  color:var(--ink);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background .35s ease, color .35s ease;
+  overflow-x:hidden;
+}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+
+.grain{
+  position:fixed;inset:0;pointer-events:none;z-index:1;
+  opacity:var(--grain-opacity,.14);mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .5 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+}
+.is-deep .grain{mix-blend-mode:screen;opacity:.04}
+
+/* Type primitives */
+.display{
+  font-family:var(--ff-display);
+  font-weight:800;
+  line-height:1.02;
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+.stat{
+  font-family:var(--ff-stat);
+  font-weight:700;
+  line-height:.85;
+  letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;
+}
+/* Compressed — Oswald stretched vertically for the GOOD-style poster feel */
+.stat.compressed{
+  transform:scaleY(1.35);
+  transform-origin:bottom center;
+  letter-spacing:-.04em;
+  display:inline-block;
+}
+.stat.tall{
+  transform:scaleY(1.18);
+  transform-origin:bottom center;
+  letter-spacing:-.03em;
+  display:inline-block;
+}
+.stat.wide{
+  transform:scaleX(1.15);
+  transform-origin:left center;
+  letter-spacing:.02em;
+  display:inline-block;
+}
+
+/* Lockup — giant numeral with small mono label tucked top-right */
+.lockup{display:inline-grid;grid-template-columns:auto auto;column-gap:14px;align-items:start}
+.lockup .num{
+  font-family:var(--ff-stat);font-weight:700;
+  line-height:.85;letter-spacing:-.02em;
+  grid-row:1 / span 2;
+}
+.lockup .lbl-top{
+  font-family:var(--ff-mono);font-size:11px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-soft);
+  padding-top:8%;
+}
+.lockup .lbl-bot{
+  font-family:var(--ff-display);font-weight:800;
+  font-size:.22em;line-height:.95;letter-spacing:-.02em;
+  align-self:start;
+  margin-top:-.05em;
+}
+.mono-cap{
+  font-family:var(--ff-mono);
+  font-weight:500;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.wrap{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:0 var(--s-6)}
+section{position:relative;z-index:2;padding:var(--s-10) 0}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-5);margin-bottom:var(--s-6);border-bottom:2px solid var(--ink);padding-bottom:var(--s-3)}
+.section-head .num{font-family:var(--ff-mono);font-size:13px;font-weight:500;color:var(--ink-soft);letter-spacing:.08em}
+
+hr.rule{border:0;border-top:2px solid var(--ink);margin:0;opacity:.6}
+
+/* ──────────────────────────────────────────────────────────────
+   HERO
+   ────────────────────────────────────────────────────────────── */
+.hero{padding:var(--s-7) 0 var(--s-10);position:relative}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:var(--s-5) 0 var(--s-9);gap:var(--s-5);flex-wrap:wrap}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--ff-mono);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.topbar .mark .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg), 0 0 0 4px var(--accent)}
+
+.theme-switch{display:inline-flex;background:color-mix(in oklab, var(--ink) 8%, transparent);border:1.5px solid var(--ink);border-radius:var(--r-pill);padding:5px;gap:2px;box-shadow:0 4px 0 0 var(--ink)}
+.theme-switch button{
+  appearance:none;border:0;background:transparent;color:var(--ink);
+  font-family:var(--ff-mono);font-weight:600;font-size:12px;letter-spacing:.1em;
+  padding:8px 16px;border-radius:var(--r-pill);cursor:pointer;text-transform:uppercase;
+  transition:background .15s, color .15s;
+}
+.theme-switch button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.theme-switch button:hover:not([aria-pressed="true"]){background:color-mix(in oklab, var(--ink) 14%, transparent)}
+
+.hero h1{
+  font-family:var(--ff-stat);
+  font-weight:700;
+  font-size:clamp(140px, 26vw, 360px);
+  line-height:.82;letter-spacing:-.02em;
+  margin:0;
+  color:var(--ink);
+  text-transform:uppercase;
+}
+.hero h1 .accent{color:var(--accent)}
+.hero h1 .punct{color:var(--accent)}
+
+.hero .lede{
+  margin-top:var(--s-6);max-width:760px;
+  font-family:var(--ff-display);font-weight:700;
+  font-size:clamp(28px, 3.4vw, 44px);line-height:1.1;letter-spacing:-.02em;
+}
+.hero .lede em{font-style:normal;color:var(--accent);font-weight:800}
+
+.hero .meta{margin-top:var(--s-7);display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-5);font-family:var(--ff-mono);font-size:13px;color:var(--ink-soft)}
+.hero .meta .k{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.hero .meta .v{color:var(--ink);font-weight:500;font-family:var(--ff-display)}
+
+/* ──────────────────────────────────────────────────────────────
+   PRINCIPLES
+   ────────────────────────────────────────────────────────────── */
+.manifesto{padding:var(--s-9) 0}
+.manifesto ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s-7) var(--s-7)}
+.manifesto li{display:flex;gap:var(--s-5);align-items:flex-start;padding-top:var(--s-5);border-top:2px solid var(--ink)}
+.manifesto .n{
+  font-family:var(--ff-stat);font-weight:700;
+  font-size:96px;line-height:.85;color:var(--accent);min-width:96px;
+}
+.manifesto h3{
+  font-family:var(--ff-display);font-weight:800;
+  font-size:36px;line-height:1.05;letter-spacing:-.02em;margin:0 0 10px;
+}
+.manifesto p{margin:0;font-size:19px;line-height:1.4;color:var(--ink-soft);max-width:46ch}
+
+/* ──────────────────────────────────────────────────────────────
+   THEMES
+   ────────────────────────────────────────────────────────────── */
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5)}
+.theme-card{
+  position:relative;
+  border:2px solid var(--ink);
+  border-radius:var(--r-card);
+  padding:var(--s-6);
+  background:var(--bg);
+  color:var(--ink);
+  overflow:hidden;
+  box-shadow:0 8px 0 0 var(--ink);
+  display:flex;flex-direction:column;gap:var(--s-5);min-height:520px;
+}
+.theme-card .head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-4)}
+.theme-card .name{font-family:var(--ff-display);font-weight:800;font-size:48px;line-height:1;letter-spacing:-.025em}
+.theme-card .tag{font-family:var(--ff-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+.theme-card p{margin:0;color:var(--ink-soft);max-width:30ch;font-size:15px;line-height:1.4}
+.theme-card .demo-num{
+  font-family:var(--ff-stat);font-weight:700;
+  font-size:200px;line-height:.82;letter-spacing:-.02em;color:var(--accent);
+  margin-top:auto;text-transform:uppercase;
+}
+.theme-card .demo-label{font-family:var(--ff-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px;font-weight:500}
+.theme-card .palette{display:flex;gap:6px;flex-wrap:wrap}
+.theme-card .palette span{height:32px;flex:1;border-radius:8px;min-width:30px;border:1.5px solid var(--ink)}
+
+/* ──────────────────────────────────────────────────────────────
+   COLOR TOKENS
+   ────────────────────────────────────────────────────────────── */
+.tokens{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-6)}
+.token-set{display:flex;flex-direction:column;gap:var(--s-2);padding:var(--s-5);border-radius:var(--r-card);border:2px solid var(--ink);background:var(--bg);box-shadow:0 6px 0 0 var(--ink);color:var(--ink)}
+.token-set h4{font-family:var(--ff-display);font-weight:800;font-size:36px;margin:0 0 var(--s-3);letter-spacing:-.025em;color:var(--ink)}
+.swatch{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:var(--s-3);padding:10px;border:1.5px solid var(--ink-faint);border-radius:14px;background:var(--surface);color:var(--ink)}
+.is-volt .swatch{color:#FFF7EE}
+.swatch .chip{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--ink-faint)}
+.swatch .meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.swatch .meta b{font-family:var(--ff-mono);font-size:12px;font-weight:600;letter-spacing:.04em}
+.swatch .meta small{font-family:var(--ff-display);font-size:13px;font-weight:500;opacity:.7}
+.swatch .hex{font-family:var(--ff-mono);font-size:11px;opacity:.7;letter-spacing:.04em}
+
+/* ──────────────────────────────────────────────────────────────
+   TYPE
+   ────────────────────────────────────────────────────────────── */
+.type-hero{
+  border:2px solid var(--ink);
+  border-radius:var(--r-card);
+  padding:var(--s-7) var(--s-6);
+  background:var(--surface);
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--s-6);align-items:center;
+  margin-bottom:var(--s-6);
+  box-shadow:0 8px 0 0 var(--ink);
+  color:var(--ink);
+}
+.is-volt .type-hero{color:#FFF7EE}
+.type-hero .big{
+  font-family:var(--ff-stat);font-weight:700;
+  font-size:320px;line-height:.82;letter-spacing:-.02em;color:var(--accent);
+  text-align:center;
+}
+.type-hero .info dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-family:var(--ff-display);font-size:15px}
+.type-hero .info dt{font-family:var(--ff-mono);color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase;font-size:11px;font-weight:500}
+.type-hero .info dd{margin:0;font-weight:600}
+.type-hero .info h3{font-family:var(--ff-display);font-weight:800;font-size:42px;margin:0 0 var(--s-3);letter-spacing:-.025em}
+.type-hero .info p{font-size:17px;line-height:1.4;opacity:.75;max-width:38ch;margin:0 0 var(--s-4)}
+
+.scale{display:flex;flex-direction:column;gap:var(--s-2);border-top:2px solid var(--ink)}
+.scale-row{display:grid;grid-template-columns:120px 1fr auto;align-items:baseline;gap:var(--s-5);padding:var(--s-3) 0;border-bottom:1px solid var(--ink-faint)}
+.scale-row .label{font-family:var(--ff-mono);font-size:12px;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+.scale-row .sample{color:var(--ink);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scale-row.disp .sample{font-family:var(--ff-display);font-weight:800;letter-spacing:-.025em}
+.scale-row.stat .sample{font-family:var(--ff-stat);font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
+.scale-row.body .sample{font-family:var(--ff-display);font-weight:500;letter-spacing:-.005em}
+.scale-row.mono .sample{font-family:var(--ff-mono);font-weight:500;letter-spacing:.04em}
+.scale-row .spec{font-family:var(--ff-mono);font-size:12px;color:var(--ink-soft);letter-spacing:.04em;white-space:nowrap}
+
+/* ──────────────────────────────────────────────────────────────
+   BUTTONS
+   ────────────────────────────────────────────────────────────── */
+.btn{
+  appearance:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--ff-display);font-weight:700;font-size:16px;letter-spacing:-.005em;
+  padding:0 28px;height:56px;border-radius:var(--r-button);
+  background:var(--accent);color:var(--on-accent);
+  border:2px solid var(--ink);
+  box-shadow:
+    inset 0 2px 0 0 rgba(255,255,255,.28),
+    inset 0 -3px 0 0 rgba(0,0,0,.18),
+    0 6px 0 0 var(--ink);
+  transition:transform .12s cubic-bezier(.2,.7,.3,1.4), box-shadow .12s ease, background .15s;
+  position:relative;text-decoration:none;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.32),inset 0 -3px 0 0 rgba(0,0,0,.2),0 7px 0 0 var(--ink)}
+.btn:active,.btn.is-pressed{transform:translateY(5px);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.28),inset 0 -2px 0 0 rgba(0,0,0,.16),0 1px 0 0 var(--ink)}
+
+.btn.size-l{height:64px;padding:0 36px;font-size:18px}
+.btn.size-s{height:42px;padding:0 20px;font-size:14px;box-shadow:inset 0 2px 0 0 rgba(255,255,255,.28),inset 0 -2px 0 0 rgba(0,0,0,.16),0 4px 0 0 var(--ink)}
+
+.btn.secondary{background:var(--surface);color:var(--ink);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.5),inset 0 -3px 0 0 rgba(0,0,0,.08),0 6px 0 0 var(--ink)}
+.is-deep .btn.secondary{box-shadow:inset 0 2px 0 0 rgba(255,255,255,.12),inset 0 -3px 0 0 rgba(0,0,0,.4),0 6px 0 0 var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);box-shadow:0 0 0 0 var(--ink)}
+.btn.ghost:hover{background:var(--ink-faint);box-shadow:0 0 0 0 var(--ink);transform:none}
+.btn.ghost:active{transform:translateY(0)}
+.btn[disabled],.btn.is-disabled{cursor:not-allowed;opacity:.45;transform:none;box-shadow:0 4px 0 0 var(--ink-faint)}
+
+.btn .arrow{font-family:var(--ff-stat);font-weight:700;font-size:1.2em;line-height:1}
+
+.btn-grid{display:grid;grid-template-columns:140px repeat(4,1fr);gap:var(--s-4) var(--s-4);align-items:center}
+.btn-grid .col-h{font-family:var(--ff-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding-bottom:8px;border-bottom:1px solid var(--ink-faint);font-weight:500}
+.btn-grid .row-h{font-family:var(--ff-mono);font-size:12px;letter-spacing:.1em;color:var(--ink);font-weight:600;text-transform:uppercase}
+
+/* ──────────────────────────────────────────────────────────────
+   MOCKUP PHONES
+   ────────────────────────────────────────────────────────────── */
+.in-practice{padding-bottom:var(--s-10)}
+.mocks{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-6);align-items:end;justify-items:center}
+.mock{display:flex;flex-direction:column;align-items:center;gap:var(--s-4)}
+.mock .mock-label{font-family:var(--ff-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);text-align:center;font-weight:500}
+.mock .mock-label b{display:block;font-family:var(--ff-display);font-weight:800;color:var(--ink);font-size:24px;letter-spacing:-.02em;margin-bottom:4px;text-transform:none}
+
+.phone{
+  width:340px;height:720px;
+  border-radius:54px;
+  background:var(--bg);
+  border:2px solid #0a0a0a;
+  box-shadow:
+    inset 0 0 0 6px #1a1a1a,
+    inset 0 0 0 8px #2a2a2a,
+    0 24px 60px rgba(0,0,0,.25),
+    0 8px 0 0 #0a0a0a;
+  position:relative;overflow:hidden;color:var(--ink);
+}
+.phone .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:110px;height:30px;border-radius:18px;background:#0a0a0a;z-index:5}
+.phone .scr{position:absolute;inset:8px;border-radius:46px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+.phone .status{display:flex;justify-content:space-between;align-items:center;padding:14px 28px 0;font-family:var(--ff-mono);font-size:13px;font-weight:600;color:var(--ink)}
+.phone .status .right{display:flex;gap:6px;align-items:center;font-size:11px}
+.phone .status .bat{width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;padding:1px;display:flex}
+.phone .status .bat::after{content:"";flex:1;background:var(--ink);border-radius:1px}
+.phone .body{flex:1;padding:24px 22px;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─── GYM (HEAT) — Not Boring style ─── */
+.gym-eyebrow{font-family:var(--ff-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;display:flex;justify-content:space-between;font-weight:500}
+.gym-title{font-family:var(--ff-display);font-weight:800;font-size:32px;line-height:1;letter-spacing:-.025em;margin:0 0 4px;color:var(--ink)}
+.gym-sub{font-family:var(--ff-display);font-size:14px;color:var(--ink-soft);margin-bottom:18px;font-weight:500}
+
+.gym-set{
+  background:var(--accent);color:var(--on-accent);
+  border:2px solid var(--ink);border-radius:24px;padding:18px 20px 22px;
+  box-shadow:0 6px 0 0 var(--ink);
+  display:flex;flex-direction:column;gap:2px;margin-bottom:14px;
+}
+.gym-set .kicker{font-family:var(--ff-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.85;font-weight:500}
+.gym-set .reps{font-family:var(--ff-stat);font-weight:700;font-size:120px;line-height:.82;letter-spacing:-.02em;margin-top:-2px;display:flex;align-items:baseline;gap:10px}
+.gym-set .reps span{font-family:var(--ff-display);font-size:15px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;opacity:.95}
+.gym-set .move{font-family:var(--ff-display);font-weight:800;font-size:24px;line-height:1;letter-spacing:-.02em;margin-top:6px}
+.gym-set .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-family:var(--ff-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+
+.gym-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.gym-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1.5px solid var(--ink);border-radius:18px;color:var(--ink)}
+.gym-row.done{opacity:.5}
+.gym-row .check{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);background:transparent;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-weight:800;font-size:13px}
+.gym-row.done .check{background:var(--ink);color:var(--bg)}
+.gym-row .nm{flex:1;font-family:var(--ff-display);font-weight:700;font-size:14px}
+.gym-row .ct{font-family:var(--ff-mono);font-size:11px;color:var(--ink-soft);letter-spacing:.08em;font-weight:500}
+
+.gym-cta{margin-top:auto;display:flex;gap:8px;padding-top:12px}
+
+/* ─── TASKS (DEEP) ─── */
+.tasks-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px}
+.tasks-day{font-family:var(--ff-display);font-weight:800;font-size:36px;line-height:1;letter-spacing:-.025em;margin:0;color:var(--ink)}
+.tasks-pill{font-family:var(--ff-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:6px 10px;border:1.5px solid var(--ink);border-radius:999px;color:var(--ink);white-space:nowrap;flex:none;font-weight:500}
+.tasks-counter{
+  position:relative;text-align:center;margin:8px 0 18px;
+  font-family:var(--ff-stat);font-weight:700;
+  line-height:.82;letter-spacing:-.02em;
+}
+.tasks-counter .pct{font-size:170px;color:var(--accent);display:inline-flex;align-items:baseline}
+.tasks-counter .pct sub{font-family:var(--ff-display);font-size:42px;color:var(--ink-soft);vertical-align:baseline;font-weight:800;line-height:1;margin-left:4px;letter-spacing:-.02em}
+.tasks-counter .lbl{font-family:var(--ff-mono);font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:8px}
+
+.task-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;border:1.5px solid var(--ink-faint);background:var(--surface);margin-bottom:8px;color:var(--ink)}
+.task-row .dot{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-weight:800;font-size:13px;
+}
+.task-row.done .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.task-row .nm{flex:1;font-family:var(--ff-display);font-weight:600;font-size:14px}
+.task-row.done .nm{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink-soft)}
+.task-row .when{font-family:var(--ff-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+
+.tasks-foot{margin-top:auto;padding-top:14px;display:flex;gap:8px}
+
+/* ─── STATS (VOLT) ─── */
+.stat-eyebrow{font-family:var(--ff-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;font-weight:500}
+.stat-h{font-family:var(--ff-display);font-weight:800;font-size:32px;line-height:1;letter-spacing:-.025em;margin:0 0 14px;color:var(--ink)}
+.stat-card{
+  background:var(--surface);color:var(--bg);
+  border:2px solid var(--ink);border-radius:22px;padding:16px 18px 20px;
+  margin-bottom:10px;
+  box-shadow:0 5px 0 0 var(--ink);
+}
+.stat-card.accent{background:var(--accent);color:#fff;box-shadow:0 5px 0 0 var(--ink)}
+.stat-card .k{font-family:var(--ff-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.85;font-weight:500}
+.stat-card .v{font-family:var(--ff-stat);font-weight:700;font-size:90px;line-height:.82;letter-spacing:-.02em;margin-top:-2px;display:flex;align-items:baseline;gap:8px;text-transform:uppercase}
+.stat-card .v span{font-family:var(--ff-display);font-size:13px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;opacity:.9}
+.stat-card .u{font-family:var(--ff-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-top:4px;font-weight:500}
+
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-row .stat-card{margin-bottom:0;padding:14px}
+.stat-row .stat-card .v{font-size:54px}
+
+.weekstrip{margin-top:10px;display:flex;gap:6px}
+.weekstrip .d{flex:1;text-align:center;padding:10px 0;border-radius:10px;border:1.5px solid var(--ink);font-family:var(--ff-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);font-weight:500}
+.weekstrip .d.on{background:var(--ink);color:var(--bg)}
+
+.stats-foot{margin-top:auto;padding-top:14px;display:flex;gap:8px}
+
+/* ──────────────────────────────────────────────────────────────
+   FOOTER
+   ────────────────────────────────────────────────────────────── */
+footer{padding:var(--s-9) 0 var(--s-7);border-top:2px solid var(--ink);margin-top:var(--s-9)}
+footer .grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--s-6)}
+footer h5{font-family:var(--ff-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 var(--s-3);font-weight:500}
+footer .big{font-family:var(--ff-stat);font-weight:700;font-size:96px;line-height:.85;letter-spacing:-.02em;margin:0;text-transform:uppercase}
+footer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-family:var(--ff-display);font-size:14px;font-weight:500}
+
+@media (max-width:1080px){
+  .themes,.tokens,.mocks,footer .grid,.hero .meta{grid-template-columns:1fr 1fr}
+  .manifesto ol{grid-template-columns:1fr}
+  .btn-grid{grid-template-columns:1fr 1fr}
+  .type-hero{grid-template-columns:1fr}
+  .type-hero .big{font-size:200px}
+}
+@media (max-width:680px){
+  .themes,.tokens,.mocks,footer .grid,.hero .meta{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-theme="deep">
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- HERO -->
+<section class="hero" data-screen-label="01 Cover">
+  <div class="wrap">
+    <header class="topbar">
+      <div class="mark"><span class="dot"></span><span>PULSE / v0.2</span></div>
+      <div class="theme-switch" role="tablist" aria-label="Theme">
+        <button type="button" data-set="heat" aria-pressed="false">Heat</button>
+        <button type="button" data-set="volt" aria-pressed="false">Volt</button>
+        <button type="button" data-set="deep" aria-pressed="true">Deep</button>
+      </div>
+    </header>
+
+    <h1><span>Pul</span><span class="accent">se</span><span class="punct">.</span></h1>
+
+    <p class="lede">A design system for products that need to make you <em>move</em>. Big condensed numbers, bold rounded headlines, monospace meta — and buttons that feel like a thing.</p>
+
+    <div class="meta">
+      <div><span class="k">Display</span><span class="v">Hanken Grotesk</span></div>
+      <div><span class="k">Numerals</span><span class="v">Oswald Condensed</span></div>
+      <div><span class="k">Mono</span><span class="v">Geist Mono</span></div>
+      <div><span class="k">Themes</span><span class="v">Heat · Volt · Deep</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- PRINCIPLES -->
+<section class="manifesto" data-screen-label="02 Principles">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">Principles.</h2>
+      <span class="num">§ 01</span>
+    </div>
+
+    <ol>
+      <li>
+        <span class="n">01</span>
+        <div>
+          <h3>Make it loud.</h3>
+          <p>One thing on the screen should be huge. Numbers, verbs, names. If it isn't shouting, it isn't earning its pixels.</p>
+        </div>
+      </li>
+      <li>
+        <span class="n">02</span>
+        <div>
+          <h3>Color is mood.</h3>
+          <p>Themes aren't decoration — they set the emotional temperature. Heat for daylight, Volt for hype, Deep for focus.</p>
+        </div>
+      </li>
+      <li>
+        <span class="n">03</span>
+        <div>
+          <h3>Numbers want to be giants.</h3>
+          <p>Tall, narrow, tabular. Stats, counts, scores — render them in Oswald Condensed and let them carry the screen.</p>
+        </div>
+      </li>
+      <li>
+        <span class="n">04</span>
+        <div>
+          <h3>Buttons want to be pressed.</h3>
+          <p>Chunky, drop-shadowed, pill-shaped. A press travels down and back. The interface should feel like a physical object.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- THEMES -->
+<section data-screen-label="03 Themes">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">Themes.</h2>
+      <span class="num">§ 02 · three skins</span>
+    </div>
+
+    <div class="themes">
+
+      <div class="theme-card is-heat">
+        <div class="head">
+          <div>
+            <div class="tag">01 — Daylight</div>
+            <div class="name">Heat.</div>
+          </div>
+        </div>
+        <p>Warm cream, scorched red. The default — sun-up, motivating, push-forward moments.</p>
+        <div class="palette">
+          <span style="background:#FFEAD2"></span>
+          <span style="background:#FFDBB0"></span>
+          <span style="background:#FF3D14"></span>
+          <span style="background:#1A0F08"></span>
+        </div>
+        <div>
+          <div class="demo-num">86°</div>
+          <div class="demo-label">Heat / 86 degrees</div>
+        </div>
+      </div>
+
+      <div class="theme-card is-volt">
+        <div class="head">
+          <div>
+            <div class="tag">02 — Charge</div>
+            <div class="name">Volt.</div>
+          </div>
+        </div>
+        <p>Acid lime + magenta jolt. The loud one — streaks, PRs, launches, hype.</p>
+        <div class="palette">
+          <span style="background:#D6FF1F"></span>
+          <span style="background:#B8DD12"></span>
+          <span style="background:#FF2A6D"></span>
+          <span style="background:#00C2FF"></span>
+          <span style="background:#0E0E10"></span>
+        </div>
+        <div>
+          <div class="demo-num">+27</div>
+          <div class="demo-label">Volt / streak</div>
+        </div>
+      </div>
+
+      <div class="theme-card is-deep">
+        <div class="head">
+          <div>
+            <div class="tag">03 — After dark</div>
+            <div class="name">Deep.</div>
+          </div>
+        </div>
+        <p>Near-black + scorch red. Night mode and focus — late sessions, deep work, recovery.</p>
+        <div class="palette">
+          <span style="background:#0B0B0E"></span>
+          <span style="background:#17171B"></span>
+          <span style="background:#FF2A2A"></span>
+          <span style="background:#00B7FF"></span>
+          <span style="background:#FFFFFF"></span>
+        </div>
+        <div>
+          <div class="demo-num">2:14</div>
+          <div class="demo-label">Deep / focus</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- COLOR TOKENS -->
+<section data-screen-label="04 Color tokens">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">Color tokens.</h2>
+      <span class="num">§ 03 · semantic, per theme</span>
+    </div>
+
+    <div class="tokens">
+
+      <div class="token-set is-heat">
+        <h4>Heat</h4>
+        <div class="swatch"><div class="chip" style="background:#FFEAD2"></div><div class="meta"><b>--bg</b><small>page background</small></div><span class="hex">#FFEAD2</span></div>
+        <div class="swatch"><div class="chip" style="background:#FFF7EE"></div><div class="meta"><b>--surface</b><small>cards, sheets</small></div><span class="hex">#FFF7EE</span></div>
+        <div class="swatch"><div class="chip" style="background:#1A0F08"></div><div class="meta"><b>--ink</b><small>primary text</small></div><span class="hex">#1A0F08</span></div>
+        <div class="swatch"><div class="chip" style="background:#FF3D14"></div><div class="meta"><b>--accent</b><small>primary action</small></div><span class="hex">#FF3D14</span></div>
+      </div>
+
+      <div class="token-set is-volt">
+        <h4>Volt</h4>
+        <div class="swatch"><div class="chip" style="background:#D6FF1F"></div><div class="meta"><b>--bg</b><small>page background</small></div><span class="hex">#D6FF1F</span></div>
+        <div class="swatch"><div class="chip" style="background:#0E0E10"></div><div class="meta"><b>--surface</b><small>cards, sheets</small></div><span class="hex">#0E0E10</span></div>
+        <div class="swatch"><div class="chip" style="background:#0E0E10"></div><div class="meta"><b>--ink</b><small>primary text</small></div><span class="hex">#0E0E10</span></div>
+        <div class="swatch"><div class="chip" style="background:#FF2A6D"></div><div class="meta"><b>--accent</b><small>primary action</small></div><span class="hex">#FF2A6D</span></div>
+      </div>
+
+      <div class="token-set is-deep">
+        <h4>Deep</h4>
+        <div class="swatch"><div class="chip" style="background:#0B0B0E"></div><div class="meta"><b>--bg</b><small>page background</small></div><span class="hex">#0B0B0E</span></div>
+        <div class="swatch"><div class="chip" style="background:#17171B"></div><div class="meta"><b>--surface</b><small>cards, sheets</small></div><span class="hex">#17171B</span></div>
+        <div class="swatch"><div class="chip" style="background:#FFFFFF"></div><div class="meta"><b>--ink</b><small>primary text</small></div><span class="hex">#FFFFFF</span></div>
+        <div class="swatch"><div class="chip" style="background:#FF2A2A"></div><div class="meta"><b>--accent</b><small>primary action</small></div><span class="hex">#FF2A2A</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- TYPE -->
+<section data-screen-label="05 Type">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">Type.</h2>
+      <span class="num">§ 04 · three families, one attitude</span>
+    </div>
+
+    <div class="type-hero">
+      <div class="big">65°</div>
+      <div class="info">
+        <h3>Oswald Condensed — the hero.</h3>
+        <p>Tall, narrow, dense. The number that owns the screen. Used for temperatures, scores, counts, anything that wants to be read from across the room.</p>
+        <dl>
+          <dt>Display</dt><dd>Hanken Grotesk · 700 / 800</dd>
+          <dt>Hero numerals</dt><dd>Oswald · 700 condensed</dd>
+          <dt>Body</dt><dd>Hanken Grotesk · 400 / 500 / 600</dd>
+          <dt>Mono labels</dt><dd>Geist Mono · 500 caps</dd>
+          <dt>Tracking</dt><dd>Display −2.5% · Mono caps +12 to +16%</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="scale">
+      <div class="scale-row stat">
+        <span class="label">Hero numeral</span>
+        <span class="sample" style="font-size:140px">65°</span>
+        <span class="spec">Oswald 700 · −2% · cond.</span>
+      </div>
+      <div class="scale-row stat">
+        <span class="label">Stat XL</span>
+        <span class="sample" style="font-size:96px">GOOD</span>
+        <span class="spec">Oswald 700 · −1%</span>
+      </div>
+      <div class="scale-row stat">
+        <span class="label">Compressed</span>
+        <span class="sample" style="font-size:80px;height:140px;display:flex;align-items:flex-end"><span class="stat compressed" style="font-size:inherit">GOOD</span></span>
+        <span class="spec">Oswald 700 · scaleY 1.35 · −4%</span>
+      </div>
+      <div class="scale-row stat">
+        <span class="label">Stat M</span>
+        <span class="sample" style="font-size:56px">14.2K</span>
+        <span class="spec">Oswald 700 · 0</span>
+      </div>
+      <div class="scale-row disp">
+        <span class="label">Display L</span>
+        <span class="sample" style="font-size:64px">Live widgets</span>
+        <span class="spec">Hanken 800 · 64/64 · −2.5%</span>
+      </div>
+      <div class="scale-row disp">
+        <span class="label">Display M</span>
+        <span class="sample" style="font-size:42px">Make it loud.</span>
+        <span class="spec">Hanken 800 · 42/46 · −2.5%</span>
+      </div>
+      <div class="scale-row disp">
+        <span class="label">H1</span>
+        <span class="sample" style="font-size:32px">Today's session</span>
+        <span class="spec">Hanken 800 · 32/36 · −2%</span>
+      </div>
+      <div class="scale-row disp">
+        <span class="label">H2</span>
+        <span class="sample" style="font-size:24px">Push day, no excuses</span>
+        <span class="spec">Hanken 700 · 24/28 · −1.5%</span>
+      </div>
+      <div class="scale-row body">
+        <span class="label">Body L</span>
+        <span class="sample" style="font-size:19px">Walk in, warm up, hit the first set. Keep moving.</span>
+        <span class="spec">Hanken 500 · 19/28 · 0</span>
+      </div>
+      <div class="scale-row body">
+        <span class="label">Body</span>
+        <span class="sample" style="font-size:16px">Default running text. Handles everything that isn't trying to grab you.</span>
+        <span class="spec">Hanken 400 · 16/24 · 0</span>
+      </div>
+      <div class="scale-row mono">
+        <span class="label">Mono</span>
+        <span class="sample" style="font-size:13px">SET 3 / 5 · 225 LBS · 00:43</span>
+        <span class="spec">Geist Mono 500 · 13/20 · +6%</span>
+      </div>
+      <div class="scale-row mono">
+        <span class="label">Micro caps</span>
+        <span class="sample" style="font-size:11px;text-transform:uppercase;letter-spacing:.16em">Eyebrow · category · status</span>
+        <span class="spec">Geist Mono 500 · 11/16 · +16%</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- TYPE COMPOSITIONS -->
+<section data-screen-label="05b Compositions" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">Compositions.</h2>
+      <span class="num">§ 04b · lockups, stretch, play</span>
+    </div>
+
+    <p style="max-width:62ch;color:var(--ink-soft);font-size:19px;margin:0 0 var(--s-7)">When the hero element needs more attitude, push the type. Stretch it vertically. Tuck a small mono label into the top corner of a giant numeral. Let the metadata cling to the figure.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5)">
+
+      <div style="border:2px solid var(--ink);border-radius:var(--r-card);background:var(--surface);padding:var(--s-6);box-shadow:0 6px 0 0 var(--ink);display:flex;flex-direction:column;gap:var(--s-5);min-height:340px">
+        <div class="mono-cap" style="font-size:11px;color:var(--ink-soft)">Lockup · numeral + label</div>
+        <div class="lockup" style="font-size:180px;color:var(--ink)">
+          <div class="num">65</div>
+          <div class="lbl-top">Seattle</div>
+          <div class="lbl-bot" style="color:var(--ink)">Light<br/>rain.</div>
+        </div>
+        <div style="margin-top:auto" class="mono-cap" style="font-size:11px;color:var(--ink-soft)">A 4-row CSS grid does it</div>
+      </div>
+
+      <div style="border:2px solid var(--ink);border-radius:var(--r-card);background:var(--surface);padding:var(--s-6);box-shadow:0 6px 0 0 var(--ink);display:flex;flex-direction:column;gap:var(--s-5);min-height:340px;overflow:hidden">
+        <div class="mono-cap" style="font-size:11px;color:var(--ink-soft)">Compressed · poster stretch</div>
+        <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:24px">
+          <span class="stat compressed" style="font-size:120px;color:var(--ink)">GOOD</span>
+        </div>
+        <div class="mono-cap" style="font-size:11px;color:var(--ink-soft);text-align:center">transform: scaleY(1.35)</div>
+      </div>
+
+      <div style="border:2px solid var(--ink);border-radius:var(--r-card);background:var(--surface);padding:var(--s-6);box-shadow:0 6px 0 0 var(--ink);display:flex;flex-direction:column;gap:var(--s-3);min-height:340px;overflow:hidden">
+        <div class="mono-cap" style="font-size:11px;color:var(--ink-soft)">Mix · scale + spacing</div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px">
+          <span class="stat" style="font-size:88px;color:var(--ink);letter-spacing:-.01em">27<span style="font-family:var(--ff-display);font-size:.28em;letter-spacing:.04em;margin-left:.1em;font-weight:800">DAYS</span></span>
+          <span class="stat tall" style="font-size:42px;color:var(--accent)">STREAK</span>
+          <span class="stat wide" style="font-size:18px;color:var(--ink-soft);font-weight:500">PERSONAL · BEST</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recipe card -->
+    <div style="margin-top:var(--s-7);border:2px solid var(--ink);border-radius:var(--r-card);background:var(--bg);padding:var(--s-6);box-shadow:0 6px 0 0 var(--ink)">
+      <div class="mono-cap" style="font-size:11px;color:var(--ink-soft);margin-bottom:var(--s-3)">The rules</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-5)">
+        <div>
+          <h4 style="font-family:var(--ff-display);font-weight:800;font-size:24px;margin:0 0 6px;letter-spacing:-.02em">One thing is hero.</h4>
+          <p style="margin:0;color:var(--ink-soft);font-size:15px">The giant numeral or word carries the screen. Everything else clings to it.</p>
+        </div>
+        <div>
+          <h4 style="font-family:var(--ff-display);font-weight:800;font-size:24px;margin:0 0 6px;letter-spacing:-.02em">Labels tuck in.</h4>
+          <p style="margin:0;color:var(--ink-soft);font-size:15px">Mono caps anchor to the top-right of the hero numeral. Don't float them off in their own card.</p>
+        </div>
+        <div>
+          <h4 style="font-family:var(--ff-display);font-weight:800;font-size:24px;margin:0 0 6px;letter-spacing:-.02em">Stretch on purpose.</h4>
+          <p style="margin:0;color:var(--ink-soft);font-size:15px">Use <code style="font-family:var(--ff-mono);font-size:13px">scaleY(1.2–1.4)</code> for poster moments. Don't apply globally.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- BUTTONS -->
+<section data-screen-label="06 Buttons">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">Buttons.</h2>
+      <span class="num">§ 05 · pressable, chunky, alive</span>
+    </div>
+
+    <p style="max-width:62ch;color:var(--ink-soft);font-size:19px;margin:0 0 var(--s-7)">Pills with a solid drop. Top edge gets a light inner highlight, bottom a dark inner shadow — so the button reads as a physical object. On press it travels down five pixels and the under-shadow collapses. Try one.</p>
+
+    <div class="btn-grid">
+      <div></div>
+      <div class="col-h">Default</div>
+      <div class="col-h">Hover</div>
+      <div class="col-h">Pressed</div>
+      <div class="col-h">Disabled</div>
+
+      <div class="row-h">Primary · L</div>
+      <button class="btn size-l" type="button">Start session <span class="arrow">→</span></button>
+      <button class="btn size-l" type="button" style="transform:translateY(-1px);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.32),inset 0 -3px 0 0 rgba(0,0,0,.2),0 7px 0 0 var(--ink)">Start session <span class="arrow">→</span></button>
+      <button class="btn size-l is-pressed" type="button">Start session <span class="arrow">→</span></button>
+      <button class="btn size-l is-disabled" type="button" disabled>Start session <span class="arrow">→</span></button>
+
+      <div class="row-h">Primary · M</div>
+      <button class="btn" type="button">Log set</button>
+      <button class="btn" type="button" style="transform:translateY(-1px);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.32),inset 0 -3px 0 0 rgba(0,0,0,.2),0 7px 0 0 var(--ink)">Log set</button>
+      <button class="btn is-pressed" type="button">Log set</button>
+      <button class="btn is-disabled" type="button" disabled>Log set</button>
+
+      <div class="row-h">Secondary</div>
+      <button class="btn secondary" type="button">Skip</button>
+      <button class="btn secondary" type="button" style="transform:translateY(-1px)">Skip</button>
+      <button class="btn secondary is-pressed" type="button">Skip</button>
+      <button class="btn secondary is-disabled" type="button" disabled>Skip</button>
+
+      <div class="row-h">Ghost</div>
+      <button class="btn ghost" type="button">More <span class="arrow">→</span></button>
+      <button class="btn ghost" type="button" style="background:var(--ink-faint)">More <span class="arrow">→</span></button>
+      <button class="btn ghost is-pressed" type="button">More <span class="arrow">→</span></button>
+      <button class="btn ghost is-disabled" type="button" disabled>More <span class="arrow">→</span></button>
+
+      <div class="row-h">Primary · S</div>
+      <button class="btn size-s" type="button">+ Add</button>
+      <button class="btn size-s" type="button" style="transform:translateY(-1px);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.32),inset 0 -3px 0 0 rgba(0,0,0,.2),0 5px 0 0 var(--ink)">+ Add</button>
+      <button class="btn size-s is-pressed" type="button">+ Add</button>
+      <button class="btn size-s is-disabled" type="button" disabled>+ Add</button>
+    </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<!-- IN PRACTICE -->
+<section class="in-practice" data-screen-label="07 In practice">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="display" style="font-size:56px;margin:0">In practice.</h2>
+      <span class="num">§ 06 · the system, applied</span>
+    </div>
+
+    <p style="max-width:62ch;color:var(--ink-soft);font-size:19px;margin:0 0 var(--s-7)">Three looks at the system in product. Each phone is locked to a different theme so you can see how the same components shift mood.</p>
+
+    <div class="mocks">
+
+      <!-- Gym (HEAT) -->
+      <div class="mock">
+        <div class="phone is-heat">
+          <div class="notch"></div>
+          <div class="scr">
+            <div class="status">
+              <span>9:41</span>
+              <span class="right"><span>5G</span><span class="bat"></span></span>
+            </div>
+            <div class="body">
+              <div class="gym-eyebrow"><span>PUSH DAY · WK 04</span><span>03 / 06</span></div>
+              <h3 class="gym-title">Bench press.</h3>
+              <div class="gym-sub">Heavy day. Three working sets at 80%.</div>
+
+              <div class="gym-set">
+                <div class="lockup" style="font-size:140px;width:100%">
+                  <div class="num" style="color:var(--on-accent)">8</div>
+                  <div class="lbl-top" style="color:rgba(255,255,255,.75)">Set 3 / 5</div>
+                  <div class="lbl-bot" style="color:var(--on-accent)">Reps<br/>@ 225.</div>
+                </div>
+                <div class="row" style="margin-top:14px"><span>REST 02:00</span><span>+5 LBS NEXT</span></div>
+              </div>
+
+              <div class="gym-list">
+                <div class="gym-row done"><div class="check">✓</div><div class="nm">Warmup · 45 lb</div><div class="ct">10 × 2</div></div>
+                <div class="gym-row done"><div class="check">✓</div><div class="nm">Set 1 · 185 lb</div><div class="ct">8 reps</div></div>
+                <div class="gym-row"><div class="check"></div><div class="nm">Set 4 · 235 lb</div><div class="ct">6 reps</div></div>
+              </div>
+
+              <div class="gym-cta">
+                <button class="btn" type="button" style="flex:1">Log set <span class="arrow">→</span></button>
+                <button class="btn secondary size-s" type="button">Skip</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-label"><b>Pulse Gym.</b>Heat · workout in progress</div>
+      </div>
+
+      <!-- Tasks (DEEP) -->
+      <div class="mock">
+        <div class="phone is-deep">
+          <div class="notch"></div>
+          <div class="scr">
+            <div class="status">
+              <span>9:41</span>
+              <span class="right"><span>5G</span><span class="bat"></span></span>
+            </div>
+            <div class="body">
+              <div class="tasks-head">
+                <div>
+                  <div class="gym-eyebrow" style="display:block">WEDNESDAY · MAY 21</div>
+                  <h3 class="tasks-day">Big day.</h3>
+                </div>
+                <div class="tasks-pill">7 left</div>
+              </div>
+
+              <div class="tasks-counter">
+                <div class="pct">58<sub>%</sub></div>
+                <div class="lbl">Done today</div>
+              </div>
+
+              <div class="task-row done"><div class="dot">✓</div><div class="nm">Send PRD draft</div><div class="when">8:30</div></div>
+              <div class="task-row done"><div class="dot">✓</div><div class="nm">Standup</div><div class="when">9:00</div></div>
+              <div class="task-row"><div class="dot"></div><div class="nm">Review design system</div><div class="when">11:00</div></div>
+              <div class="task-row"><div class="dot"></div><div class="nm">1:1 with Sam</div><div class="when">2:00</div></div>
+              <div class="task-row"><div class="dot"></div><div class="nm">Ship the email</div><div class="when">4:30</div></div>
+
+              <div class="tasks-foot">
+                <button class="btn" type="button" style="flex:1">+ Add task</button>
+                <button class="btn secondary size-s" type="button">Focus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-label"><b>Pulse Tasks.</b>Deep · daily focus</div>
+      </div>
+
+      <!-- Stats (VOLT) -->
+      <div class="mock">
+        <div class="phone is-volt">
+          <div class="notch"></div>
+          <div class="scr">
+            <div class="status">
+              <span>9:41</span>
+              <span class="right"><span>5G</span><span class="bat"></span></span>
+            </div>
+            <div class="body">
+              <div class="stat-eyebrow">YOUR WEEK · MAY 14 — 20</div>
+              <h3 class="stat-h">Streak alive.</h3>
+
+              <div class="stat-card accent">
+                <div class="k">CURRENT STREAK</div>
+                <div class="v">27<span>days</span></div>
+                <div class="u">Personal best · keep going</div>
+              </div>
+
+              <div class="stat-row">
+                <div class="stat-card" style="color:var(--bg)">
+                  <div class="k" style="color:var(--accent-2)">VOLUME</div>
+                  <div class="v">14.2K</div>
+                  <div class="u">lbs this week</div>
+                </div>
+                <div class="stat-card" style="color:var(--bg)">
+                  <div class="k" style="color:var(--accent-2)">SESSIONS</div>
+                  <div class="v">5<span>/ 5</span></div>
+                  <div class="u">planned</div>
+                </div>
+              </div>
+
+              <div class="weekstrip">
+                <div class="d on">M</div>
+                <div class="d on">T</div>
+                <div class="d on">W</div>
+                <div class="d on">T</div>
+                <div class="d on">F</div>
+                <div class="d">S</div>
+                <div class="d">S</div>
+              </div>
+
+              <div class="stats-foot">
+                <button class="btn" type="button" style="flex:1">Share win <span class="arrow">→</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-label"><b>Pulse Stats.</b>Volt · the hype screen</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <h5>The system</h5>
+        <p class="big">Pulse —</p>
+        <p class="big" style="color:var(--accent)">go louder.</p>
+      </div>
+      <div>
+        <h5>Sections</h5>
+        <ul>
+          <li>01 · Principles</li>
+          <li>02 · Themes</li>
+          <li>03 · Color tokens</li>
+          <li>04 · Type</li>
+          <li>05 · Buttons</li>
+          <li>06 · In practice</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Type</h5>
+        <ul>
+          <li>Hanken Grotesk</li>
+          <li>Oswald</li>
+          <li>Geist Mono</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Status</h5>
+        <ul>
+          <li>v0.2 · type overhaul</li>
+          <li>3 themes</li>
+          <li>3 sample screens</li>
+          <li>Updated May 2026</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Theme switcher — flip the whole doc between Heat / Volt / Deep
+(function(){
+  var body = document.body;
+  var buttons = document.querySelectorAll(".theme-switch button");
+  function setTheme(t){
+    body.setAttribute("data-theme", t);
+    buttons.forEach(function(b){ b.setAttribute("aria-pressed", b.dataset.set === t ? "true" : "false"); });
+    try{ localStorage.setItem("pulse-theme", t); }catch(e){}
+  }
+  buttons.forEach(function(b){ b.addEventListener("click", function(){ setTheme(b.dataset.set); }); });
+  try{
+    var saved = localStorage.getItem("pulse-theme");
+    if(saved && ["heat","volt","deep"].indexOf(saved) >= 0) setTheme(saved);
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
