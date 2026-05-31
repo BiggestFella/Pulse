@@ -48,8 +48,8 @@ struct DesignSystemGallery: View {
                     .buttonStyle(PressableButtonStyle(variant: .primary, size: .md))
                     .accessibilityIdentifier("gallery-open-sheet")
 
-                // Palette picker (Task 9) — uncomment once PaletteView is in place.
-                // PaletteView()
+                // Palette picker (Task 9).
+                PaletteView()
             }
             .padding(24)
         }
