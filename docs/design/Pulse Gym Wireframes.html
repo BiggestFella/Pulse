@@ -1,0 +1,2049 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pulse Gym — Wireframes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+:root{
+  --ff-display:"Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --ff-stat:"Oswald", "Impact", "Arial Narrow", sans-serif;
+  --ff-mono:"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:"Hanken Grotesk", system-ui, sans-serif;
+  background:#f0eee9;
+  color:#1f1f1f;
+  min-height:100vh;
+}
+
+/* ── Phone frame for wireframes (Coastal Deep palette) ── */
+.pulse{
+  --bg:#06121F;
+  --surface:#0E1F33;
+  --ink:#FFF4D6;
+  --ink-soft:rgba(255,244,214,.62);
+  --ink-faint:rgba(255,244,214,.16);
+  --accent:#26B6F6;
+  --accent-deep:#0E5BA8;
+  --accent-2:#FF6A1F;
+  --on-accent:#06121F;
+}
+
+.phone{
+  width:340px;height:720px;
+  border-radius:50px;
+  background:#0a0a0a;
+  padding:8px;
+  box-shadow:
+    inset 0 0 0 2px #1f1f1f,
+    inset 0 0 0 4px #2a2a2a,
+    0 10px 30px rgba(0,0,0,.25);
+  position:relative;
+  flex:none;
+}
+.phone .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:108px;height:28px;border-radius:18px;background:#000;z-index:60}
+.phone .screen{
+  position:relative;width:100%;height:100%;
+  border-radius:42px;overflow:hidden;
+  background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;
+}
+.phone .status{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 28px 0;
+  font-family:"Geist Mono", monospace;font-size:12px;font-weight:600;
+  color:var(--ink);z-index:5;position:relative;
+}
+.phone .status .right{display:flex;gap:6px;align-items:center;font-size:10px}
+.phone .status .bat{width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;padding:1px;display:flex}
+.phone .status .bat::after{content:"";flex:1;background:var(--ink);border-radius:1px}
+.phone .body{
+  position:relative;z-index:5;
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  padding:14px 18px 0;
+}
+
+/* Type primitives */
+.eyebrow{font-family:"Geist Mono", monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+.h-title{font-family:var(--ff-display);font-weight:800;font-size:30px;line-height:1;letter-spacing:-.025em;margin:0;color:var(--ink)}
+.h-sub{font-family:var(--ff-display);font-size:13px;color:var(--ink-soft);font-weight:500;margin:4px 0 0}
+
+/* Cards */
+.card{
+  background:var(--surface);
+  border:1.5px solid var(--ink-faint);border-radius:18px;
+  padding:14px 16px;
+}
+.card.accent{background:var(--accent);color:var(--on-accent);border-color:var(--ink)}
+.card.flat{background:transparent;border:1.5px dashed var(--ink-faint)}
+
+/* Buttons */
+.btn{
+  appearance:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--ff-display);font-weight:700;font-size:14px;letter-spacing:-.005em;
+  padding:0 18px;height:46px;border-radius:999px;
+  background:var(--accent);color:var(--on-accent);
+  border:2px solid var(--ink);
+  box-shadow:
+    inset 0 2px 0 0 rgba(255,255,255,.28),
+    inset 0 -3px 0 0 rgba(0,0,0,.22),
+    0 4px 0 0 var(--ink);
+}
+.btn.sm{height:36px;font-size:12px;padding:0 14px;box-shadow:inset 0 2px 0 0 rgba(255,255,255,.28),inset 0 -2px 0 0 rgba(0,0,0,.18),0 3px 0 0 var(--ink)}
+.btn.secondary{background:transparent;color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--ink);border:0;box-shadow:none;padding:0}
+
+.icon-btn{
+  appearance:none;cursor:pointer;
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface);color:var(--ink);
+  border:1.5px solid var(--ink-faint);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--ff-display);font-weight:800;font-size:16px;
+}
+
+/* Lockup */
+.lockup{display:inline-grid;grid-template-columns:auto auto;column-gap:12px;align-items:start}
+.lockup .num{font-family:var(--ff-stat);font-weight:700;line-height:.82;letter-spacing:-.02em;grid-row:1 / span 2}
+.lockup .lbl-top{font-family:"Geist Mono", monospace;font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-2);padding-top:8%}
+.lockup .lbl-bot{font-family:var(--ff-display);font-weight:800;font-size:.22em;line-height:.95;letter-spacing:-.02em;align-self:start;margin-top:-.05em}
+
+/* Lists */
+.row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;
+  background:var(--surface);
+  border:1.5px solid var(--ink-faint);
+  border-radius:14px;
+}
+.row.dashed{background:transparent;border-style:dashed}
+.row.done{opacity:.5}
+.row .badge{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink-faint);flex:none;display:flex;align-items:center;justify-content:center;font-family:'Oswald, sans-serif';font-weight:700;font-size:12px;color:var(--ink)}
+.row .nm{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+.row .nm-name{font-family:var(--ff-display);font-weight:700;font-size:14px;letter-spacing:-.005em;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .nm-sub{font-family:"Geist Mono", monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+.row .end{font-family:'Oswald', sans-serif;font-weight:700;font-size:18px;color:var(--ink);letterSpacing:-.01em}
+
+/* Tab bar */
+.tabbar{
+  position:relative;z-index:5;
+  display:flex;justify-content:space-around;align-items:center;
+  background:var(--surface);
+  border-top:1.5px solid var(--ink-faint);
+  padding:8px 0 18px;
+  margin-top:auto;
+}
+.tab{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--ink-soft);
+  font-family:"Geist Mono", monospace;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+}
+.tab.on{color:var(--ink)}
+.tab .tab-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+
+/* Scroll body */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;margin:0 -18px;padding:0 18px 16px;display:flex;flex-direction:column;gap:8px}
+.scroll::-webkit-scrollbar{width:0}
+
+/* Mini chart placeholder */
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px;padding:6px 0}
+.chart-bars div{flex:1;background:var(--accent);border-radius:3px 3px 0 0;min-width:0}
+.chart-bars div.dim{background:var(--ink-faint)}
+
+/* Calendar grid */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .d{
+  aspect-ratio:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-radius:8px;
+  font-family:'Hanken Grotesk', sans-serif;font-size:12px;font-weight:700;
+  color:var(--ink);position:relative;
+}
+.cal .d.muted{color:var(--ink-soft)}
+.cal .d.has{background:var(--ink-faint)}
+.cal .d.done{background:var(--accent);color:var(--on-accent)}
+.cal .d.today{outline:2px solid var(--accent-2);outline-offset:-2px}
+.cal .d .dot{width:4px;height:4px;border-radius:50%;background:currentColor;margin-top:1px}
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-head span{text-align:center;font-family:"Geist Mono", monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+
+/* Settings list */
+.set-row{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;
+  background:var(--surface);
+  border-top:1.5px solid var(--ink-faint);
+}
+.set-row:first-child{border-radius:14px 14px 0 0;border-top:0}
+.set-row:last-child{border-radius:0 0 14px 14px}
+.set-row .label{flex:1;font-family:var(--ff-display);font-weight:600;font-size:14px;color:var(--ink)}
+.set-row .val{font-family:"Geist Mono", monospace;font-size:11px;color:var(--ink-soft);letter-spacing:.06em}
+
+.switch{width:38px;height:22px;border-radius:11px;background:var(--ink-faint);position:relative;flex:none}
+.switch.on{background:var(--accent)}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--ink);transition:left .2s}
+.switch.on::after{left:18px;background:var(--on-accent)}
+
+/* Hover on phones */
+.phone{transition:transform .2s ease}
+
+/* Wireframe markup hint */
+.wf-note{
+  position:absolute;top:8px;right:8px;z-index:50;
+  padding:4px 8px;border-radius:6px;
+  background:rgba(0,0,0,.4);color:#fff;
+  font-family:"Geist Mono", monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+}
+
+/* Section intro hint */
+.intro{
+  max-width:480px;margin:24px auto 8px;text-align:center;
+  font-family:"Geist Mono", monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(60,50,40,.75);font-weight:500;
+}
+.intro h2{font-family:"Hanken Grotesk", sans-serif;font-weight:800;font-size:34px;letter-spacing:-.025em;margin:0 0 8px;color:#1f1f1f;text-transform:none;letter-spacing:-.02em}
+
+</style>
+
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react" src="design-canvas.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+
+const ICON = {
+  back:  <span style={{fontFamily:'Oswald, sans-serif',fontWeight:700,fontSize:18,lineHeight:1}}>←</span>,
+  fwd:   <span style={{fontFamily:'Oswald, sans-serif',fontWeight:700,fontSize:18,lineHeight:1}}>→</span>,
+  plus:  <span style={{fontFamily:'Oswald, sans-serif',fontWeight:700,fontSize:22,lineHeight:1}}>+</span>,
+  dots:  <span style={{fontFamily:'Hanken Grotesk, sans-serif',fontWeight:800,fontSize:18,lineHeight:1,letterSpacing:1}}>···</span>,
+  chev:  <span style={{fontFamily:'Oswald, sans-serif',fontWeight:700,fontSize:14,lineHeight:1,opacity:.5}}>›</span>,
+  grip:  <span style={{fontFamily:'Geist Mono, monospace',fontSize:13,opacity:.5,letterSpacing:-2}}>⋮⋮</span>,
+  bolt:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round"/></svg>,
+  chart: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>,
+  user:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2.2"/><path d="M3 21c0-4.4 4-8 9-8s9 3.6 9 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>,
+  cal:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+  lib:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h7v14H4zM13 6h7v14h-7z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/></svg>,
+};
+
+function Status(){
+  return (
+    <div className="status">
+      <span>9:41</span>
+      <span className="right"><span>5G</span><span className="bat"></span></span>
+    </div>
+  );
+}
+
+function Tabs({on}){
+  const t = [["today",ICON.bolt,"Today"],["library",ICON.lib,"Library"],["plan",ICON.cal,"Plan"],["you",ICON.user,"You"]];
+  return (
+    <div className="tabbar">
+      {t.map(([k,ic,lbl]) => (
+        <div key={k} className={"tab" + (on===k?" on":"")}>
+          <div className="tab-icon">{ic}</div>
+          <span>{lbl}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Phone({ note, tab, children }){
+  return (
+    <div className="phone pulse">
+      {note && <div className="wf-note">{note}</div>}
+      <div className="notch"></div>
+      <div className="screen">
+        <Status />
+        <div className="body">{children}</div>
+        {tab && <Tabs on={tab} />}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ title, back=true, onBack, right, eyebrow }){
+  return (
+    <div style={{marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:6}}>
+        {back ? <div className="icon-btn">{ICON.back}</div> : <div></div>}
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <div className="icon-btn">{right || ICON.dots}</div>
+      </div>
+      {title && <h1 className="h-title">{title}</h1>}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// PROGRAM DETAIL
+// ────────────────────────────────────────────────────────────────
+
+function ProgramDetail_A(){
+  return (
+    <Phone note="A · week tabs" tab="library">
+      <SectionHeader />
+      <div className="eyebrow">PROGRAM · ACTIVE</div>
+      <h1 className="h-title" style={{fontSize:30,marginTop:4}}>Push / Pull / Legs.</h1>
+      <div className="h-sub">12 weeks · 5 days/wk · intermediate</div>
+
+      <div style={{display:"flex",gap:6,overflowX:"auto",marginTop:12,paddingBottom:4,marginLeft:-2,marginRight:-2}}>
+        {Array.from({length:8}).map((_,i)=>(
+          <div key={i} style={{
+            padding:"6px 12px",borderRadius:999,
+            border:"1.5px solid " + (i===3?"var(--accent)":"var(--ink-faint)"),
+            background:i===3?"var(--accent)":"transparent",
+            color:i===3?"var(--on-accent)":"var(--ink)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>WK {i+1}</div>
+        ))}
+      </div>
+
+      <div className="card accent" style={{marginTop:12}}>
+        <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>WEEK 4 · PROGRESS</div>
+        <div className="lockup" style={{fontSize:64,marginTop:4}}>
+          <div className="num" style={{color:"var(--on-accent)"}}>3<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:20,opacity:.6,marginLeft:4}}>/5</span></div>
+          <div className="lbl-top" style={{color:"var(--accent-2)"}}>Done</div>
+          <div className="lbl-bot">Two<br/>to go.</div>
+        </div>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:8}}>THIS WEEK</div>
+      <div className="scroll">
+        <div className="row done"><div className="badge">M</div><div className="nm"><div className="nm-name">Chest & Tris</div><div className="nm-sub">Done · 58m</div></div><span className="end">✓</span></div>
+        <div className="row done"><div className="badge">T</div><div className="nm"><div className="nm-name">Back & Bis</div><div className="nm-sub">Done · 62m</div></div><span className="end">✓</span></div>
+        <div className="row done"><div className="badge">W</div><div className="nm"><div className="nm-name">Legs</div><div className="nm-sub">Done · 71m</div></div><span className="end">✓</span></div>
+        <div className="row" style={{borderColor:"var(--accent)",borderWidth:2}}><div className="badge" style={{background:"var(--accent)",color:"var(--on-accent)",borderColor:"var(--accent)"}}>T</div><div className="nm"><div className="nm-name">Shoulders</div><div className="nm-sub">Today · ~55m</div></div><span className="end" style={{color:"var(--accent)"}}>→</span></div>
+        <div className="row"><div className="badge">F</div><div className="nm"><div className="nm-name">Arms · finisher</div><div className="nm-sub">Tomorrow · ~45m</div></div><span className="end">{ICON.chev}</span></div>
+      </div>
+    </Phone>
+  );
+}
+
+function ProgramDetail_B(){
+  return (
+    <Phone note="B · long scroll" tab="library">
+      <SectionHeader />
+      <div className="eyebrow">PROGRAM</div>
+      <h1 className="h-title" style={{fontSize:30,marginTop:4}}>Push / Pull / Legs.</h1>
+      <div className="h-sub">Week 4 of 12 · intermediate</div>
+
+      {/* Big progress lockup */}
+      <div style={{marginTop:16,display:"flex",alignItems:"baseline",justifyContent:"space-between",borderBottom:"1.5px solid var(--ink-faint)",paddingBottom:10}}>
+        <div className="lockup" style={{fontSize:80}}>
+          <div className="num">23<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:24,opacity:.5,marginLeft:4}}>/60</span></div>
+          <div className="lbl-top" style={{color:"var(--accent-2)"}}>Sessions</div>
+          <div className="lbl-bot" style={{color:"var(--ink)"}}>Logged<br/>so far.</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div className="eyebrow">PACE</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,color:"var(--accent)",letterSpacing:"-.01em"}}>ON</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,color:"var(--accent)",letterSpacing:"-.01em",marginTop:-8}}>TRACK</div>
+        </div>
+      </div>
+
+      <div className="scroll" style={{marginTop:10}}>
+        {[1,2,3,4,5].map(w => (
+          <div key={w}>
+            <div className="eyebrow" style={{marginTop:w===1?0:8,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+              <span>WEEK {w}</span>
+              <span style={{color:w===4?"var(--accent)":"var(--ink-soft)"}}>{w<4?"5/5":w===4?"3/5 active":"upcoming"}</span>
+            </div>
+            <div style={{display:"flex",gap:4}}>
+              {["M","T","W","T","F","S","S"].map((d,i) => {
+                const state = w<4 ? "done" : w===4 ? (i<3?"done":i===3?"today":"") : i===5||i===6?"":"plan";
+                return (
+                  <div key={i} style={{
+                    flex:1,aspectRatio:1,display:"flex",alignItems:"center",justifyContent:"center",
+                    borderRadius:6,fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,fontWeight:600,
+                    background:state==="done"?"var(--accent)":state==="today"?"transparent":state==="plan"?"var(--ink-faint)":"transparent",
+                    color:state==="done"?"var(--on-accent)":"var(--ink)",
+                    border:state==="today"?"2px solid var(--accent-2)":state===""?"1px dashed var(--ink-faint)":"0",
+                    opacity:state===""?.4:1,
+                  }}>{d}</div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// WORKOUT BUILDER
+// ────────────────────────────────────────────────────────────────
+
+function Builder_A(){
+  return (
+    <Phone note="A · build from blank">
+      <SectionHeader eyebrow="NEW WORKOUT" right={ICON.dots} />
+      <input className="h-title" style={{border:0,background:"transparent",outline:"none",color:"var(--ink)",fontSize:28,padding:0,width:"100%"}} defaultValue="Untitled workout" />
+      <div className="h-sub">Push · Tuesday · ~55 min</div>
+
+      <div style={{display:"flex",gap:6,marginTop:14,flexWrap:"wrap"}}>
+        <div style={{padding:"6px 10px",borderRadius:999,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase"}}>PUSH</div>
+        <div style={{padding:"6px 10px",borderRadius:999,border:"1.5px dashed var(--ink-faint)",fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",color:"var(--ink-soft)"}}>+ TAG</div>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:8}}>EXERCISES · 3</div>
+
+      <div className="scroll">
+        <div className="row"><span style={{color:"var(--ink-faint)"}}>{ICON.grip}</span><div className="badge">1</div><div className="nm"><div className="nm-name">Flat Machine Chest Press</div><div className="nm-sub">4 sets · 15-12-10-8</div></div></div>
+        <div className="row"><span style={{color:"var(--ink-faint)"}}>{ICON.grip}</span><div className="badge">2</div><div className="nm"><div className="nm-name">Incline DB Press</div><div className="nm-sub">4 sets · 15-12-10-8</div></div></div>
+        <div className="row"><span style={{color:"var(--ink-faint)"}}>{ICON.grip}</span><div className="badge">3</div><div className="nm"><div className="nm-name">Close Grip DB Press</div><div className="nm-sub">3 sets · 12-10-8</div></div></div>
+
+        <div className="row dashed" style={{justifyContent:"center",color:"var(--accent)",fontFamily:"Hanken Grotesk, sans-serif",fontWeight:700,fontSize:14,padding:"16px 12px"}}>
+          {ICON.plus} ADD EXERCISE
+        </div>
+        <div className="row dashed" style={{justifyContent:"center",color:"var(--ink-soft)",fontFamily:"Hanken Grotesk, sans-serif",fontWeight:600,fontSize:13,padding:"12px"}}>
+          + ADD SUPERSET
+        </div>
+      </div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn secondary sm">Cancel</button>
+        <button type="button" className="btn" style={{flex:1}}>Save workout {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+function Builder_B(){
+  return (
+    <Phone note="B · template-first">
+      <SectionHeader eyebrow="NEW WORKOUT" />
+      <h1 className="h-title" style={{fontSize:28}}>Start from…</h1>
+      <div className="h-sub">Pick a template or build from scratch.</div>
+
+      <div className="scroll" style={{marginTop:14}}>
+        <div className="card accent" style={{marginBottom:6}}>
+          <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>RECOMMENDED</div>
+          <div className="lockup" style={{fontSize:48,marginTop:4}}>
+            <div className="num" style={{color:"var(--on-accent)"}}>7</div>
+            <div className="lbl-top" style={{color:"var(--accent-2)"}}>Chest & Tris</div>
+            <div className="lbl-bot">Pyramid reps.<br/>~60 min.</div>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
+            <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",opacity:.85,fontWeight:600}}>USED LAST WEEK</div>
+            <div className="btn sm" style={{background:"var(--ink)",color:"var(--bg)"}}>Use →</div>
+          </div>
+        </div>
+
+        <div className="row"><div className="badge">{ICON.plus}</div><div className="nm"><div className="nm-name">Blank workout</div><div className="nm-sub">Build from scratch</div></div><span className="end">{ICON.chev}</span></div>
+        <div className="eyebrow" style={{marginTop:10,marginBottom:2}}>YOUR TEMPLATES</div>
+        <div className="row"><div className="nm"><div className="nm-name">Back & Bis</div><div className="nm-sub">6 exercises · ~62m</div></div><span className="end">{ICON.chev}</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Leg day</div><div className="nm-sub">5 exercises · ~71m</div></div><span className="end">{ICON.chev}</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Shoulders</div><div className="nm-sub">5 exercises · ~55m</div></div><span className="end">{ICON.chev}</span></div>
+
+        <div className="eyebrow" style={{marginTop:10,marginBottom:2}}>FROM LIBRARY</div>
+        <div className="row"><div className="nm"><div className="nm-name">PPL · classic</div><div className="nm-sub">Push pull legs · 6 days</div></div><span className="end">{ICON.chev}</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">5/3/1 · BBB</div><div className="nm-sub">Strength · 4 days</div></div><span className="end">{ICON.chev}</span></div>
+      </div>
+    </Phone>
+  );
+}
+
+function Builder_C(){
+  return (
+    <Phone note="C · drag library">
+      <SectionHeader eyebrow="NEW WORKOUT" right={ICON.plus} />
+      <h1 className="h-title" style={{fontSize:26}}>Chest & Tris.</h1>
+      <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap"}}>
+        <div style={{padding:"3px 8px",borderRadius:999,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase"}}>PUSH</div>
+        <span className="eyebrow">3 EXERCISES · 11 SETS</span>
+      </div>
+
+      <div style={{display:"flex",gap:8,marginTop:12,marginBottom:8}}>
+        <div style={{flex:1,padding:8,border:"1.5px solid var(--accent)",borderRadius:10,textAlign:"center",fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:"var(--accent)"}}>WORKOUT</div>
+        <div style={{flex:1,padding:8,border:"1.5px solid var(--ink-faint)",borderRadius:10,textAlign:"center",fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",color:"var(--ink-soft)"}}>LIBRARY</div>
+      </div>
+
+      <div className="scroll">
+        {/* Workout side */}
+        <div className="row"><span style={{color:"var(--ink-faint)"}}>{ICON.grip}</span><div className="badge" style={{background:"var(--accent)",color:"var(--on-accent)",borderColor:"var(--accent)"}}>1</div><div className="nm"><div className="nm-name">Flat Machine Press</div><div className="nm-sub">4 × 15-12-10-8 · 140lb</div></div></div>
+        <div className="row"><span style={{color:"var(--ink-faint)"}}>{ICON.grip}</span><div className="badge" style={{background:"var(--accent)",color:"var(--on-accent)",borderColor:"var(--accent)"}}>2</div><div className="nm"><div className="nm-name">Incline DB Press</div><div className="nm-sub">4 × 15-12-10-8 · 60lb</div></div></div>
+        <div className="row"><span style={{color:"var(--ink-faint)"}}>{ICON.grip}</span><div className="badge" style={{background:"var(--accent)",color:"var(--on-accent)",borderColor:"var(--accent)"}}>3</div><div className="nm"><div className="nm-name">Close Grip DB</div><div className="nm-sub">3 × 12-10-8 · 55lb</div></div></div>
+
+        <div style={{marginTop:8,padding:"10px 12px",borderRadius:14,background:"var(--ink-faint)",fontFamily:"Hanken Grotesk, sans-serif",fontWeight:600,fontSize:12,color:"var(--ink-soft)",textAlign:"center",border:"1.5px dashed var(--ink-faint)"}}>
+          DRAG FROM LIBRARY TO ADD ↓
+        </div>
+
+        <div className="row dashed" style={{opacity:.7}}><div className="badge">+</div><div className="nm"><div className="nm-name">Cable Fly</div><div className="nm-sub">Chest · isolation</div></div><span className="end">{ICON.plus}</span></div>
+        <div className="row dashed" style={{opacity:.7}}><div className="badge">+</div><div className="nm"><div className="nm-name">Tricep Pushdown</div><div className="nm-sub">Triceps · cable</div></div><span className="end">{ICON.plus}</span></div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// EXERCISE DETAIL
+// ────────────────────────────────────────────────────────────────
+
+function Exercise_A(){
+  return (
+    <Phone note="A · chart-led">
+      <SectionHeader />
+      <div className="eyebrow">CHEST · COMPOUND</div>
+      <h1 className="h-title" style={{fontSize:30,marginTop:4}}>Lat Pulldown.</h1>
+
+      {/* Variation pills */}
+      <div style={{display:"flex",gap:6,overflowX:"auto",marginTop:10,paddingBottom:2,marginLeft:-2,marginRight:-2}}>
+        {[["All",false],["D-bar",true],["Neutral Grip",false],["Wide",false]].map(([l,on],i)=>(
+          <div key={i} style={{
+            padding:"6px 12px",borderRadius:999,
+            border:"1.5px solid " + (on?"var(--accent)":"var(--ink-faint)"),
+            background:on?"var(--accent)":"transparent",
+            color:on?"var(--on-accent)":"var(--ink)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>{l}</div>
+        ))}
+      </div>
+
+      <div className="card accent" style={{marginTop:12,padding:"14px 16px 16px"}}>
+        <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>PERSONAL BEST</div>
+        <div className="lockup" style={{fontSize:68,marginTop:4}}>
+          <div className="num" style={{color:"var(--on-accent)"}}>175</div>
+          <div className="lbl-top" style={{color:"var(--accent-2)"}}>3 weeks ago</div>
+          <div className="lbl-bot">lbs ·<br/>8 reps.</div>
+        </div>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>VOLUME · 6 WEEKS</div>
+      <div className="chart-bars">
+        {[40,55,52,68,72,80].map((h,i)=>(
+          <div key={i} style={{height:`${h}%`,background:i===5?"var(--accent-2)":"var(--accent)",opacity:i===5?1:.7}}></div>
+        ))}
+      </div>
+
+      <div className="eyebrow" style={{marginTop:8,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+        <span>RECENT</span><span>VIEW ALL</span>
+      </div>
+      <div className="scroll">
+        <div className="row"><div className="nm"><div className="nm-name">Fri · May 18</div><div className="nm-sub">4 sets · top set 140 × 8</div></div><span className="end">14.2k</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Mon · May 14</div><div className="nm-sub">4 sets · top set 135 × 8</div></div><span className="end">13.8k</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Fri · May 11</div><div className="nm-sub">4 sets · top set 130 × 8</div></div><span className="end">12.4k</span></div>
+      </div>
+    </Phone>
+  );
+}
+
+function Exercise_B(){
+  return (
+    <Phone note="B · tabs">
+      <SectionHeader />
+      <div className="eyebrow">BACK · PULL</div>
+      <h1 className="h-title" style={{fontSize:28,marginTop:4}}>Lat Pulldown.</h1>
+
+      {/* Variation pills */}
+      <div style={{display:"flex",gap:6,overflowX:"auto",marginTop:10,paddingBottom:2,marginLeft:-2,marginRight:-2}}>
+        {[["All",true],["D-bar",false],["Neutral Grip",false],["Wide",false]].map(([l,on],i)=>(
+          <div key={i} style={{
+            padding:"6px 12px",borderRadius:999,
+            border:"1.5px solid " + (on?"var(--accent)":"var(--ink-faint)"),
+            background:on?"var(--accent)":"transparent",
+            color:on?"var(--on-accent)":"var(--ink)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".1em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>{l}</div>
+        ))}
+      </div>
+
+      <div style={{display:"flex",gap:0,marginTop:14,borderBottom:"1.5px solid var(--ink-faint)"}}>
+        {["History","Form","Swaps"].map((t,i) => (
+          <div key={t} style={{
+            flex:1,padding:"10px 0",textAlign:"center",
+            fontFamily:"Geist Mono, monospace",fontSize:11,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase",
+            color:i===0?"var(--ink)":"var(--ink-soft)",
+            borderBottom:i===0?"2px solid var(--accent)":"2px solid transparent",
+            marginBottom:-2,
+          }}>{t}</div>
+        ))}
+      </div>
+
+      <div className="scroll" style={{marginTop:10}}>
+        <div className="card accent" style={{padding:"12px 14px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+            <div>
+              <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>PR</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:42,letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>175<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:14,marginLeft:4,fontWeight:800}}>lb</span></div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.7}}>3W AGO</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:24,marginTop:2,color:"var(--accent-2)"}}>8 reps</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="chart-bars" style={{height:60,marginTop:4}}>
+          {[40,55,52,68,72,80,60,75].map((h,i)=>(
+            <div key={i} style={{height:`${h}%`,background:i===7?"var(--accent-2)":"var(--accent)",opacity:i===7?1:.5}}></div>
+          ))}
+        </div>
+
+        <div className="eyebrow" style={{marginTop:8,marginBottom:4}}>SESSIONS · LAST 6 WEEKS</div>
+        <div className="row"><div className="nm"><div className="nm-name">Fri · May 18</div><div className="nm-sub">4 sets · 140 × 8 top</div></div><span className="end">14.2k</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Mon · May 14</div><div className="nm-sub">4 sets · 135 × 8 top</div></div><span className="end">13.8k</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Fri · May 11</div><div className="nm-sub">4 sets · 130 × 8 top</div></div><span className="end">12.4k</span></div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// CALENDAR
+// ────────────────────────────────────────────────────────────────
+
+function Calendar_A(){
+  return (
+    <Phone note="A · month grid" tab="plan">
+      <SectionHeader back={false} eyebrow="PLAN" right={ICON.plus} />
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+        <h1 className="h-title" style={{fontSize:32}}>May.</h1>
+        <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:26,color:"var(--ink-soft)",letterSpacing:"-.01em"}}>2026</span>
+      </div>
+
+      <div className="card accent" style={{marginTop:10,padding:"10px 14px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>THIS MONTH</div>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,letterSpacing:"-.01em",lineHeight:.85}}>14<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:13,marginLeft:4,fontWeight:700,opacity:.6}}>/ 20</span></div>
+          </div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:26,color:"var(--accent-2)",letterSpacing:"-.01em"}}>70%</div>
+        </div>
+      </div>
+
+      <div className="cal-head" style={{marginTop:14}}>
+        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+      </div>
+      <div className="cal">
+        {/* Sample 5 weeks */}
+        {[
+          ["",""," "," "," ","27","28"],
+          ["29","30","D","D"," ","",""],
+          ["D","D","D","","D","",""],
+          ["D","D","D","T","P","",""],
+          ["P","P","P","P","P","",""],
+        ].flatMap((row,r) => row.map((c,i) => {
+          const date = (r*7 + i) - 2;
+          const state = c === "D" ? "done" : c === "T" ? "today" : c === "P" ? "has" : "";
+          const muted = date <= 0 || date > 31;
+          const label = muted ? (date<=0?(30+date):(date-31)) : date;
+          return (
+            <div key={r+"-"+i} className={`d ${state} ${muted?"muted":""} ${state==="today"?"today":""}`}>{label}{state==="done"&&<div className="dot" style={{background:"var(--on-accent)"}}></div>}{state==="has"&&<div className="dot" style={{background:"var(--accent-2)"}}></div>}</div>
+          );
+        }))}
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>WED · MAY 21</div>
+      <div className="row" style={{borderColor:"var(--accent)",borderWidth:2}}>
+        <div className="badge" style={{background:"var(--accent)",color:"var(--on-accent)",borderColor:"var(--accent)"}}>T</div>
+        <div className="nm"><div className="nm-name">Chest & Tris</div><div className="nm-sub">7 exercises · ~60m</div></div>
+        <span className="end" style={{color:"var(--accent)"}}>→</span>
+      </div>
+    </Phone>
+  );
+}
+
+function Calendar_B(){
+  return (
+    <Phone note="B · vertical week scroll" tab="plan">
+      <SectionHeader back={false} eyebrow="PLAN · 6 WEEK VIEW" right={ICON.plus} />
+      <h1 className="h-title" style={{fontSize:32}}>Next 6 weeks.</h1>
+
+      <div className="scroll" style={{marginTop:10}}>
+        {[
+          {label:"THIS WEEK · MAY 19", days:[["M","D","Chest & Tris"],["T","D","Back & Bis"],["W","D","Legs"],["T","T","Shoulders"],["F","P","Arms"],["S","R",""],["S","R",""]]},
+          {label:"NEXT WEEK · MAY 26", days:[["M","P","Chest & Tris"],["T","P","Back & Bis"],["W","P","Legs"],["T","P","Shoulders"],["F","P","Arms"],["S","R",""],["S","R",""]]},
+          {label:"WK 6 · JUN 02", days:[["M","P","Chest"],["T","P","Back"],["W","P","Legs"],["T","P","Shoulders"],["F","P","Arms"],["S","R",""],["S","R",""]]},
+        ].map((w,wi) => (
+          <div key={wi}>
+            <div className="eyebrow" style={{marginTop:wi===0?0:6,marginBottom:6}}>{w.label}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:4}}>
+              {w.days.map(([d,s,n],i) => (
+                <div key={i} style={{
+                  display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:10,
+                  background:s==="D"?"var(--accent)":s==="T"?"transparent":"transparent",
+                  border:s==="D"?"1.5px solid var(--accent)":s==="T"?"2px solid var(--accent-2)":"1.5px solid var(--ink-faint)",
+                  color:s==="D"?"var(--on-accent)":"var(--ink)",
+                  opacity:s==="R"?.4:1,
+                }}>
+                  <div style={{width:22,fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".1em",fontWeight:600}}>{d}</div>
+                  <div style={{flex:1,fontFamily:"Hanken Grotesk, sans-serif",fontWeight:600,fontSize:13}}>{n || (s==="R"?"Rest":"")}</div>
+                  {s==="D" && <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:14}}>✓</span>}
+                  {s==="T" && <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:16,color:"var(--accent)"}}>→</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Phone>
+  );
+}
+
+function Calendar_C(){
+  return (
+    <Phone note="C · agenda list" tab="plan">
+      <SectionHeader back={false} eyebrow="PLAN" right={ICON.cal} />
+      <h1 className="h-title" style={{fontSize:32}}>Upcoming.</h1>
+
+      <div className="scroll" style={{marginTop:14}}>
+        <div style={{display:"flex",gap:12,marginBottom:6}}>
+          <div style={{textAlign:"center",minWidth:48}}>
+            <div className="eyebrow">TODAY</div>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:42,color:"var(--accent)",letterSpacing:"-.02em",lineHeight:.85}}>21</div>
+            <div className="eyebrow" style={{color:"var(--accent-2)"}}>WED</div>
+          </div>
+          <div className="row" style={{flex:1,borderColor:"var(--accent)",borderWidth:2}}>
+            <div className="nm"><div className="nm-name">Chest & Tris</div><div className="nm-sub">7 exercises · ~60m</div></div>
+            <span className="end" style={{color:"var(--accent)"}}>→</span>
+          </div>
+        </div>
+
+        {[
+          ["22","THU","Shoulders","5 exercises · ~55m"],
+          ["23","FRI","Arms · finisher","4 exercises · ~45m"],
+          ["24","SAT","Rest","Walk · 30m suggested"],
+          ["25","SUN","Rest",""],
+          ["26","MON","Chest & Tris","7 exercises · ~60m"],
+          ["27","TUE","Back & Bis","6 exercises · ~62m"],
+        ].map(([d,dy,nm,sub]) => (
+          <div key={d} style={{display:"flex",gap:12,alignItems:"center",marginBottom:6}}>
+            <div style={{textAlign:"center",minWidth:48}}>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85}}>{d}</div>
+              <div className="eyebrow" style={{fontSize:9}}>{dy}</div>
+            </div>
+            <div className="row" style={{flex:1,opacity:!sub?.5:1}}>
+              <div className="nm"><div className="nm-name">{nm}</div>{sub && <div className="nm-sub">{sub}</div>}</div>
+              {sub && <span className="end">{ICON.chev}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// WORKOUT SUMMARY (calm, not SENT IT)
+// ────────────────────────────────────────────────────────────────
+
+function Summary_A(){
+  return (
+    <Phone note="A · receipt">
+      <SectionHeader eyebrow="WORKOUT COMPLETE · MAY 21" right={ICON.dots} />
+      <h1 className="h-title" style={{fontSize:30}}>Chest & Tris.</h1>
+      <div className="h-sub">Day 23 · push / pull / legs</div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:14}}>
+        <div className="card flat" style={{padding:"12px 14px"}}>
+          <div className="eyebrow">VOLUME</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:36,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>12.4<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:14,marginLeft:2,fontWeight:800,color:"var(--accent-2)"}}>k</span></div>
+          <div className="eyebrow" style={{marginTop:2,fontSize:9}}>lbs total</div>
+        </div>
+        <div className="card flat" style={{padding:"12px 14px"}}>
+          <div className="eyebrow">TIME</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:36,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>58<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:14,marginLeft:2,fontWeight:800,color:"var(--accent-2)"}}>m</span></div>
+          <div className="eyebrow" style={{marginTop:2,fontSize:9}}>elapsed</div>
+        </div>
+        <div className="card flat" style={{padding:"12px 14px"}}>
+          <div className="eyebrow">SETS</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:36,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>18<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:14,marginLeft:2,fontWeight:800,opacity:.5}}>/18</span></div>
+          <div className="eyebrow" style={{marginTop:2,fontSize:9}}>complete</div>
+        </div>
+        <div className="card flat" style={{padding:"12px 14px",borderStyle:"solid",borderColor:"var(--accent)"}}>
+          <div className="eyebrow" style={{color:"var(--accent-2)"}}>PR</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:36,color:"var(--accent)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>+1</div>
+          <div className="eyebrow" style={{marginTop:2,fontSize:9}}>Flat machine</div>
+        </div>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:12,marginBottom:6}}>LOG</div>
+      <div className="scroll">
+        <div className="row" style={{padding:"8px 12px"}}><div className="nm"><div className="nm-name">Flat Machine Press</div><div className="nm-sub">15 · 12 · 10 · 8 @ 140lb</div></div><span className="end">5.7k</span></div>
+        <div className="row" style={{padding:"8px 12px"}}><div className="nm"><div className="nm-name">Incline DB Press</div><div className="nm-sub">15 · 12 · 10 · 8 @ 60lb</div></div><span className="end">2.7k</span></div>
+        <div className="row" style={{padding:"8px 12px"}}><div className="nm"><div className="nm-name">Close Grip DB</div><div className="nm-sub">12 · 10 · 8 @ 55lb</div></div><span className="end">1.7k</span></div>
+      </div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn secondary sm">Edit log</button>
+        <button type="button" className="btn" style={{flex:1}}>Done {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+function Summary_B(){
+  return (
+    <Phone note="B · one big number">
+      <SectionHeader eyebrow="COMPLETE · MAY 21" />
+
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",paddingTop:0,paddingBottom:12}}>
+        <div className="eyebrow" style={{textAlign:"center"}}>YOU LIFTED</div>
+        <div style={{textAlign:"center",marginTop:6,fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:140,color:"var(--accent)",letterSpacing:"-.04em",lineHeight:.82,transform:"scaleY(1.15)",transformOrigin:"center"}}>12.4K</div>
+        <div className="eyebrow" style={{textAlign:"center",marginTop:14,color:"var(--accent-2)"}}>POUNDS · IN 58 MINUTES</div>
+
+        <div style={{display:"flex",justifyContent:"center",gap:24,marginTop:32}}>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:38,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85}}>18</div>
+            <div className="eyebrow" style={{marginTop:2,fontSize:9}}>SETS</div>
+          </div>
+          <div style={{width:1,background:"var(--ink-faint)"}}></div>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:38,color:"var(--accent-2)",letterSpacing:"-.02em",lineHeight:.85}}>+1</div>
+            <div className="eyebrow" style={{marginTop:2,fontSize:9}}>NEW PR</div>
+          </div>
+          <div style={{width:1,background:"var(--ink-faint)"}}></div>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:38,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85}}>28</div>
+            <div className="eyebrow" style={{marginTop:2,fontSize:9}}>STREAK</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{padding:"10px 0 16px"}}>
+        <button type="button" className="btn" style={{width:"100%"}}>View log {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// SETTINGS
+// ────────────────────────────────────────────────────────────────
+
+function Settings(){
+  return (
+    <Phone note="You + stats entry" tab="you">
+      <SectionHeader back={false} eyebrow="YOU" right={ICON.dots} />
+
+      <div style={{display:"flex",alignItems:"center",gap:14,marginTop:6}}>
+        <div style={{width:56,height:56,borderRadius:"50%",background:"var(--accent)",color:"var(--on-accent)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:30,border:"2px solid var(--ink)"}}>A</div>
+        <div>
+          <h1 className="h-title" style={{fontSize:26}}>Alex Mason.</h1>
+          <div className="h-sub">Member since Feb 2024 · PPL</div>
+        </div>
+      </div>
+
+      {/* Quick stats strip */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginTop:14}}>
+        <div className="card flat" style={{padding:"10px 10px"}}>
+          <div className="eyebrow" style={{fontSize:9}}>STREAK</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:24,color:"var(--accent)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>27<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:2,opacity:.7,fontWeight:700}}>d</span></div>
+        </div>
+        <div className="card flat" style={{padding:"10px 10px"}}>
+          <div className="eyebrow" style={{fontSize:9}}>SESSIONS</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:24,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>183</div>
+        </div>
+        <div className="card flat" style={{padding:"10px 10px"}}>
+          <div className="eyebrow" style={{fontSize:9,color:"var(--accent-2)"}}>VOLUME</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:24,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>2.1<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:2,opacity:.7,fontWeight:700}}>M</span></div>
+        </div>
+      </div>
+
+      <div className="scroll" style={{marginTop:14}}>
+        {/* Primary destinations (route to other features) */}
+        <div className="eyebrow" style={{marginBottom:6}}>YOUR DATA</div>
+        <div className="row" style={{padding:"12px 14px"}}>
+          <div style={{width:32,height:32,borderRadius:8,background:"var(--accent)",color:"var(--on-accent)",display:"flex",alignItems:"center",justifyContent:"center",flex:"none"}}>{ICON.chart}</div>
+          <div className="nm"><div className="nm-name">Stats</div><div className="nm-sub">Volume, PRs, charts</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+        <div className="row" style={{padding:"12px 14px"}}>
+          <div style={{width:32,height:32,borderRadius:8,background:"var(--accent-2)",color:"var(--on-accent)",display:"flex",alignItems:"center",justifyContent:"center",flex:"none",fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:14}}>PR</div>
+          <div className="nm"><div className="nm-name">Personal records</div><div className="nm-sub">8 lifts tracked</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+        <div className="row" style={{padding:"12px 14px"}}>
+          <div style={{width:32,height:32,borderRadius:8,background:"var(--ink-faint)",color:"var(--ink)",display:"flex",alignItems:"center",justifyContent:"center",flex:"none",fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:14}}>H</div>
+          <div className="nm"><div className="nm-name">Workout history</div><div className="nm-sub">183 sessions logged</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+
+        <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>PREFERENCES</div>
+        <div>
+          <div className="set-row"><div className="label">Units</div><span className="val">LBS · IMPERIAL</span><span style={{opacity:.4}}>{ICON.chev}</span></div>
+          <div className="set-row"><div className="label">Default rest timer</div><span className="val">90s</span><span style={{opacity:.4}}>{ICON.chev}</span></div>
+          <div className="set-row"><div className="label">Auto-progress weight</div><div className="switch on"></div></div>
+          <div className="set-row"><div className="label">Sound on rest end</div><div className="switch on"></div></div>
+        </div>
+
+        <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>NOTIFICATIONS</div>
+        <div>
+          <div className="set-row"><div className="label">Daily reminder</div><span className="val">7:30 AM</span><span style={{opacity:.4}}>{ICON.chev}</span></div>
+          <div className="set-row"><div className="label">Streak save</div><div className="switch on"></div></div>
+          <div className="set-row"><div className="label">Weekly recap</div><div className="switch"></div></div>
+        </div>
+
+        <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>THEME</div>
+        <div className="set-row" style={{justifyContent:"space-between"}}>
+          <div className="label">Palette</div>
+          <div style={{display:"flex",gap:6}}>
+            <div style={{width:22,height:22,borderRadius:"50%",background:"#26B6F6",border:"2px solid var(--ink)"}}></div>
+            <div style={{width:22,height:22,borderRadius:"50%",background:"#00D9B8",border:"1.5px solid var(--ink-faint)"}}></div>
+            <div style={{width:22,height:22,borderRadius:"50%",background:"#FF1F1F",border:"1.5px solid var(--ink-faint)"}}></div>
+          </div>
+        </div>
+
+        <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>ABOUT</div>
+        <div>
+          <div className="set-row"><div className="label">Pulse Gym</div><span className="val">v0.1</span></div>
+          <div className="set-row"><div className="label">Sign out</div><span style={{color:"var(--accent-2)",fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".06em"}}>→</span></div>
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// LIBRARY (with folders, Dropset-style)
+// ────────────────────────────────────────────────────────────────
+
+function Library_A(){
+  return (
+    <Phone note="A · folders + workouts" tab="library">
+      <SectionHeader back={false} eyebrow="LIBRARY" right={ICON.plus} />
+      <h1 className="h-title" style={{fontSize:32}}>Library.</h1>
+
+      {/* Search */}
+      <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10,padding:"10px 14px",borderRadius:14,background:"var(--surface)",border:"1.5px solid var(--ink-faint)"}}>
+        <span style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:500,fontSize:13,color:"var(--ink-soft)"}}>Search workouts, exercises…</span>
+      </div>
+
+      {/* Filter tabs */}
+      <div style={{display:"flex",gap:6,marginTop:12,overflowX:"auto"}}>
+        {[["All",true],["Workouts",false],["Folders",false],["Programs",false]].map(([l,on],i) => (
+          <div key={i} style={{
+            padding:"6px 12px",borderRadius:999,
+            border:"1.5px solid " + (on?"var(--ink)":"var(--ink-faint)"),
+            background:on?"var(--ink)":"transparent",
+            color:on?"var(--bg)":"var(--ink-soft)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>{l}</div>
+        ))}
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>FOLDERS · 3</div>
+      <div className="scroll">
+        {/* Folder rows */}
+        <div className="row" style={{padding:"14px 14px"}}>
+          <div style={{width:30,height:30,borderRadius:7,background:"var(--accent)",border:"1.5px solid var(--ink)",position:"relative",flex:"none"}}>
+            <div style={{position:"absolute",top:-3,left:6,width:14,height:5,background:"var(--accent)",borderTop:"1.5px solid var(--ink)",borderLeft:"1.5px solid var(--ink)",borderRight:"1.5px solid var(--ink)",borderRadius:"3px 3px 0 0"}}></div>
+          </div>
+          <div className="nm"><div className="nm-name">Push / Pull / Legs</div><div className="nm-sub">6 workouts · active program</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+        <div className="row" style={{padding:"14px 14px"}}>
+          <div style={{width:30,height:30,borderRadius:7,background:"var(--accent-2)",border:"1.5px solid var(--ink)",position:"relative",flex:"none"}}>
+            <div style={{position:"absolute",top:-3,left:6,width:14,height:5,background:"var(--accent-2)",borderTop:"1.5px solid var(--ink)",borderLeft:"1.5px solid var(--ink)",borderRight:"1.5px solid var(--ink)",borderRadius:"3px 3px 0 0"}}></div>
+          </div>
+          <div className="nm"><div className="nm-name">Cardio & Conditioning</div><div className="nm-sub">4 workouts</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+        <div className="row" style={{padding:"14px 14px"}}>
+          <div style={{width:30,height:30,borderRadius:7,background:"var(--ink-faint)",border:"1.5px solid var(--ink-faint)",position:"relative",flex:"none"}}>
+            <div style={{position:"absolute",top:-3,left:6,width:14,height:5,background:"var(--ink-faint)",borderTop:"1.5px solid var(--ink-faint)",borderLeft:"1.5px solid var(--ink-faint)",borderRight:"1.5px solid var(--ink-faint)",borderRadius:"3px 3px 0 0"}}></div>
+          </div>
+          <div className="nm"><div className="nm-name">One-offs</div><div className="nm-sub">7 workouts</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+
+        <div className="eyebrow" style={{marginTop:12,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+          <span>RECENT</span><span>VIEW ALL</span>
+        </div>
+        <div className="row"><div className="nm"><div className="nm-name">Chest & Tris</div><div className="nm-sub">7 exercises · used today</div></div><span className="end">{ICON.chev}</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Back & Bis</div><div className="nm-sub">6 exercises · 5d ago</div></div><span className="end">{ICON.chev}</span></div>
+        <div className="row"><div className="nm"><div className="nm-name">Leg day</div><div className="nm-sub">5 exercises · 7d ago</div></div><span className="end">{ICON.chev}</span></div>
+      </div>
+    </Phone>
+  );
+}
+
+function Library_B(){
+  return (
+    <Phone note="B · folder open" tab="library">
+      <SectionHeader eyebrow="LIBRARY · FOLDER" right={ICON.dots} />
+
+      <div style={{display:"flex",alignItems:"flex-end",gap:10,marginTop:4}}>
+        <div style={{width:42,height:42,borderRadius:9,background:"var(--accent)",border:"1.5px solid var(--ink)",position:"relative",flex:"none"}}>
+          <div style={{position:"absolute",top:-4,left:8,width:20,height:6,background:"var(--accent)",borderTop:"1.5px solid var(--ink)",borderLeft:"1.5px solid var(--ink)",borderRight:"1.5px solid var(--ink)",borderRadius:"4px 4px 0 0"}}></div>
+        </div>
+        <h1 className="h-title" style={{fontSize:28,lineHeight:.95}}>Push / Pull /<br/>Legs.</h1>
+      </div>
+      <div className="h-sub" style={{marginTop:6}}>6 workouts · active program · week 4 of 12</div>
+
+      <div style={{display:"flex",gap:8,marginTop:14}}>
+        <button type="button" className="btn sm" style={{flex:1}}>Today's workout {ICON.fwd}</button>
+        <button type="button" className="btn secondary sm">{ICON.plus}</button>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>WORKOUTS</div>
+      <div className="scroll">
+        {[
+          ["Chest & Tris","7 exercises · ~60m"],
+          ["Back & Bis","6 exercises · ~62m"],
+          ["Legs","5 exercises · ~71m"],
+          ["Shoulders","5 exercises · ~55m"],
+          ["Arms · finisher","4 exercises · ~45m"],
+          ["Active recovery","3 exercises · ~30m"],
+        ].map(([n,s],i) => (
+          <div key={i} className="row">
+            <div className="badge">{i+1}</div>
+            <div className="nm"><div className="nm-name">{n}</div><div className="nm-sub">{s}</div></div>
+            <span className="end">{ICON.chev}</span>
+          </div>
+        ))}
+        <div className="row dashed" style={{justifyContent:"center",color:"var(--accent)",fontFamily:"Hanken Grotesk, sans-serif",fontWeight:700,fontSize:14,padding:"14px 12px"}}>
+          {ICON.plus} ADD WORKOUT
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// WEEK DETAIL (within a program)
+// ────────────────────────────────────────────────────────────────
+
+function WeekDetail(){
+  return (
+    <Phone note="Single" tab="library">
+      <SectionHeader eyebrow="PROGRAM · PPL" right={ICON.dots} />
+
+      <div style={{display:"flex",alignItems:"baseline",gap:10}}>
+        <h1 className="h-title" style={{fontSize:48,lineHeight:.85}}>Wk 4</h1>
+        <span style={{fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",color:"var(--ink-soft)",fontWeight:500}}>OF 12</span>
+      </div>
+      <div className="h-sub" style={{marginTop:4}}>3 done · 2 to go · on track</div>
+
+      {/* Progress bar */}
+      <div style={{display:"flex",gap:4,marginTop:14}}>
+        {[1,1,1,2,0].map((s,i) => (
+          <div key={i} style={{
+            flex:1,height:8,borderRadius:8,
+            background:s===1?"var(--accent)":s===2?"var(--accent-2)":"var(--ink-faint)",
+            border:s===2?"2px solid var(--ink)":"0",
+            boxSizing:"border-box"
+          }}></div>
+        ))}
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>THIS WEEK</div>
+      <div className="scroll">
+        <div className="row done" style={{padding:"12px 14px"}}>
+          <div className="badge" style={{background:"var(--ink)",color:"var(--bg)",borderColor:"var(--ink)"}}>M</div>
+          <div className="nm"><div className="nm-name">Chest & Tris</div><div className="nm-sub">DONE · 58m · 12.4k LBS</div></div>
+          <span className="end" style={{fontSize:14}}>✓</span>
+        </div>
+        <div className="row done" style={{padding:"12px 14px"}}>
+          <div className="badge" style={{background:"var(--ink)",color:"var(--bg)",borderColor:"var(--ink)"}}>T</div>
+          <div className="nm"><div className="nm-name">Back & Bis</div><div className="nm-sub">DONE · 62m · 14.2k LBS</div></div>
+          <span className="end" style={{fontSize:14}}>✓</span>
+        </div>
+        <div className="row done" style={{padding:"12px 14px"}}>
+          <div className="badge" style={{background:"var(--ink)",color:"var(--bg)",borderColor:"var(--ink)"}}>W</div>
+          <div className="nm"><div className="nm-name">Legs</div><div className="nm-sub">DONE · 71m · 18.7k LBS</div></div>
+          <span className="end" style={{fontSize:14}}>✓</span>
+        </div>
+        <div className="card accent" style={{padding:"14px 16px",margin:"0"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div className="badge" style={{background:"var(--on-accent)",color:"var(--accent)",borderColor:"var(--on-accent)"}}>T</div>
+            <div className="nm" style={{flex:1}}>
+              <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>TODAY · NEXT UP</div>
+              <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:18,letterSpacing:"-.01em"}}>Shoulders</div>
+              <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".1em",textTransform:"uppercase",opacity:.85,fontWeight:500}}>5 exercises · ~55m</div>
+            </div>
+            <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:24,lineHeight:1}}>→</span>
+          </div>
+        </div>
+        <div className="row">
+          <div className="badge">F</div>
+          <div className="nm"><div className="nm-name">Arms · finisher</div><div className="nm-sub">TOMORROW · ~45m</div></div>
+          <span className="end">{ICON.chev}</span>
+        </div>
+        <div className="row dashed">
+          <div className="badge" style={{borderStyle:"dashed"}}>R</div>
+          <div className="nm"><div className="nm-name">Rest</div><div className="nm-sub">Sat · Sun</div></div>
+        </div>
+
+        <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>NEXT WEEK</div>
+        <div className="row" style={{opacity:.6}}><div className="badge">M</div><div className="nm"><div className="nm-name">Chest & Tris</div><div className="nm-sub">Pyramid · weight ↑5lb</div></div></div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// ACTIVE SESSION — SUPERSET (A1 → B1 → A2 → B2 …)
+// ────────────────────────────────────────────────────────────────
+
+function ActiveSuperset_A(){
+  return (
+    <Phone note="A · linked cards">
+      <SectionHeader eyebrow="EX 4 / 7 · SUPERSET" right={ICON.plus} />
+
+      <div style={{display:"flex",gap:4,marginTop:6}}>
+        {[0,0,0,1,2,0,0].map((s,i) => (
+          <div key={i} style={{
+            flex:1,height:6,borderRadius:6,
+            background:s===1?"var(--accent)":s===2?"var(--accent-2)":"var(--ink-faint)",
+            opacity:s===0?.5:1,
+            border:s===2?"2px solid var(--ink)":"0",
+            boxSizing:"border-box"
+          }}></div>
+        ))}
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>SUPERSET · ROUND 1 OF 3</div>
+
+      {/* Active set card (A) */}
+      <div className="card accent" style={{padding:"18px 18px 20px",position:"relative"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>4A · ACTIVE</div>
+          <div style={{padding:"2px 8px",borderRadius:999,background:"var(--on-accent)",color:"var(--accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>WORKING</div>
+        </div>
+        <div className="lockup" style={{fontSize:96,marginTop:4}}>
+          <div className="num" style={{color:"var(--on-accent)"}}>12</div>
+          <div className="lbl-top" style={{color:"var(--accent-2)"}}>Triceps</div>
+          <div className="lbl-bot">Cable Ext.<br/>w/ Rope.</div>
+        </div>
+        <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.85,marginTop:10}}>50 LBS · 12 REPS</div>
+      </div>
+
+      {/* Connector */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",margin:"4px 0",position:"relative"}}>
+        <div style={{height:14,width:2,background:"var(--accent-2)",borderRadius:2}}></div>
+      </div>
+
+      {/* Next in pair card (B) */}
+      <div className="card" style={{padding:"14px 16px",borderColor:"var(--accent-2)",borderWidth:2,opacity:.85}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,color:"var(--accent-2)"}}>4B · NEXT IN PAIR</div>
+          <div style={{padding:"2px 8px",borderRadius:999,border:"1.5px solid var(--ink-faint)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:500,letterSpacing:".14em",textTransform:"uppercase",color:"var(--ink-soft)"}}>QUEUED</div>
+        </div>
+        <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:18,marginTop:2,color:"var(--ink)",letterSpacing:"-.01em"}}>Single Arm Lateral Raise</div>
+        <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".12em",textTransform:"uppercase",fontWeight:500,color:"var(--ink-soft)",marginTop:2}}>15 LBS · 12 REPS · LEFT THEN RIGHT</div>
+      </div>
+
+      <div style={{flex:1}}></div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn secondary sm">Skip</button>
+        <button type="button" className="btn" style={{flex:1}}>Log → 4B {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+function ActiveSuperset_B(){
+  return (
+    <Phone note="B · dual half-cards">
+      <SectionHeader eyebrow="EX 4 / 7 · SUPERSET" right={ICON.plus} />
+
+      <div style={{display:"flex",gap:4,marginTop:6}}>
+        {[0,0,0,1,2,0,0].map((s,i) => (
+          <div key={i} style={{
+            flex:1,height:6,borderRadius:6,
+            background:s===1?"var(--accent)":s===2?"var(--accent-2)":"var(--ink-faint)",
+            opacity:s===0?.5:1,
+            border:s===2?"2px solid var(--ink)":"0",
+            boxSizing:"border-box"
+          }}></div>
+        ))}
+      </div>
+
+      <div style={{marginTop:14,display:"flex",alignItems:"baseline",justifyContent:"space-between"}}>
+        <h1 className="h-title" style={{fontSize:24}}>Superset.</h1>
+        <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:28,color:"var(--accent-2)",letterSpacing:"-.01em"}}>ROUND 1/3</span>
+      </div>
+
+      {/* Linked pair card */}
+      <div style={{marginTop:10,border:"2px solid var(--accent-2)",borderRadius:24,overflow:"hidden",position:"relative"}}>
+        {/* A — active */}
+        <div style={{background:"var(--accent)",color:"var(--on-accent)",padding:"16px 16px 14px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:48,letterSpacing:"-.02em",lineHeight:.85}}>4A</div>
+            <div style={{padding:"3px 8px",borderRadius:999,background:"var(--on-accent)",color:"var(--accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>NOW</div>
+          </div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:18,marginTop:2,letterSpacing:"-.01em"}}>Tricep Cable Ext.</div>
+          <div style={{display:"flex",alignItems:"baseline",gap:10,marginTop:6}}>
+            <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:42,letterSpacing:"-.02em",lineHeight:.85}}>12</span>
+            <span style={{fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.85}}>REPS · 50 LBS</span>
+          </div>
+        </div>
+        {/* Divider */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"4px 0",background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600}}>→ THEN →</div>
+        {/* B — queued */}
+        <div style={{background:"var(--surface)",color:"var(--ink)",padding:"14px 16px 16px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:42,letterSpacing:"-.02em",lineHeight:.85,color:"var(--accent-2)"}}>4B</div>
+            <div style={{padding:"3px 8px",borderRadius:999,border:"1.5px solid var(--ink-faint)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:500,letterSpacing:".14em",textTransform:"uppercase",color:"var(--ink-soft)"}}>QUEUED</div>
+          </div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:16,marginTop:2,letterSpacing:"-.01em"}}>Single Arm Lateral Raise</div>
+          <div style={{display:"flex",alignItems:"baseline",gap:10,marginTop:4}}>
+            <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,letterSpacing:"-.02em",lineHeight:.85}}>12</span>
+            <span style={{fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,color:"var(--ink-soft)"}}>REPS · 15 LBS</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{flex:1}}></div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn secondary sm">Skip</button>
+        <button type="button" className="btn" style={{flex:1}}>Log 4A {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// SET TYPE LOGGERS (mini cards showing each set_type's UI)
+// ────────────────────────────────────────────────────────────────
+
+function SetTypes_A(){
+  // Mini phone with multiple set-type cards stacked
+  return (
+    <Phone note="Set types · working / warmup / amrap">
+      <SectionHeader eyebrow="SET LOGGER · STATES" />
+      <h1 className="h-title" style={{fontSize:24}}>Set types.</h1>
+      <div className="h-sub">Different inputs per set_type.</div>
+
+      <div className="scroll" style={{marginTop:12}}>
+        {/* Working set */}
+        <div className="card" style={{padding:"12px 14px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--accent)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>WORKING</div>
+            <div className="eyebrow" style={{fontSize:9}}>SET 3 / 4</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}>
+            <div style={{flex:1,padding:"8px 10px",borderRadius:8,border:"1.5px solid var(--ink-faint)"}}>
+              <div className="eyebrow" style={{fontSize:9}}>WEIGHT</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:26,color:"var(--ink)",letterSpacing:"-.01em",lineHeight:.85,marginTop:2}}>140<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:3,opacity:.6}}>lb</span></div>
+            </div>
+            <div style={{flex:1,padding:"8px 10px",borderRadius:8,border:"1.5px solid var(--accent)"}}>
+              <div className="eyebrow" style={{fontSize:9,color:"var(--accent)"}}>REPS</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:26,color:"var(--accent)",letterSpacing:"-.01em",lineHeight:.85,marginTop:2}}>10</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Warmup */}
+        <div className="card" style={{padding:"12px 14px",opacity:.85}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"transparent",border:"1.5px solid var(--ink-faint)",color:"var(--ink-soft)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>WARMUP</div>
+            <div className="eyebrow" style={{fontSize:9}}>SET 1 / 2</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}>
+            <div style={{flex:1,padding:"8px 10px",borderRadius:8,border:"1.5px dashed var(--ink-faint)"}}>
+              <div className="eyebrow" style={{fontSize:9}}>WEIGHT</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,color:"var(--ink-soft)",letterSpacing:"-.01em",lineHeight:.85,marginTop:2}}>45<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:3}}>lb</span></div>
+            </div>
+            <div style={{flex:1,padding:"8px 10px",borderRadius:8,border:"1.5px dashed var(--ink-faint)"}}>
+              <div className="eyebrow" style={{fontSize:9}}>REPS</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,color:"var(--ink-soft)",letterSpacing:"-.01em",lineHeight:.85,marginTop:2}}>10</div>
+            </div>
+          </div>
+        </div>
+
+        {/* AMRAP */}
+        <div className="card" style={{padding:"12px 14px",background:"var(--accent-2)",color:"var(--on-accent)",border:"2px solid var(--ink)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--ink)",color:"var(--bg)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>AMRAP</div>
+            <div className="eyebrow" style={{fontSize:9,color:"var(--on-accent)",opacity:.85}}>FINAL SET</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>HOW MANY?</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:48,letterSpacing:"-.02em",lineHeight:.82,marginTop:2}}>—<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:6,opacity:.7,fontWeight:600}}>REPS</span></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Failure */}
+        <div className="card" style={{padding:"12px 14px",borderColor:"var(--ink)",borderWidth:2}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--ink)",color:"var(--bg)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>FAILURE</div>
+            <div className="eyebrow" style={{fontSize:9}}>BODYWEIGHT · TO MAX</div>
+          </div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:16,marginTop:6,color:"var(--ink)"}}>Tricep Push Up</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:38,letterSpacing:"-.02em",lineHeight:.85,marginTop:4,color:"var(--ink)"}}>—<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:4,opacity:.6,fontWeight:600}}>reps to fail</span></div>
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+function SetTypes_B(){
+  return (
+    <Phone note="Set types · dropset / rack / burnout">
+      <SectionHeader eyebrow="SET LOGGER · STATES" />
+      <h1 className="h-title" style={{fontSize:24}}>Set types ii.</h1>
+      <div className="h-sub">Drop sets, rack-runs, burnouts.</div>
+
+      <div className="scroll" style={{marginTop:12}}>
+        {/* Dropset */}
+        <div className="card" style={{padding:"12px 14px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--accent)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>DROPSET</div>
+            <div className="eyebrow" style={{fontSize:9}}>3 DROPS</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:4,marginTop:8}}>
+            {[
+              ["140","8",1],
+              ["120","6",.7],
+              ["100","—",.4],
+            ].map(([w,r,o],i) => (
+              <div key={i} style={{display:"flex",alignItems:"baseline",gap:8,padding:"4px 0",borderTop:i===0?"0":"1px dashed var(--ink-faint)",opacity:o}}>
+                <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:20,letterSpacing:"-.01em",color:i===2?"var(--accent-2)":"var(--ink)"}}>{i+1}.</span>
+                <span style={{flex:1,fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,letterSpacing:"-.01em"}}>{w}<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:3,opacity:.6,fontWeight:600}}>lb</span></span>
+                <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,letterSpacing:"-.01em",color:i===2?"var(--accent-2)":"var(--ink)"}}>{r}<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:3,opacity:.6,fontWeight:600}}>reps</span></span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Run the rack */}
+        <div className="card" style={{padding:"12px 14px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>RUN THE RACK</div>
+            <div className="eyebrow" style={{fontSize:9}}>4 STOPS</div>
+          </div>
+          <div style={{display:"flex",alignItems:"flex-end",gap:6,marginTop:10}}>
+            {[
+              ["35","10",1],
+              ["30","8",1],
+              ["25","6",.7],
+              ["20","—",.4],
+            ].map(([w,r,o],i) => (
+              <div key={i} style={{flex:1,padding:"6px 4px",borderRadius:8,border:"1.5px solid " + (o===1?"var(--accent)":"var(--ink-faint)"),textAlign:"center",opacity:o}}>
+                <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:20,letterSpacing:"-.01em",color:"var(--ink)",lineHeight:.85}}>{w}</div>
+                <div style={{fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".08em",color:"var(--ink-soft)",marginTop:2,fontWeight:500}}>{r}r</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Burnout */}
+        <div className="card" style={{padding:"12px 14px",background:"var(--ink)",color:"var(--bg)",border:"2px solid var(--ink)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>BURNOUT</div>
+            <div className="eyebrow" style={{fontSize:9,color:"var(--bg)",opacity:.7}}>LIGHT · MAX REPS</div>
+          </div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:16,marginTop:6,opacity:.9}}>Cable Fly · 25 lb</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:48,letterSpacing:"-.02em",lineHeight:.82,marginTop:2,color:"var(--accent-2)",transform:"scaleY(1.1)",transformOrigin:"left center",display:"inline-block"}}>—<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:6,opacity:.85,fontWeight:600,color:"var(--bg)",display:"inline-block",transform:"scaleY(.9)"}}>BURN IT OUT</span></div>
+        </div>
+
+        {/* Variation override hint */}
+        <div className="card flat" style={{padding:"12px 14px"}}>
+          <div className="eyebrow">SESSION OVERRIDE</div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:700,fontSize:14,color:"var(--ink)",marginTop:4}}>Swap variation for today only</div>
+          <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+            <div style={{padding:"4px 10px",borderRadius:999,background:"var(--accent)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase"}}>D-bar</div>
+            <div style={{padding:"4px 10px",borderRadius:999,border:"1.5px solid var(--ink-faint)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",color:"var(--ink-soft)"}}>Neutral</div>
+            <div style={{padding:"4px 10px",borderRadius:999,border:"1.5px solid var(--ink-faint)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",color:"var(--ink-soft)"}}>Wide</div>
+          </div>
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// TODAY (primary tab entry)
+// ────────────────────────────────────────────────────────────────
+
+function Today_A(){
+  return (
+    <Phone note="A · single focus" tab="today">
+      <SectionHeader back={false} eyebrow="WED · MAY 28" right={ICON.dots} />
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between"}}>
+        <h1 className="h-title" style={{fontSize:32}}>Hey, Alex.</h1>
+        <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:28,color:"var(--accent-2)",letterSpacing:"-.01em",lineHeight:.85}}>27<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:3,opacity:.7,fontWeight:700,letterSpacing:".06em"}}>D STREAK</span></div>
+      </div>
+
+      {/* Hero — today's workout */}
+      <div className="card accent" style={{marginTop:14,padding:"18px 18px 20px"}}>
+        <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>TODAY · PPL · WEEK 4</div>
+        <div className="lockup" style={{fontSize:120,marginTop:8}}>
+          <div className="num" style={{color:"var(--on-accent)"}}>7</div>
+          <div className="lbl-top" style={{color:"var(--accent-2)"}}>Day 23</div>
+          <div className="lbl-bot">Chest<br/>& Tris.</div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginTop:14}}>
+          <div style={{fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.85}}>7 exercises · ~60m</div>
+          <button type="button" className="btn sm" style={{background:"var(--ink)",color:"var(--bg)",border:"2px solid var(--ink)"}}>Start →</button>
+        </div>
+      </div>
+
+      {/* Week strip */}
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+        <span>THIS WEEK</span>
+        <span>3 OF 5 DONE</span>
+      </div>
+      <div style={{display:"flex",gap:4}}>
+        {[["M","D"],["T","D"],["W","T"],["T","P"],["F","P"],["S","R"],["S","R"]].map(([d,s],i) => (
+          <div key={i} style={{
+            flex:1,aspectRatio:.85,display:"flex",alignItems:"center",justifyContent:"center",
+            borderRadius:8,fontFamily:"Geist Mono, monospace",fontSize:11,fontWeight:600,letterSpacing:".08em",
+            background:s==="D"?"var(--accent)":s==="T"?"transparent":"transparent",
+            color:s==="D"?"var(--on-accent)":"var(--ink)",
+            border:s==="T"?"2px solid var(--accent-2)":s==="R"?"1px dashed var(--ink-faint)":s==="D"?"1.5px solid var(--accent)":"1.5px solid var(--ink-faint)",
+            opacity:s==="R"?.4:1,
+          }}>{d}</div>
+        ))}
+      </div>
+
+      {/* Last session */}
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>YESTERDAY</div>
+      <div className="row" style={{padding:"10px 14px",opacity:.7}}>
+        <div className="nm"><div className="nm-name">Legs</div><div className="nm-sub">71m · 18.7k LBS · +1 PR</div></div>
+        <span className="end">{ICON.chev}</span>
+      </div>
+    </Phone>
+  );
+}
+
+function Today_B(){
+  return (
+    <Phone note="B · status board" tab="today">
+      <SectionHeader back={false} eyebrow="WED · MAY 28 · 9:41" right={ICON.dots} />
+      <h1 className="h-title" style={{fontSize:32}}>Today.</h1>
+
+      {/* Stat strip */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginTop:10}}>
+        <div className="card flat" style={{padding:"10px 10px"}}>
+          <div className="eyebrow" style={{fontSize:9}}>STREAK</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,color:"var(--accent-2)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>27<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:2,opacity:.7,fontWeight:700}}>d</span></div>
+        </div>
+        <div className="card flat" style={{padding:"10px 10px"}}>
+          <div className="eyebrow" style={{fontSize:9}}>WEEK</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>3<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:2,opacity:.5,fontWeight:700}}>/5</span></div>
+        </div>
+        <div className="card flat" style={{padding:"10px 10px"}}>
+          <div className="eyebrow" style={{fontSize:9,color:"var(--accent)"}}>VOL</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:22,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>45<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:2,opacity:.7,fontWeight:700}}>k</span></div>
+        </div>
+      </div>
+
+      {/* Today's workout */}
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>TODAY'S SESSION</div>
+      <div className="card accent" style={{padding:"14px 16px 16px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>PPL · WK 4 · DAY 23</div>
+            <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:28,marginTop:2,letterSpacing:"-.02em",lineHeight:1}}>Chest & Tris.</div>
+            <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.85,marginTop:4}}>7 EX · ~60M</div>
+          </div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:54,letterSpacing:"-.02em",lineHeight:.85}}>7</div>
+        </div>
+        <button type="button" className="btn" style={{marginTop:12,width:"100%",background:"var(--ink)",color:"var(--bg)",border:"2px solid var(--ink)"}}>Start workout {ICON.fwd}</button>
+      </div>
+
+      {/* Quick actions */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:10}}>
+        <div className="row" style={{padding:"10px 12px"}}>
+          <div style={{width:28,height:28,borderRadius:7,background:"var(--ink-faint)",display:"flex",alignItems:"center",justifyContent:"center",flex:"none",color:"var(--ink)"}}>{ICON.plus}</div>
+          <div className="nm"><div className="nm-name" style={{fontSize:13}}>One-off</div></div>
+        </div>
+        <div className="row" style={{padding:"10px 12px"}}>
+          <div style={{width:28,height:28,borderRadius:7,background:"var(--ink-faint)",display:"flex",alignItems:"center",justifyContent:"center",flex:"none",color:"var(--ink)"}}>{ICON.cal}</div>
+          <div className="nm"><div className="nm-name" style={{fontSize:13}}>This week</div></div>
+        </div>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>RECENT</div>
+      <div className="row" style={{padding:"10px 14px",opacity:.7}}>
+        <div className="nm"><div className="nm-name">Legs · yesterday</div><div className="nm-sub">71m · 18.7k LBS · +1 PR</div></div>
+        <span className="end">{ICON.chev}</span>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// ACTIVE SESSION — single (non-superset)
+// ────────────────────────────────────────────────────────────────
+
+function ActiveSingle(){
+  return (
+    <Phone note="Single exercise">
+      <SectionHeader eyebrow="EX 1 / 7 · CHEST" right={ICON.plus} />
+
+      <div style={{display:"flex",gap:4,marginTop:6}}>
+        {[1,1,2,0].map((s,i) => (
+          <div key={i} style={{
+            flex:1,height:6,borderRadius:6,
+            background:s===1?"var(--accent)":s===2?"var(--accent-2)":"var(--ink-faint)",
+            opacity:s===0?.5:1,
+            border:s===2?"2px solid var(--ink)":"0",
+            boxSizing:"border-box"
+          }}></div>
+        ))}
+      </div>
+
+      {/* Exercise meta + variation swap */}
+      <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:10,marginTop:12}}>
+        <div>
+          <div className="eyebrow" style={{fontSize:10}}>CHEST · COMPOUND</div>
+          <h1 className="h-title" style={{fontSize:24,marginTop:2}}>Flat Machine<br/>Chest Press.</h1>
+        </div>
+        <div style={{padding:"4px 10px",borderRadius:999,background:"var(--accent)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase",whiteSpace:"nowrap"}}>D-BAR ⇆</div>
+      </div>
+
+      {/* Cue */}
+      <div style={{padding:"8px 12px",borderRadius:10,background:"var(--ink-faint)",marginTop:10,display:"flex",alignItems:"flex-start",gap:8}}>
+        <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:14,color:"var(--accent-2)",lineHeight:1.2}}>!</span>
+        <span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:12,color:"var(--ink-soft)",fontWeight:500,lineHeight:1.3}}>Keep elbows tucked, control the eccentric. Pause 1s at bottom.</span>
+      </div>
+
+      {/* Hero set card */}
+      <div className="card accent" style={{marginTop:12,padding:"18px 18px 22px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div style={{padding:"2px 8px",borderRadius:999,background:"var(--on-accent)",color:"var(--accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>WORKING</div>
+          <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.85}}>SET 3 / 4</div>
+        </div>
+        <div className="lockup" style={{fontSize:140,marginTop:4}}>
+          <div className="num" style={{color:"var(--on-accent)"}}>10</div>
+          <div className="lbl-top" style={{color:"var(--accent-2)"}}>Reps</div>
+          <div className="lbl-bot">@ 140<br/>lbs.</div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12,fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".14em",textTransform:"uppercase",fontWeight:500,opacity:.85}}>
+          <span>PYRAMID</span>
+          <span style={{color:"var(--accent-2)",fontWeight:600}}>15 → 12 → 10 → 8</span>
+        </div>
+      </div>
+
+      <div style={{flex:1}}></div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn secondary sm">Skip</button>
+        <button type="button" className="btn" style={{flex:1}}>Log set {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// REST TIMER (new model)
+// ────────────────────────────────────────────────────────────────
+
+function RestTimer(){
+  return (
+    <Phone note="Countdown + next preview">
+      <SectionHeader eyebrow="REST · 1 MIN 30" right={ICON.dots} />
+
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between"}}>
+        <h1 className="h-title" style={{fontSize:30}}>Rest.</h1>
+        <span style={{fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".14em",textTransform:"uppercase",color:"var(--ink-soft)",fontWeight:500}}>EX 1/7 · SET 3</span>
+      </div>
+
+      {/* Big countdown ring */}
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",margin:"10px 0"}}>
+        <div style={{position:"relative",width:200,height:200}}>
+          <svg width="200" height="200" style={{transform:"rotate(-90deg)"}}>
+            <circle cx="100" cy="100" r="90" fill="none" stroke="var(--ink-faint)" strokeWidth="6"/>
+            <circle cx="100" cy="100" r="90" fill="none" stroke="var(--accent-2)" strokeWidth="8" strokeLinecap="round" strokeDasharray={Math.PI*180} strokeDashoffset={Math.PI*180 * .4}/>
+          </svg>
+          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+            <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:64,letterSpacing:"-.02em",lineHeight:.85,color:"var(--accent-2)"}}>0:54</span>
+            <span className="eyebrow" style={{marginTop:4}}>OF 1:30</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick adjust */}
+      <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:10}}>
+        {["−15","+15","+30"].map(t => (
+          <div key={t} style={{padding:"6px 14px",borderRadius:999,border:"1.5px solid var(--ink-faint)",fontFamily:"Geist Mono, monospace",fontSize:11,letterSpacing:".08em",color:"var(--ink)",fontWeight:600}}>{t}s</div>
+        ))}
+      </div>
+
+      {/* Up next */}
+      <div className="card" style={{padding:"12px 14px",borderColor:"var(--accent)",borderWidth:2,display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:36,height:36,borderRadius:"50%",background:"var(--accent)",color:"var(--on-accent)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:16,border:"2px solid var(--ink)",flex:"none"}}>4</div>
+        <div style={{flex:1}}>
+          <div className="eyebrow" style={{fontSize:9}}>UP NEXT · SET 4 / 4</div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:700,fontSize:14,color:"var(--ink)",letterSpacing:"-.005em"}}>Flat Machine Press · 140lb</div>
+        </div>
+        <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:28,color:"var(--accent)",letterSpacing:"-.01em"}}>8</div>
+      </div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn" style={{flex:1}}>Skip rest {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// STATS HOME (under You)
+// ────────────────────────────────────────────────────────────────
+
+function Stats(){
+  return (
+    <Phone note="Charts + totals" tab="you">
+      <SectionHeader eyebrow="STATS" right={ICON.dots} />
+      <h1 className="h-title" style={{fontSize:32}}>Your numbers.</h1>
+
+      {/* Range tabs */}
+      <div style={{display:"flex",gap:6,marginTop:10,overflowX:"auto"}}>
+        {[["7D",false],["30D",true],["3M",false],["YR",false],["ALL",false]].map(([l,on],i) => (
+          <div key={i} style={{
+            padding:"5px 12px",borderRadius:999,
+            border:"1.5px solid " + (on?"var(--ink)":"var(--ink-faint)"),
+            background:on?"var(--ink)":"transparent",
+            color:on?"var(--bg)":"var(--ink-soft)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>{l}</div>
+        ))}
+      </div>
+
+      <div className="scroll" style={{marginTop:12}}>
+        {/* Hero stat */}
+        <div className="card accent" style={{padding:"14px 16px 16px"}}>
+          <div style={{fontFamily:"Geist Mono, monospace",fontSize:10,letterSpacing:".16em",textTransform:"uppercase",fontWeight:600,opacity:.85}}>30D VOLUME · LBS</div>
+          <div className="lockup" style={{fontSize:84,marginTop:4}}>
+            <div className="num" style={{color:"var(--on-accent)"}}>184<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:24,opacity:.85,marginLeft:2,fontWeight:800}}>K</span></div>
+            <div className="lbl-top" style={{color:"var(--accent-2)"}}>+12% vs prev</div>
+            <div className="lbl-bot">Trending<br/>up.</div>
+          </div>
+          <div className="chart-bars" style={{height:50,marginTop:10}}>
+            {[40,55,52,68,72,80,60,75,72,85,90,82].map((h,i)=>(
+              <div key={i} style={{height:`${h}%`,background:"var(--on-accent)",opacity:.85,borderRadius:"3px 3px 0 0"}}></div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sub-stats grid */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:8}}>
+          <div className="card" style={{padding:"12px 14px"}}>
+            <div className="eyebrow" style={{fontSize:9}}>SESSIONS</div>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,letterSpacing:"-.02em",lineHeight:.85,marginTop:2,color:"var(--ink)"}}>21<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:4,opacity:.5,fontWeight:800}}>/ 22</span></div>
+            <div className="eyebrow" style={{fontSize:9,marginTop:2}}>OF PLAN</div>
+          </div>
+          <div className="card" style={{padding:"12px 14px"}}>
+            <div className="eyebrow" style={{fontSize:9,color:"var(--accent-2)"}}>NEW PRS</div>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,letterSpacing:"-.02em",lineHeight:.85,marginTop:2,color:"var(--accent)"}}>4</div>
+            <div className="eyebrow" style={{fontSize:9,marginTop:2}}>THIS MONTH</div>
+          </div>
+          <div className="card" style={{padding:"12px 14px"}}>
+            <div className="eyebrow" style={{fontSize:9}}>AVG TIME</div>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,letterSpacing:"-.02em",lineHeight:.85,marginTop:2,color:"var(--ink)"}}>62<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:2,opacity:.7,fontWeight:800}}>m</span></div>
+            <div className="eyebrow" style={{fontSize:9,marginTop:2}}>PER SESSION</div>
+          </div>
+          <div className="card" style={{padding:"12px 14px"}}>
+            <div className="eyebrow" style={{fontSize:9,color:"var(--accent-2)"}}>STREAK</div>
+            <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:32,letterSpacing:"-.02em",lineHeight:.85,marginTop:2,color:"var(--accent-2)"}}>27<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:2,opacity:.7,fontWeight:800,color:"var(--ink)"}}>d</span></div>
+            <div className="eyebrow" style={{fontSize:9,marginTop:2}}>PERSONAL BEST</div>
+          </div>
+        </div>
+
+        {/* Body part split */}
+        <div className="eyebrow" style={{marginTop:14,marginBottom:6}}>VOLUME BY MUSCLE</div>
+        {[
+          ["Chest","42k",.95],
+          ["Back","38k",.85],
+          ["Legs","56k",1],
+          ["Shoulders","22k",.5],
+          ["Arms","18k",.4],
+        ].map(([n,v,pct],i) => (
+          <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+            <div style={{width:64,fontFamily:"Hanken Grotesk, sans-serif",fontWeight:600,fontSize:13,color:"var(--ink)"}}>{n}</div>
+            <div style={{flex:1,height:18,background:"var(--ink-faint)",borderRadius:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${pct*100}%`,background:n==="Legs"?"var(--accent-2)":"var(--accent)"}}></div>
+            </div>
+            <div style={{width:48,textAlign:"right",fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:16,color:"var(--ink)",letterSpacing:"-.01em"}}>{v}</div>
+          </div>
+        ))}
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// PERSONAL RECORDS GALLERY
+// ────────────────────────────────────────────────────────────────
+
+function PRGallery(){
+  return (
+    <Phone note="PR cards" tab="you">
+      <SectionHeader eyebrow="PERSONAL RECORDS" right={ICON.dots} />
+      <h1 className="h-title" style={{fontSize:32}}>PRs.</h1>
+      <div className="h-sub">8 lifts tracked · 4 new this month</div>
+
+      <div style={{display:"flex",gap:6,marginTop:10,overflowX:"auto"}}>
+        {[["All",true],["Chest",false],["Back",false],["Legs",false],["Arms",false]].map(([l,on],i) => (
+          <div key={i} style={{
+            padding:"5px 12px",borderRadius:999,
+            border:"1.5px solid " + (on?"var(--accent)":"var(--ink-faint)"),
+            background:on?"var(--accent)":"transparent",
+            color:on?"var(--on-accent)":"var(--ink-soft)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>{l}</div>
+        ))}
+      </div>
+
+      <div className="scroll" style={{marginTop:12,gap:8}}>
+        {/* Headline PR */}
+        <div className="card accent" style={{padding:"14px 16px 16px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{padding:"2px 8px",borderRadius:999,background:"var(--on-accent)",color:"var(--accent)",fontFamily:"Geist Mono, monospace",fontSize:9,fontWeight:600,letterSpacing:".14em",textTransform:"uppercase"}}>NEW · 3D AGO</div>
+            <div className="eyebrow" style={{opacity:.85,color:"var(--on-accent)"}}>CHEST</div>
+          </div>
+          <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:800,fontSize:18,marginTop:4,letterSpacing:"-.01em"}}>Bench press</div>
+          <div style={{display:"flex",alignItems:"baseline",gap:14,marginTop:4}}>
+            <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:64,letterSpacing:"-.02em",lineHeight:.82}}>275<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:14,marginLeft:4,fontWeight:800,opacity:.85}}>lb</span></span>
+            <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:34,letterSpacing:"-.02em",color:"var(--accent-2)"}}>× 1</span>
+          </div>
+        </div>
+
+        {/* Grid of PRs */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+          {[
+            ["Squat","365","× 1","BACK","3w ago"],
+            ["Deadlift","415","× 1","BACK","LAST WEEK",true],
+            ["OHP","165","× 3","DELTS","6w ago"],
+            ["Pulldown","175","× 8","BACK","3w ago"],
+            ["Incline DB","75","× 8","CHEST","5d ago",true],
+          ].map(([n,w,r,m,d,fresh],i) => (
+            <div key={i} className="card" style={{padding:"12px 14px",borderColor:fresh?"var(--accent-2)":"var(--ink-faint)",borderWidth:fresh?2:1.5}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                <div className="eyebrow" style={{fontSize:9}}>{m}</div>
+                {fresh && <div className="eyebrow" style={{fontSize:9,color:"var(--accent-2)"}}>NEW</div>}
+              </div>
+              <div style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:700,fontSize:13,color:"var(--ink)",marginTop:2,letterSpacing:"-.005em"}}>{n}</div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:2}}>
+                <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:24,letterSpacing:"-.02em",color:"var(--ink)"}}>{w}<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:10,marginLeft:2,opacity:.6,fontWeight:800}}>lb</span></span>
+                <span style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:14,letterSpacing:"-.01em",color:"var(--accent-2)"}}>{r}</span>
+              </div>
+              <div className="eyebrow" style={{fontSize:9,marginTop:2}}>{d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// WORKOUT HISTORY LIST
+// ────────────────────────────────────────────────────────────────
+
+function History(){
+  return (
+    <Phone note="Past sessions" tab="you">
+      <SectionHeader eyebrow="WORKOUT HISTORY" right={ICON.dots} />
+      <h1 className="h-title" style={{fontSize:30}}>History.</h1>
+      <div className="h-sub">183 sessions · since Feb 2024</div>
+
+      {/* Filter chips */}
+      <div style={{display:"flex",gap:6,marginTop:10,overflowX:"auto"}}>
+        {[["All",true],["PPL",false],["One-offs",false],["+ PR",false]].map(([l,on],i) => (
+          <div key={i} style={{
+            padding:"5px 12px",borderRadius:999,
+            border:"1.5px solid " + (on?"var(--ink)":"var(--ink-faint)"),
+            background:on?"var(--ink)":"transparent",
+            color:on?"var(--bg)":"var(--ink-soft)",
+            fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",
+            whiteSpace:"nowrap",flexShrink:0
+          }}>{l}</div>
+        ))}
+      </div>
+
+      <div className="scroll" style={{marginTop:12,gap:6}}>
+        <div className="eyebrow" style={{marginBottom:4}}>THIS WEEK</div>
+        {[
+          ["YESTERDAY","TUE","Legs","71m · 18.7k LBS",true],
+          ["MAY 26","MON","Back & Bis","62m · 14.2k LBS"],
+        ].map(([d,dy,nm,sub,pr],i) => (
+          <div key={i} className="row" style={{padding:"10px 12px"}}>
+            <div style={{minWidth:48}}>
+              <div className="eyebrow" style={{fontSize:9}}>{dy}</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:18,color:"var(--ink)",letterSpacing:"-.01em",lineHeight:.85}}>{d}</div>
+            </div>
+            <div className="nm"><div className="nm-name">{nm}</div><div className="nm-sub">{sub}</div></div>
+            {pr && <div style={{padding:"2px 6px",borderRadius:6,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".1em",fontWeight:600}}>+1 PR</div>}
+            <span className="end" style={{marginLeft:6}}>{ICON.chev}</span>
+          </div>
+        ))}
+
+        <div className="eyebrow" style={{marginTop:8,marginBottom:4}}>LAST WEEK</div>
+        {[
+          ["FRI","MAY 23","Arms","45m · 8.4k LBS"],
+          ["THU","MAY 22","Shoulders","55m · 11.8k LBS"],
+          ["WED","MAY 21","Chest & Tris","58m · 12.4k LBS",true],
+          ["TUE","MAY 20","Back & Bis","61m · 13.9k LBS"],
+          ["MON","MAY 19","Legs","68m · 17.2k LBS"],
+        ].map(([dy,d,nm,sub,pr],i) => (
+          <div key={i} className="row" style={{padding:"10px 12px"}}>
+            <div style={{minWidth:48}}>
+              <div className="eyebrow" style={{fontSize:9}}>{dy}</div>
+              <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:14,color:"var(--ink-soft)",letterSpacing:"-.01em",lineHeight:.85,fontWeight:600}}>{d}</div>
+            </div>
+            <div className="nm"><div className="nm-name">{nm}</div><div className="nm-sub">{sub}</div></div>
+            {pr && <div style={{padding:"2px 6px",borderRadius:6,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".1em",fontWeight:600}}>+1 PR</div>}
+            <span className="end" style={{marginLeft:6}}>{ICON.chev}</span>
+          </div>
+        ))}
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// SESSION DETAIL (read-only past workout)
+// ────────────────────────────────────────────────────────────────
+
+function SessionDetail(){
+  return (
+    <Phone note="Past session · read-only">
+      <SectionHeader eyebrow="WED · MAY 21 · 58m" right={ICON.dots} />
+      <h1 className="h-title" style={{fontSize:30}}>Chest & Tris.</h1>
+      <div className="h-sub">PPL · Week 3 · Day 18 · completed</div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:12}}>
+        <div className="card flat" style={{padding:"10px 12px"}}>
+          <div className="eyebrow" style={{fontSize:9}}>VOLUME</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:28,color:"var(--ink)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>12.4<span style={{fontFamily:"Hanken Grotesk, sans-serif",fontSize:11,marginLeft:2,opacity:.6,fontWeight:800}}>K LB</span></div>
+        </div>
+        <div className="card flat" style={{padding:"10px 12px",borderColor:"var(--accent-2)",borderStyle:"solid"}}>
+          <div className="eyebrow" style={{fontSize:9,color:"var(--accent-2)"}}>PR</div>
+          <div style={{fontFamily:"Oswald, sans-serif",fontWeight:700,fontSize:28,color:"var(--accent)",letterSpacing:"-.02em",lineHeight:.85,marginTop:2}}>+1</div>
+        </div>
+      </div>
+
+      <div className="eyebrow" style={{marginTop:12,marginBottom:6}}>LOG</div>
+      <div className="scroll" style={{gap:6}}>
+        {[
+          ["Flat Machine Press","15·12·10·8 @ 140lb","5.7k",true],
+          ["Incline DB Press","15·12·10·8 @ 60lb","2.7k"],
+          ["Close Grip DB","12·10·8 @ 55lb","1.7k"],
+          ["Tri Cable / Lat Raise","3 rounds · superset","1.4k"],
+          ["Shoulder Press Mach","12·10·8·6 @ 90lb","800"],
+          ["Plate Tri Ext","3 × 12 @ 70lb","2.5k"],
+          ["Tricep Pushup","To failure · 18 reps","BW"],
+        ].map(([n,sub,vol,pr],i) => (
+          <div key={i} className="row" style={{padding:"10px 12px"}}>
+            <div className="badge" style={{width:20,height:20,fontSize:10}}>{i+1}</div>
+            <div className="nm"><div className="nm-name" style={{fontSize:13}}>{n}</div><div className="nm-sub" style={{fontSize:9}}>{sub}</div></div>
+            {pr && <div style={{padding:"2px 6px",borderRadius:6,background:"var(--accent-2)",color:"var(--on-accent)",fontFamily:"Geist Mono, monospace",fontSize:9,letterSpacing:".1em",fontWeight:600,marginRight:4}}>PR</div>}
+            <span className="end" style={{fontSize:14}}>{vol}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:"flex",gap:8,padding:"10px 0 16px"}}>
+        <button type="button" className="btn secondary sm">Duplicate</button>
+        <button type="button" className="btn sm" style={{flex:1}}>Repeat workout {ICON.fwd}</button>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// EXERCISE PICKER (modal sheet in Builder)
+// ────────────────────────────────────────────────────────────────
+
+function ExercisePicker(){
+  return (
+    <Phone note="Picker sheet">
+      <div className="status" style={{opacity:.5}}>
+        <span>9:41</span>
+        <span className="right"><span>5G</span><span className="bat"></span></span>
+      </div>
+      {/* Sheet overlay style */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",position:"relative"}}>
+        {/* Dimmed bg */}
+        <div style={{position:"absolute",inset:0,background:"rgba(6,18,31,.6)",zIndex:1}}></div>
+        {/* Sheet */}
+        <div style={{
+          position:"absolute",left:0,right:0,bottom:0,top:60,
+          background:"var(--bg)",borderRadius:"24px 24px 0 0",
+          border:"2px solid var(--ink)",borderBottom:0,
+          zIndex:2,
+          display:"flex",flexDirection:"column",
+          padding:"14px 18px 0",
+        }}>
+          {/* Handle */}
+          <div style={{width:40,height:4,background:"var(--ink-faint)",borderRadius:4,margin:"0 auto 12px"}}></div>
+
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+            <h1 className="h-title" style={{fontSize:26}}>Add exercise.</h1>
+            <div className="eyebrow">CHEST & TRIS</div>
+          </div>
+
+          {/* Search */}
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10,padding:"10px 14px",borderRadius:14,background:"var(--surface)",border:"1.5px solid var(--ink-faint)"}}>
+            <span style={{fontFamily:"Hanken Grotesk, sans-serif",fontWeight:500,fontSize:13,color:"var(--ink-soft)"}}>Search exercises…</span>
+          </div>
+
+          {/* Filters */}
+          <div style={{display:"flex",gap:6,marginTop:10,overflowX:"auto"}}>
+            {[["All",true],["Chest",false],["Tri",false],["Cable",false],["Machine",false],["DB",false]].map(([l,on],i) => (
+              <div key={i} style={{
+                padding:"5px 12px",borderRadius:999,
+                border:"1.5px solid " + (on?"var(--accent)":"var(--ink-faint)"),
+                background:on?"var(--accent)":"transparent",
+                color:on?"var(--on-accent)":"var(--ink-soft)",
+                fontFamily:"Geist Mono, monospace",fontSize:10,fontWeight:600,letterSpacing:".12em",textTransform:"uppercase",
+                whiteSpace:"nowrap",flexShrink:0
+              }}>{l}</div>
+            ))}
+          </div>
+
+          <div className="eyebrow" style={{marginTop:12,marginBottom:6}}>RECENT</div>
+          <div className="scroll" style={{gap:6}}>
+            {[
+              ["Flat Machine Chest Press","CHEST · COMPOUND · MACHINE",true],
+              ["Incline DB Press","CHEST · COMPOUND · DUMBBELL"],
+              ["Cable Fly","CHEST · ISOLATION · CABLE"],
+              ["Tricep Cable Ext.","TRICEPS · CABLE",true],
+              ["Plate Tricep Ext.","TRICEPS · COMPOUND"],
+              ["Tricep Pushup","TRICEPS · BODYWEIGHT"],
+              ["Close Grip Bench","TRICEPS · COMPOUND"],
+            ].map(([n,t,added],i) => (
+              <div key={i} className="row" style={{padding:"10px 12px",borderColor:added?"var(--accent)":"var(--ink-faint)"}}>
+                <div className="nm"><div className="nm-name">{n}</div><div className="nm-sub">{t}</div></div>
+                <div className="icon-btn" style={{
+                  width:28,height:28,
+                  background:added?"var(--accent)":"transparent",
+                  color:added?"var(--on-accent)":"var(--ink)",
+                  borderColor:added?"var(--accent)":"var(--ink-faint)",
+                  fontSize:14
+                }}>{added?"✓":"+"}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{display:"flex",gap:8,padding:"10px 0 18px",borderTop:"1.5px solid var(--ink-faint)",marginTop:"auto"}}>
+            <button type="button" className="btn secondary sm">Cancel</button>
+            <button type="button" className="btn sm" style={{flex:1}}>Add 2 selected {ICON.fwd}</button>
+          </div>
+        </div>
+      </div>
+    </Phone>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// APP — design canvas
+// ────────────────────────────────────────────────────────────────
+
+const PHONE_W = 360, PHONE_H = 760;
+
+function App(){
+  return (
+    <DesignCanvas title="Pulse Gym · Wireframes v0.3" subtitle="Full app · 18 screens + variations · Coastal Deep">
+      <DCSection id="today" title="Today" subtitle="Primary tab · what to do right now">
+        <DCArtboard id="today-a" label="A · single focus"     width={PHONE_W} height={PHONE_H}><Today_A /></DCArtboard>
+        <DCArtboard id="today-b" label="B · status board"     width={PHONE_W} height={PHONE_H}><Today_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="library" title="Library" subtitle="Folders + workouts (Dropset-style). One-offs and programs both live here.">
+        <DCArtboard id="library-a" label="A · folders + recent"  width={PHONE_W} height={PHONE_H}><Library_A /></DCArtboard>
+        <DCArtboard id="library-b" label="B · folder open"       width={PHONE_W} height={PHONE_H}><Library_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="program" title="Program detail" subtitle="Your active multi-week training plan">
+        <DCArtboard id="program-a" label="A · week tabs"       width={PHONE_W} height={PHONE_H}><ProgramDetail_A /></DCArtboard>
+        <DCArtboard id="program-b" label="B · long scroll"     width={PHONE_W} height={PHONE_H}><ProgramDetail_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="week" title="Week detail" subtitle="Drill into a single week — what's done, what's next">
+        <DCArtboard id="week-a" label="Week 4"                 width={PHONE_W} height={PHONE_H}><WeekDetail /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="active-single" title="Active session — single" subtitle="One exercise · cue · variation swap · pyramid reps">
+        <DCArtboard id="active-single-a" label="Set 3 / 4"     width={PHONE_W} height={PHONE_H}><ActiveSingle /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="rest" title="Rest timer" subtitle="Countdown + next-set preview">
+        <DCArtboard id="rest-a" label="Mid-rest"               width={PHONE_W} height={PHONE_H}><RestTimer /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="superset" title="Active session — superset" subtitle="Logging order: A1 → B1 → A2 → B2. The pair stays visible.">
+        <DCArtboard id="superset-a" label="A · linked cards"     width={PHONE_W} height={PHONE_H}><ActiveSuperset_A /></DCArtboard>
+        <DCArtboard id="superset-b" label="B · dual half-cards"  width={PHONE_W} height={PHONE_H}><ActiveSuperset_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="settypes" title="Set type loggers" subtitle="Different inputs per set_type — working, warmup, amrap, dropset, rack, burnout, failure">
+        <DCArtboard id="settypes-a" label="Working / Warmup / AMRAP / Failure"  width={PHONE_W} height={PHONE_H}><SetTypes_A /></DCArtboard>
+        <DCArtboard id="settypes-b" label="Dropset / Rack / Burnout + Swap"     width={PHONE_W} height={PHONE_H}><SetTypes_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="builder" title="Workout builder" subtitle="Inside a folder · creates a one-off or a program day">
+        <DCArtboard id="builder-a" label="A · build from blank"  width={PHONE_W} height={PHONE_H}><Builder_A /></DCArtboard>
+        <DCArtboard id="builder-b" label="B · template-first"    width={PHONE_W} height={PHONE_H}><Builder_B /></DCArtboard>
+        <DCArtboard id="builder-c" label="C · drag library"      width={PHONE_W} height={PHONE_H}><Builder_C /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="picker" title="Exercise picker" subtitle="Sheet · used from Builder to add exercises">
+        <DCArtboard id="picker-a" label="Sheet over Builder"   width={PHONE_W} height={PHONE_H}><ExercisePicker /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="exercise" title="Exercise detail" subtitle="History filtered by Variation pills · D-bar / Neutral / Wide / All">
+        <DCArtboard id="exercise-a" label="A · chart-led"      width={PHONE_W} height={PHONE_H}><Exercise_A /></DCArtboard>
+        <DCArtboard id="exercise-b" label="B · tabbed"         width={PHONE_W} height={PHONE_H}><Exercise_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="calendar" title="Calendar / schedule" subtitle="Plan workouts on specific days">
+        <DCArtboard id="calendar-a" label="A · month grid"     width={PHONE_W} height={PHONE_H}><Calendar_A /></DCArtboard>
+        <DCArtboard id="calendar-b" label="B · week scroll"    width={PHONE_W} height={PHONE_H}><Calendar_B /></DCArtboard>
+        <DCArtboard id="calendar-c" label="C · agenda list"    width={PHONE_W} height={PHONE_H}><Calendar_C /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="summary" title="Workout summary" subtitle="Post-session recap — calm, no theatrics">
+        <DCArtboard id="summary-a" label="A · receipt"         width={PHONE_W} height={PHONE_H}><Summary_A /></DCArtboard>
+        <DCArtboard id="summary-b" label="B · one big number"  width={PHONE_W} height={PHONE_H}><Summary_B /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="stats" title="Stats" subtitle="Charts, totals, body-part split — under You">
+        <DCArtboard id="stats-a" label="30D view"              width={PHONE_W} height={PHONE_H}><Stats /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="prs" title="Personal records" subtitle="Gallery of PRs · filter by muscle group">
+        <DCArtboard id="prs-a" label="All PRs"                 width={PHONE_W} height={PHONE_H}><PRGallery /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="history" title="Workout history" subtitle="Reverse-chrono list · taps into session detail">
+        <DCArtboard id="history-a" label="List"                width={PHONE_W} height={PHONE_H}><History /></DCArtboard>
+        <DCArtboard id="history-b" label="Session detail"      width={PHONE_W} height={PHONE_H}><SessionDetail /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="settings" title="You" subtitle="Profile, stats, prefs — stats nested here">
+        <DCArtboard id="settings-a" label="You + stats entry"  width={PHONE_W} height={PHONE_H}><Settings /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+
+</body>
+</html>

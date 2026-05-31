@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pulse Gym</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:"Hanken Grotesk", system-ui, sans-serif;
+  background:#0a0a0c;
+  min-height:100vh;
+}
+
+.stage{
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 18% 8%, rgba(38,182,246,.10), transparent 52%),
+    radial-gradient(ellipse at 82% 92%, rgba(255,106,31,.07), transparent 52%),
+    #0a0a0c;
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+.stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .5 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  opacity:.05;mix-blend-mode:screen;
+}
+
+.brand{
+  position:fixed;top:20px;left:24px;z-index:10;
+  font-family:"Geist Mono", monospace;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);display:flex;align-items:center;gap:8px;
+}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:#26B6F6;box-shadow:0 0 12px #26B6F6}
+
+.pal-toggle{
+  position:fixed;top:18px;right:24px;z-index:10;display:flex;gap:4px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px;
+  backdrop-filter:blur(10px);
+}
+.pal-toggle button{
+  appearance:none;border:0;background:transparent;color:rgba(255,255,255,.6);cursor:pointer;
+  font-family:"Geist Mono", monospace;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 12px;border-radius:999px;display:flex;align-items:center;gap:6px;transition:all .15s;
+}
+.pal-toggle button:hover{color:#fff}
+.pal-toggle button.on{background:#fff;color:#0a0a0c}
+.pal-toggle .sw{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+/* ── PHONE ── */
+.phone{
+  width:382px;height:788px;border-radius:56px;
+  background:#0a0a0a;padding:9px;position:relative;flex:none;
+  box-shadow:inset 0 0 0 2px #1f1f1f, inset 0 0 0 4px #2a2a2a, 0 30px 80px rgba(0,0,0,.6), 0 8px 0 0 #050505;
+}
+.notch{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:118px;height:32px;border-radius:20px;background:#000;z-index:60}
+.screen{
+  position:relative;width:100%;height:100%;border-radius:47px;overflow:hidden;
+  background:var(--bg);color:var(--ink);display:flex;flex-direction:column;
+}
+
+.statusbar{
+  display:flex;justify-content:space-between;align-items:center;padding:14px 30px 0;
+  font-family:"Geist Mono", monospace;font-size:13px;font-weight:600;color:var(--ink);z-index:5;flex:none;
+}
+.statusbar .right{display:flex;gap:6px;align-items:center;font-size:11px}
+.statusbar .bat{width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;padding:1px;display:flex}
+.statusbar .bat::after{content:"";flex:1;background:var(--ink);border-radius:1px}
+
+.body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:14px 20px 0;min-height:0;position:relative}
+
+/* ── SHEET (overlays the active screen) ── */
+.sheet-wrap{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:flex-end}
+.sheet-dim{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.sheet{position:relative;background:var(--bg);color:var(--ink);border:2px solid var(--ink);border-bottom:0;border-radius:26px 26px 0 0;padding:12px 18px 30px;max-height:84%;display:flex;flex-direction:column;animation:sheetup .25s cubic-bezier(.2,.7,.3,1)}
+.sheet-handle{width:42px;height:4px;border-radius:4px;background:var(--ink-faint);margin:0 auto 8px}
+.sheet-scroll{overflow-y:auto;overflow-x:hidden;margin:0 -18px;padding:4px 18px 0;display:flex;flex-direction:column;min-height:0;flex:1 1 auto}
+.sheet-scroll::-webkit-scrollbar{width:0}
+@keyframes sheetup{from{transform:translateY(24px);opacity:.5}to{transform:none;opacity:1}}
+
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.screen-anim{animation:fadein .28s cubic-bezier(.2,.7,.3,1)}
+
+/* ── TYPE ── */
+.h1{font-family:"Hanken Grotesk", sans-serif;font-weight:800;font-size:32px;line-height:1;letter-spacing:-.025em;margin:0;color:var(--ink)}
+.sub{font-family:"Hanken Grotesk", sans-serif;font-size:13px;color:var(--ink-soft);font-weight:500;margin:4px 0 0}
+.eyebrow{font-family:"Geist Mono", monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+
+/* topbar within body */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+
+/* ── LOCKUP ── */
+.lockup{display:inline-grid;grid-template-columns:auto auto;column-gap:12px;align-items:start}
+.lockup .num{font-family:"Oswald", sans-serif;font-weight:700;line-height:.82;letter-spacing:-.02em;grid-row:1 / span 2}
+.lockup .lbl-top{font-family:"Geist Mono", monospace;font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;padding-top:8%}
+.lockup .lbl-bot{font-family:"Hanken Grotesk", sans-serif;font-weight:800;font-size:.2em;line-height:.95;letter-spacing:-.02em;align-self:start;margin-top:-.05em}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1.5px solid var(--ink-faint);border-radius:20px;padding:16px 18px;color:var(--ink)}
+.card.accent{background:var(--accent);color:var(--on-accent);border:2px solid var(--ink);box-shadow:0 6px 0 0 var(--ink)}
+.card.flat{background:transparent;border:1.5px dashed var(--ink-faint)}
+
+/* ── BUTTON ── */
+.btn{
+  appearance:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:"Hanken Grotesk", sans-serif;font-weight:700;letter-spacing:-.005em;
+  border-radius:999px;border:2px solid var(--ink);
+  background:var(--accent);color:var(--on-accent);
+  box-shadow:inset 0 2px 0 0 rgba(255,255,255,.28), inset 0 -3px 0 0 rgba(0,0,0,.22), 0 5px 0 0 var(--ink);
+  transition:transform .1s cubic-bezier(.2,.7,.3,1.4), box-shadow .1s ease;
+}
+.btn.md{height:52px;padding:0 24px;font-size:16px}
+.btn.lg{height:60px;padding:0 30px;font-size:18px}
+.btn.sm{height:42px;padding:0 18px;font-size:14px;box-shadow:inset 0 2px 0 0 rgba(255,255,255,.28), inset 0 -2px 0 0 rgba(0,0,0,.18), 0 4px 0 0 var(--ink)}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(4px);box-shadow:inset 0 2px 0 0 rgba(255,255,255,.28), inset 0 -1px 0 0 rgba(0,0,0,.18), 0 1px 0 0 var(--ink)}
+.btn.secondary{background:transparent;color:var(--ink);box-shadow:none;border:1.5px solid var(--ink)}
+.btn.secondary:active{transform:translateY(0)}
+.btn.ghost{background:transparent;color:var(--ink);border:0;box-shadow:none;padding:0}
+
+.icon-btn{
+  appearance:none;cursor:pointer;width:36px;height:36px;border-radius:50%;flex:none;
+  background:var(--surface);color:var(--ink);border:1.5px solid var(--ink-faint);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:"Hanken Grotesk", sans-serif;font-weight:800;font-size:16px;
+}
+.icon-btn:active{transform:translateY(1px)}
+
+/* ── ROWS ── */
+.row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--ink-faint);border-radius:14px;color:var(--ink)}
+.row.dashed{background:transparent;border-style:dashed}
+.badge{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink-faint);flex:none;display:flex;align-items:center;justify-content:center;font-family:"Oswald", sans-serif;font-weight:700;font-size:12px;color:var(--ink)}
+.nm{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+.nm-name{font-family:"Hanken Grotesk", sans-serif;font-weight:700;font-size:14px;letter-spacing:-.005em;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nm-sub{font-family:"Geist Mono", monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+.end{font-family:"Oswald", sans-serif;font-weight:700;font-size:18px;color:var(--ink);letter-spacing:-.01em}
+.end-unit{font-family:"Geist Mono", monospace;font-size:10px;letter-spacing:.1em;font-weight:500;opacity:.6;margin-left:3px}
+
+/* ── SCROLL ── */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;margin:0 -20px;padding:0 20px 16px;display:flex;flex-direction:column;min-height:0}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ── CHART ── */
+.chart-bars{display:flex;align-items:flex-end;gap:4px;padding:4px 0}
+
+/* ── SETTINGS ── */
+.set-row{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);border-top:1.5px solid var(--ink-faint)}
+.set-row:first-child{border-top:0}
+.set-label{flex:1;font-family:"Hanken Grotesk", sans-serif;font-weight:600;font-size:14px;color:var(--ink)}
+.set-val{font-family:"Geist Mono", monospace;font-size:11px;color:var(--ink-soft);letter-spacing:.06em}
+.switch{width:38px;height:22px;border-radius:11px;background:var(--ink-faint);position:relative;flex:none;cursor:pointer;transition:background .2s}
+.switch.on{background:var(--accent)}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--ink);transition:left .2s}
+.switch.on::after{left:18px;background:var(--on-accent)}
+
+/* ── TAB BAR ── */
+.tabbar{display:flex;justify-content:space-around;align-items:center;background:var(--surface);border-top:1.5px solid var(--ink-faint);padding:8px 0 20px;flex:none;z-index:5}
+.tab{appearance:none;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;color:var(--ink-soft);font-family:"Geist Mono", monospace;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.tab.on{color:var(--ink)}
+.tab .tab-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+
+@media (max-height:840px){ .phone{transform:scale(.92)} }
+@media (max-height:780px){ .phone{transform:scale(.86)} }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react" src="pulse-app.jsx"></script>
+
+</body>
+</html>
