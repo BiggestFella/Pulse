@@ -1,0 +1,39 @@
+name: Pulse
+options:
+  bundleIdPrefix: au.com.codeheroes.pulse
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "5"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Pulse:
+    type: application
+    platform: iOS
+    sources: [Pulse]
+    settings:
+      base:
+        INFOPLIST_FILE: Pulse/Resources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse
+        GENERATE_INFOPLIST_FILE: NO
+  PulseTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [PulseTests]
+    dependencies:
+      - target: Pulse
+  PulseUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [PulseUITests]
+    dependencies:
+      - target: Pulse
+schemes:
+  Pulse:
+    build:
+      targets:
+        Pulse: all
+    test:
+      targets: [PulseTests, PulseUITests]
