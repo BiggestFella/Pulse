@@ -1,5 +1,5 @@
 # Widgets (WidgetKit) — Spec
-**Linear:** BAK-19  |  **Date:** 2026-05-31  |  **Status:** Draft for review
+**Linear:** BAK-19  |  **Date:** 2026-05-31  |  **Status:** PARKED — needs its own brainstorm (not in the prototype; this draft is derived/assumption-heavy)
 
 ## Overview
 Home Screen and Lock Screen widgets that surface Pulse's "what do I do right now?" answer outside the app: today's prescribed workout, the current-week progress strip, and the training streak. The widgets live in the `PulseWidgets` extension (WidgetKit) and render from a small, view-ready snapshot shared from the app via an App Group, refreshed on a `TimelineProvider` schedule. Tapping a widget deep-links into the relevant in-app screen (Today, or directly into the active workout via the start hook). This is the static/glanceable widget surface; it is distinct from the **Live Activity / Dynamic Island** real-time workout timer, which is downstream of the active session engine (BAK-14) and specified separately.

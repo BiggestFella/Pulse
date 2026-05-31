@@ -1,5 +1,5 @@
 # Auth & Onboarding — Spec
-**Linear:** BAK-8  |  **Date:** 2026-05-31  |  **Status:** Draft for review
+**Linear:** BAK-8  |  **Date:** 2026-05-31  |  **Status:** PARKED — needs its own brainstorm (not in the prototype; this draft is derived/assumption-heavy)
 
 > ⚠️ **No design source.** Auth and onboarding are explicitly listed as **"Not yet built"**
 > in `docs/design/README.md` (line 100: *"persistence/sync, auth/onboarding, empty/loading/error
