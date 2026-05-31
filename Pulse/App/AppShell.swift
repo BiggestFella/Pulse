@@ -2,6 +2,20 @@ import SwiftUI
 
 struct AppShell: View {
     var body: some View {
+        Group {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-uiTestGallery") {
+                DesignSystemGallery()
+            } else {
+                tabs
+            }
+            #else
+            tabs
+            #endif
+        }
+    }
+
+    private var tabs: some View {
         TabView {
             TodayView()
                 .tabItem { Label("Today", systemImage: "bolt.fill") }
@@ -15,4 +29,4 @@ struct AppShell: View {
     }
 }
 
-#Preview { AppShell() }
+#Preview { AppShell().environment(Theme()) }
