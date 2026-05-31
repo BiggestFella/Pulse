@@ -16,6 +16,7 @@ struct PaletteView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("palette-picker")
     }
 

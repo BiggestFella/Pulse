@@ -63,6 +63,7 @@ private struct PulseSheetModifier<SheetContent: View>: ViewModifier {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.hidden) // we draw our own handle
             .presentationBackground(.clear)     // scrim/background is ours
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("pulse-sheet")
         }
     }
