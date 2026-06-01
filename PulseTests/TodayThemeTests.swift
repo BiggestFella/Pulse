@@ -4,6 +4,26 @@ import SwiftUI
 
 @MainActor
 final class TodayThemeTests: XCTestCase {
+    // `Theme.palette` persists to UserDefaults.standard (shared with the app
+    // process the UI tests launch). Save and restore it so mutating the palette
+    // here can't leak into other suites (e.g. the palette-persistence UI test).
+    private static let paletteKey = "pulse-pal"
+    private var savedPalette: String?
+
+    override func setUp() {
+        super.setUp()
+        savedPalette = UserDefaults.standard.string(forKey: Self.paletteKey)
+    }
+
+    override func tearDown() {
+        if let savedPalette {
+            UserDefaults.standard.set(savedPalette, forKey: Self.paletteKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: Self.paletteKey)
+        }
+        super.tearDown()
+    }
+
     /// The model carries no color/theme state — switching palette never touches it.
     func testModelIsThemeAgnostic() async {
         let theme = Theme()
