@@ -8,14 +8,13 @@ final class InMemoryCatalogRepositoriesTests: XCTestCase {
         let store = MockStore()
         let repo = InMemoryProgramRepository(store: store)
         let before = try await repo.fetchPrograms().count
-        var p = Program(name: "5x5", weeks: 12, workouts: [])
+        let p = Program(name: "5x5", weeks: 12, workouts: [])
         let saved = try await repo.saveProgram(p)
         let afterSave = try await repo.fetchPrograms().count
         XCTAssertEqual(afterSave, before + 1)
         try await repo.deleteProgram(id: saved.id)
         let ids = try await repo.fetchPrograms().map(\.id)
         XCTAssertFalse(ids.contains(saved.id))
-        _ = p; p.name = "x"
     }
 
     func testActiveProgramReturnsTheActiveOne() async throws {

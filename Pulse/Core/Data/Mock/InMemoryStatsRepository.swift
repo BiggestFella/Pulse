@@ -14,49 +14,40 @@ struct InMemoryStatsRepository: StatsRepository {
         case .all:  return nil
         }
     }
-    private enum Bucket { case day, week, month }
-    private func bucket(_ range: StatRange) -> Bucket {
-        switch range {
-        case .d7, .d30: return .day
-        case .m3:       return .week
-        case .year, .all: return .month
-        }
-    }
     private func sessionsInRange(_ range: StatRange) -> [WorkoutSession] {
         let now = Date()
         guard let start = windowStart(range, now: now) else { return store.sessions }
         return store.sessions.filter { $0.startedAt > start }
     }
-    private func bucketKey(_ date: Date, _ b: Bucket) -> (Date, String) {
-        switch b {
-        case .day:
-            let d = cal.startOfDay(for: date)
-            return (d, shortLabel(d, "EEE"))
-        case .week:
+
+    /// The bucket-start date for a session in this range (day / ISO-week / month
+    /// start). The axis *label* is derived from this key via
+    /// `WorkoutAnalytics.bucketLabel`, so fixed-locale formatting lives in one place.
+    private func bucketKey(_ date: Date, _ range: StatRange) -> Date {
+        switch range {
+        case .d7, .d30:
+            return cal.startOfDay(for: date)
+        case .m3:
             let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
-            let d = cal.date(from: comps)!
-            return (d, "W\(cal.component(.weekOfYear, from: d))")
-        case .month:
+            return cal.date(from: comps)!
+        case .year, .all:
             let comps = cal.dateComponents([.year, .month], from: date)
-            let d = cal.date(from: comps)!
-            return (d, shortLabel(d, "MMM"))
+            return cal.date(from: comps)!
         }
-    }
-    private func shortLabel(_ date: Date, _ fmt: String) -> String {
-        let f = DateFormatter(); f.calendar = cal; f.dateFormat = fmt
-        return f.string(from: date)
     }
 
     func volumeSeries(range: StatRange) async throws -> [VolumePoint] {
         try await store.gate()
-        let b = bucket(range)
-        var totals: [Date: (label: String, volume: Double)] = [:]
+        var totals: [Date: Double] = [:]
         for session in sessionsInRange(range) {
-            let (key, label) = bucketKey(session.startedAt, b)
-            totals[key, default: (label, 0)].volume += WorkoutAnalytics.sessionVolume(session)
+            totals[bucketKey(session.startedAt, range), default: 0] += WorkoutAnalytics.sessionVolume(session)
         }
-        return totals.map { VolumePoint(date: $0.key, label: $0.value.label, volume: $0.value.volume) }
-                     .sorted { $0.date < $1.date }
+        return totals.map { key, volume in
+            VolumePoint(date: key,
+                        label: WorkoutAnalytics.bucketLabel(for: key, range: range, calendar: cal),
+                        volume: volume)
+        }
+        .sorted { $0.date < $1.date }
     }
 
     func summary(range: StatRange) async throws -> StatsSummary {
@@ -109,7 +100,17 @@ struct InMemoryStatsRepository: StatsRepository {
             let vol = session.sets.filter { $0.exerciseID == exerciseID }
                                   .reduce(0) { $0 + WorkoutAnalytics.setVolume($1) }
             return VolumePoint(date: session.startedAt,
-                               label: shortLabel(session.startedAt, "d/M"), volume: vol)
+                               label: dayMonthLabel(session.startedAt), volume: vol)
         }
+    }
+
+    /// "d/M" caption for the per-session exercise-history chart. Fixed locale so
+    /// it reads identically regardless of device language.
+    private func dayMonthLabel(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.calendar = cal
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "d/M"
+        return f.string(from: date)
     }
 }
