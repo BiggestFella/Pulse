@@ -74,12 +74,4 @@ create policy "own_programs" on programs
 create policy "own_sessions" on sessions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- DEFERRED to the data-layer feature (BAK-6): the child tables (workouts,
--- workout_exercises, set_specs, session_sets) own data only via parent FKs and
--- still need RLS + policies that walk the FK up to the owning user_id, e.g.:
---   alter table session_sets enable row level security;
---   create policy "own_session_sets" on session_sets for all using (
---     exists (select 1 from sessions s where s.id = session_id and s.user_id = auth.uid()));
--- The shared catalog (exercises, variations) needs an explicit read policy
--- (e.g. for select using (true)) or it will be unreadable via the API.
--- Until then these tables are deny-all to API clients (RLS disabled = no access).
+-- Child/catalog RLS and default_variation_id are added in 0002_schedule_and_rls.sql (BAK-6).
