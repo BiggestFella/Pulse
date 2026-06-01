@@ -37,8 +37,20 @@ final class StatsRepositoryTests: XCTestCase {
     }
 
     func testCurrentStreakMatchesAnalytics() async throws {
-        let streak = try await repo().currentStreak()
-        XCTAssertGreaterThanOrEqual(streak, 1)
+        // `currentStreak()` must return exactly what `WorkoutAnalytics.streak`
+        // computes from the store's schedule + completed days. (Asserting a fixed
+        // value like ">= 1" is wrong: the sample streak depends on what weekday
+        // "today" is — a scheduled training day with no session logged today
+        // correctly yields 0 — so we verify delegation, not a magic number.)
+        let store = MockStore()
+        let streak = try await InMemoryStatsRepository(store: store).currentStreak()
+        let completedDays = Set(store.sessions
+            .filter { $0.endedAt != nil }
+            .map { SampleData.calendar.startOfDay(for: $0.startedAt) })
+        let expected = WorkoutAnalytics.streak(plan: store.schedule,
+                                               completedDays: completedDays,
+                                               asOf: Date(), calendar: SampleData.calendar)
+        XCTAssertEqual(streak, expected)
     }
 
     func testExerciseVolumeHistoryLastN() async throws {
