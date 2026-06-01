@@ -30,13 +30,13 @@ extension TodaySnapshot {
     static let sampleWorkoutID = UUID()
 
     static let sampleWeek: [WeekDayCell] = [
-        WeekDayCell(dayLetter: "M", label: "Chest&Tris", state: .done),
-        WeekDayCell(dayLetter: "T", label: "Back&Bis", state: .done),
-        WeekDayCell(dayLetter: "W", label: "Legs", state: .done),
-        WeekDayCell(dayLetter: "T", label: "Shoulders", state: .today),
-        WeekDayCell(dayLetter: "F", label: "Arms·finisher", state: .plan),
-        WeekDayCell(dayLetter: "S", label: "Rest", state: .rest),
-        WeekDayCell(dayLetter: "S", label: "Rest", state: .rest),
+        WeekDayCell(index: 0, dayLetter: "M", label: "Chest&Tris", state: .done),
+        WeekDayCell(index: 1, dayLetter: "T", label: "Back&Bis", state: .done),
+        WeekDayCell(index: 2, dayLetter: "W", label: "Legs", state: .done),
+        WeekDayCell(index: 3, dayLetter: "T", label: "Shoulders", state: .today),
+        WeekDayCell(index: 4, dayLetter: "F", label: "Arms·finisher", state: .plan),
+        WeekDayCell(index: 5, dayLetter: "S", label: "Rest", state: .rest),
+        WeekDayCell(index: 6, dayLetter: "S", label: "Rest", state: .rest),
     ]
 
     static let sampleCard = TodayWorkoutCard(
@@ -62,7 +62,8 @@ extension TodaySnapshot {
     static let allRest = TodaySnapshot(
         dateEyebrow: "SUN · JUN 01", greetingName: "Alex", streak: 0,
         today: nil,
-        week: Array(repeating:
-            WeekDayCell(dayLetter: "R", label: "Rest", state: .rest), count: 7),
+        week: (0..<7).map {
+            WeekDayCell(index: $0, dayLetter: "R", label: "Rest", state: .rest)
+        },
         yesterday: nil)
 }

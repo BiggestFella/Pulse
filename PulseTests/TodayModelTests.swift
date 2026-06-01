@@ -1,6 +1,19 @@
 import XCTest
 @testable import Pulse
 
+/// Fails the first `loadToday()` then succeeds — models a transient outage so we
+/// can verify retry against the SAME repository (the production recovery path).
+private final class FlakyRepository: TodayRepository, @unchecked Sendable {
+    private let lock = NSLock()
+    private var calls = 0
+    func loadToday() async throws -> TodaySnapshot {
+        lock.lock(); defer { lock.unlock() }
+        calls += 1
+        if calls == 1 { throw MockTodayRepository.Failure.unavailable }
+        return .sample
+    }
+}
+
 @MainActor
 final class TodayModelTests: XCTestCase {
     func testLoadPopulatesAllFields() async {
@@ -20,6 +33,14 @@ final class TodayModelTests: XCTestCase {
         await model.load()
         XCTAssertEqual(model.doneCount, 3)
         XCTAssertEqual(model.plannedCount, 5)
+        XCTAssertEqual(model.weekProgressLabel, "3 OF 5 DONE")
+        XCTAssertEqual(model.streakLabel, "27D")
+    }
+
+    func testStreakLabelIsZeroDNotHidden() async {
+        let model = TodayModel(repository: MockTodayRepository.allRest)
+        await model.load()
+        XCTAssertEqual(model.streakLabel, "0D")
     }
 
     func testRestDayLoadsEmptyPhase() async {
@@ -49,6 +70,17 @@ final class TodayModelTests: XCTestCase {
         XCTAssertEqual(model.phase, TodayModel.Phase.error)
         // Recover by swapping in a working repo and reloading.
         model.replaceRepository(MockTodayRepository.sample)
+        await model.load()
+        XCTAssertEqual(model.phase, TodayModel.Phase.loaded)
+    }
+
+    /// The real error-recovery path: the View's Retry button calls `load()` again
+    /// on the SAME repository. A transient failure should clear on the next load.
+    func testRetryOnSameRepositoryRecoversAfterTransientFailure() async {
+        let flaky = FlakyRepository()
+        let model = TodayModel(repository: flaky)
+        await model.load()
+        XCTAssertEqual(model.phase, TodayModel.Phase.error)
         await model.load()
         XCTAssertEqual(model.phase, TodayModel.Phase.loaded)
     }

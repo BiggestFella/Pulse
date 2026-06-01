@@ -19,7 +19,10 @@ struct TodayWorkoutCard: Equatable, Identifiable {
 /// One of exactly seven cells in the week strip.
 struct WeekDayCell: Equatable, Identifiable {
     enum State: String, CaseIterable { case done, today, plan, rest }
-    var id: String { dayLetter + label }
+    /// Identity is the strip position, not the content: rest days repeat
+    /// (e.g. two "Rest" cells) and would otherwise collide in a `ForEach`.
+    var id: Int { index }
+    let index: Int          // 0...6 — position in the strip
     let dayLetter: String   // "M"
     let label: String       // "Chest&Tris"
     let state: State
