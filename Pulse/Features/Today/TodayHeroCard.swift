@@ -28,6 +28,7 @@ struct TodayHeroCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(theme.accent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .accessibilityElement(children: .contain)   // expose child ids (start/name) instead of shadowing them
         .accessibilityIdentifier("today.hero")
     }
 

@@ -21,9 +21,6 @@ struct MockTodayRepository: TodayRepository {
     static let noHistory = MockTodayRepository(snapshot: .noHistory)
     static let allRest = MockTodayRepository(snapshot: .allRest)
     static let failing = MockTodayRepository(snapshot: nil)
-
-    /// Sample with a visible loading window for previewing the skeleton.
-    static let slow = MockTodayRepository(snapshot: .sample, artificialDelay: .seconds(2))
 }
 
 extension TodaySnapshot {

@@ -16,26 +16,24 @@ final class TodayTabTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["27"].exists)
     }
 
-    // AC4/AC5 — Hero card elements inherit id='today.hero' from the card container.
-    // Use label-predicate matching for texts; the Start button is accessible via id='today.hero'.
+    // AC4/AC5 — hero card exposes its children (it uses .accessibilityElement(children: .contain)),
+    // so the workout name and Start button resolve by their own identifiers.
     func testHeroShowsWorkoutAndStartFires() {
         let app = launch()
-        // Wait for the loaded state to appear (date eyebrow visible means content is ready).
         XCTAssertTrue(app.staticTexts["WED · MAY 28"].waitForExistence(timeout: 5))
 
-        // "DAY 23" rendered by Eyebrow (uppercased). Its label is "DAY 23" even though the
-        // accessibility identifier is propagated from the hero container as "today.hero".
-        let day23 = app.staticTexts.matching(NSPredicate(format: "label == %@", "DAY 23")).firstMatch
-        XCTAssertTrue(day23.exists, "Expected hero day label 'DAY 23' to exist")
+        // The workout name carries id 'today.hero.name'.
+        let name = app.staticTexts["today.hero.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), "Expected hero workout name to exist")
+        XCTAssertEqual(name.label, "Chest & Tris")
 
-        let name = app.staticTexts.matching(NSPredicate(format: "label == %@", "Chest & Tris")).firstMatch
-        XCTAssertTrue(name.exists, "Expected hero workout name 'Chest & Tris' to exist")
+        // The eyebrow texts have no own id; assert their rendered (uppercased) labels.
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", "DAY 23")).firstMatch.exists,
+                      "Expected hero day label 'DAY 23'")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", "7 EXERCISES · ~60 MIN")).firstMatch.exists,
+                      "Expected hero footer '7 EXERCISES · ~60 MIN'")
 
-        let footer = app.staticTexts.matching(NSPredicate(format: "label == %@", "7 EXERCISES · ~60 MIN")).firstMatch
-        XCTAssertTrue(footer.exists, "Expected hero footer '7 EXERCISES · ~60 MIN' to exist")
-
-        // The Start button inherits id='today.hero' from the card VStack. Label='Start'.
-        let start = app.buttons.matching(NSPredicate(format: "label == %@", "Start")).firstMatch
+        let start = app.buttons["today.hero.start"]
         XCTAssertTrue(start.exists, "Expected Start button to exist in hero card")
         start.tap()   // no crash; BAK-14 hook is a no-op here
     }
@@ -63,12 +61,11 @@ final class TodayTabTests: XCTestCase {
         XCTAssertFalse(app.buttons["today.hero.start"].exists)
     }
 
-    // AC9/AC11 — The error VStack has id='today.error'; the Retry button inside inherits
-    // this identifier. Find it by that id (label='Retry').
+    // AC9/AC11 — error state exposes the retry button by its own id (container uses .contain).
     func testErrorShowsRetry() {
         let app = launch(["-uiTestError"])
-        let retry = app.buttons["today.error"]
-        XCTAssertTrue(retry.waitForExistence(timeout: 5), "Expected Retry button (id='today.error') to appear in error state")
+        let retry = app.buttons["today.retry"]
+        XCTAssertTrue(retry.waitForExistence(timeout: 5), "Expected Retry button to appear in error state")
         XCTAssertEqual(retry.label, "Retry", "Expected button label to be 'Retry'")
     }
 }

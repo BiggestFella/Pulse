@@ -113,6 +113,7 @@ struct TodayView: View {
                 .accessibilityIdentifier("today.retry")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .contain)   // expose the retry button's own id
         .accessibilityIdentifier("today.error")
     }
 }
