@@ -45,14 +45,19 @@ struct Program: Codable, Equatable, Identifiable {
     var id = UUID()
     var name: String
     var weeks: Int
+    var isActive: Bool = false
     var workouts: [Workout]
 }
 
-/// A logged session — actual performance against a Workout.
+/// A logged set — actual performance against a Workout. `exerciseID` lets logged
+/// sets group per-exercise (Session Detail, History, PR derivation); `order`
+/// mirrors the SQL `"order"` column so round-trips preserve sequence.
 struct SessionSet: Codable, Equatable, Identifiable {
     var id = UUID()
+    var exerciseID: Exercise.ID
+    var order: Int
     var reps: Int
-    var weight: Double
+    var weight: Double            // kilograms (v1 is kg-only)
     var type: SetType
 }
 
