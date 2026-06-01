@@ -69,12 +69,12 @@ struct TodayHeroCard: View {
 
 #Preview("Workout") {
     @Previewable @State var theme = Theme()
-    return TodayHeroCard(card: .sampleCard, onStart: {})
+    TodayHeroCard(card: TodaySnapshot.sampleCard, onStart: {})
         .padding().background(theme.bg).environment(theme)
 }
 
 #Preview("Rest day") {
     @Previewable @State var theme = Theme()
-    return TodayHeroCard(card: nil, onStart: {})
+    TodayHeroCard(card: nil, onStart: {})
         .padding().background(theme.bg).environment(theme)
 }
