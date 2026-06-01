@@ -36,10 +36,11 @@ enum WorkoutAnalytics {
             .max { estimatedOneRepMax($0) < estimatedOneRepMax($1) }
     }
 
-    /// Consecutive honored scheduled days ending at `asOf`. A scheduled training
-    /// day (`.workout`) counts only if a session completed that day; a `.rest`
-    /// day is transparent (neither breaks nor extends); a scheduled day with no
-    /// completed session breaks the streak. Days with no plan entry stop the walk.
+    /// Consecutive honored scheduled days ending at `asOf`. A `.done` day already
+    /// encodes a completed session, so it counts unconditionally; a scheduled
+    /// `.workout` day counts only if a session completed that day (else the streak
+    /// breaks); a `.rest` day is transparent (neither breaks nor extends). Days
+    /// with no plan entry stop the walk.
     static func streak(plan: [Date: DayPlan],
                        completedDays: Set<Date>,
                        asOf: Date,
@@ -53,7 +54,7 @@ enum WorkoutAnalytics {
             case .workout:
                 if completedDays.contains(cursor) { streak += 1 } else { return streak }
             case .done:
-                if completedDays.contains(cursor) { streak += 1 } else { return streak }
+                streak += 1 // a logged session — counts unconditionally
             }
             guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
             cursor = calendar.startOfDay(for: prev)
@@ -61,14 +62,16 @@ enum WorkoutAnalytics {
         return streak
     }
 
-    /// Bucket a date into a label string for chart axes.
+    /// Bucket a date into a label string for chart axes. Labels are fixed-locale
+    /// (`en_US_POSIX`) so they read identically regardless of device language.
     /// - 7D/30D: "Mon", "Tue" … (day abbreviation)
-    /// - 3M: "W1", "W2" … (ISO week number, relative)
+    /// - 3M: "W48", "W49" … (calendar week-of-year for the injected calendar)
     /// - YR/ALL: "Jan", "Feb" … (month abbreviation)
     static func bucketLabel(for date: Date, range: StatRange,
                             calendar: Calendar = .current) -> String {
         let fmt = DateFormatter()
         fmt.calendar = calendar
+        fmt.locale = Locale(identifier: "en_US_POSIX")
         switch range {
         case .d7, .d30:
             fmt.dateFormat = "EEE"

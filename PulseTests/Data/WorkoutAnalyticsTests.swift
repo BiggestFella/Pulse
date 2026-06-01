@@ -72,4 +72,59 @@ final class WorkoutAnalyticsTests: XCTestCase {
             WorkoutAnalytics.streak(plan: plan, completedDays: completedDays,
                                     asOf: day(0), calendar: cal), 1)
     }
+
+    func testStreakCountsDoneDaysUnconditionally() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.firstWeekday = 2
+        let day = { (offset: Int) in cal.date(byAdding: .day, value: offset, to: Date())! }
+        // Both days are `.done` (a session was logged) — they count even though
+        // `completedDays` is empty, because `.done` already encodes completion.
+        let plan: [Date: DayPlan] = [
+            cal.startOfDay(for: day(0)):  .done(UUID()),
+            cal.startOfDay(for: day(-1)): .done(UUID())]
+        XCTAssertEqual(
+            WorkoutAnalytics.streak(plan: plan, completedDays: [],
+                                    asOf: day(0), calendar: cal), 2)
+    }
+
+    func testStreakStopsAtDayWithNoPlanEntry() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.firstWeekday = 2
+        let day = { (offset: Int) in cal.date(byAdding: .day, value: offset, to: Date())! }
+        // Today is done; yesterday has no plan entry → the walk stops at 1.
+        let plan: [Date: DayPlan] = [cal.startOfDay(for: day(0)): .done(UUID())]
+        XCTAssertEqual(
+            WorkoutAnalytics.streak(plan: plan, completedDays: [],
+                                    asOf: day(0), calendar: cal), 1)
+        // Empty plan → no entry at `asOf` → 0.
+        XCTAssertEqual(
+            WorkoutAnalytics.streak(plan: [:], completedDays: [],
+                                    asOf: day(0), calendar: cal), 0)
+    }
+
+    func testVolumeAndOneRepMaxEdgeCases() {
+        // Zero reps and zero weight both yield zero volume.
+        XCTAssertEqual(WorkoutAnalytics.setVolume(set(0, 50, .working)), 0)
+        XCTAssertEqual(WorkoutAnalytics.setVolume(set(10, 0, .working)), 0)
+        // 1RM: zero reps falls through the `reps > 1` guard and returns the weight;
+        // bodyweight (zero weight) returns zero.
+        XCTAssertEqual(WorkoutAnalytics.estimatedOneRepMax(weight: 100, reps: 0), 100)
+        XCTAssertEqual(WorkoutAnalytics.estimatedOneRepMax(weight: 0, reps: 8), 0)
+    }
+
+    func testBestSetReturnsNilWhenNoCountingSets() {
+        XCTAssertNil(WorkoutAnalytics.bestSet(in: []))
+        XCTAssertNil(WorkoutAnalytics.bestSet(in: [set(5, 100, .warmup),
+                                                   set(3, 110, .warmup)]))
+    }
+
+    func testBucketLabelIsFixedLocale() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.firstWeekday = 2
+        // 2026-01-05 is a Monday.
+        let monday = DateComponents(calendar: cal, year: 2026, month: 1, day: 5).date!
+        XCTAssertEqual(WorkoutAnalytics.bucketLabel(for: monday, range: .d7, calendar: cal), "Mon")
+        XCTAssertEqual(WorkoutAnalytics.bucketLabel(for: monday, range: .year, calendar: cal), "Jan")
+        XCTAssertTrue(WorkoutAnalytics.bucketLabel(for: monday, range: .m3, calendar: cal).hasPrefix("W"))
+    }
 }

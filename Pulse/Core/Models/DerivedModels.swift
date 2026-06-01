@@ -3,7 +3,7 @@ import Foundation
 /// One point on a volume chart. `label` is the axis caption ("Mon", "W1", "Jan");
 /// `date` is the bucket start for sorting.
 struct VolumePoint: Equatable, Identifiable {
-    var id = UUID()
+    var id: Date { date }   // one point per bucket — stable across recompute
     var date: Date
     var label: String
     var volume: Double
@@ -27,7 +27,8 @@ struct MuscleVolume: Equatable, Identifiable {
 /// A derived personal record (est. 1RM via Epley). Not persisted — computed
 /// from logged sets. `isNew` is true when achieved within the queried range.
 struct PersonalRecord: Equatable, Identifiable {
-    var id = UUID()
+    // One PR per exercise+variation in a list — stable across recompute.
+    var id: String { "\(exerciseID.uuidString)-\(variationID?.uuidString ?? "base")" }
     var exerciseID: Exercise.ID
     var variationID: Variation.ID?
     var weight: Double
