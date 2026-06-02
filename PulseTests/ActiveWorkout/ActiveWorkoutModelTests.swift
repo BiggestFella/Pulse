@@ -158,4 +158,25 @@ final class ActiveWorkoutModelTests: XCTestCase {
         m.endWorkout()
         XCTAssertFalse(m.isActive)
     }
+
+    // afterRest is idempotent — a stray timer tick after leaving rest is a no-op.
+    func testAfterRestIsIdempotentAcrossStrayTicks() {
+        let m = started(); m.beginSets()
+        m.logSet(reps: 15, weight: 40)   // → rest at step 0
+        XCTAssertEqual(m.phase, .rest)
+        m.afterRest()                    // rest → active, advance to step 1
+        XCTAssertEqual(m.stepIdx, 1)
+        m.afterRest()                    // stray tick while already active → no-op
+        XCTAssertEqual(m.stepIdx, 1)
+        XCTAssertEqual(m.phase, .active)
+    }
+
+    // PR count consults the history baseline (not trivially "everything is a PR").
+    func testPRCountUsesHistoryBaseline() async {
+        let m = started(); m.beginSets()
+        await m.loadPRBaselines()        // mock history best est-1RM ≈ 76 kg
+        m.skipSet()                      // skip bench warmup (step 0) → step 1 (working)
+        m.logSet(reps: 1, weight: 10)    // est-1RM 10 ≪ baseline → not a PR
+        XCTAssertEqual(m.summary.prCount, 0)
+    }
 }

@@ -22,6 +22,7 @@ struct ActiveWorkoutFlowView: View {
             .accessibilityIdentifier("activeFlow.phase.\(phaseID)")
         }
         .animation(.easeOut(duration: 0.28), value: model.phase)
+        .task { await model.loadPRBaselines() }
         .sheet(item: Binding(get: { model.activeSheet }, set: { model.activeSheet = $0 })) { sheet in
             Group {
                 switch sheet {

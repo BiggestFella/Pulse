@@ -86,7 +86,9 @@ final class ActiveWorkoutModel {
     }
 
     /// Rest finished (auto at 0) or "Skip rest" — advance, clamp, back to active.
+    /// Guarded so a stray `TimelineView` tick after we've left rest is a no-op.
     func afterRest() {
+        guard phase == .rest else { return }
         stepIdx = min(stepIdx + 1, steps.count - 1)
         restEndsAt = nil
         phase = .active
@@ -136,6 +138,19 @@ final class ActiveWorkoutModel {
             exerciseID: workout.exercises[exIdx].exercise.id)) ?? []
     }
 
+    /// Seed per-exercise PR baselines (best prior est-1RM) from history so the
+    /// summary's PR count reflects real bests, not "everything is a PR". Called
+    /// when the flow appears.
+    func loadPRBaselines() async {
+        var base: [Exercise.ID: Double] = [:]
+        for we in workout.exercises {
+            let id = we.exercise.id
+            let prior = (try? await historyRepo.recentSets(exerciseID: id)) ?? []
+            if let best = bestEpley(in: prior) { base[id] = best }
+        }
+        prBaseline = base
+    }
+
     // MARK: - derived UI state
 
     var currentStep: WorkoutStep { steps[stepIdx] }
@@ -181,9 +196,9 @@ final class ActiveWorkoutModel {
 
     var summary: SessionSummary {
         let logged = Array(loggedSets.values)
-        let volume = logged
-            .filter { $0.type != .failure && $0.type != .warmup }
-            .reduce(0) { $0 + Double($1.reps) * $1.weight }
+        // Canonical volume (working/amrap only — warmup & dropset & failure excluded),
+        // matching Stats/History so totals agree app-wide.
+        let volume = logged.reduce(0) { $0 + WorkoutAnalytics.setVolume($1) }
         let elapsed = Int(Date.now.timeIntervalSince(startedAt) / 60)
         var byExercise: [Exercise.ID: [SessionSet]] = [:]
         for (idx, set) in loggedSets {
@@ -213,8 +228,7 @@ final class ActiveWorkoutModel {
             let stepIdxs = stepMap[exIdx] ?? []
             let sets = stepIdxs.compactMap { loggedSets[$0] }
             guard !sets.isEmpty else { return nil }
-            let vol = sets.filter { $0.type != .failure && $0.type != .warmup }
-                          .reduce(0) { $0 + Double($1.reps) * $1.weight }
+            let vol = sets.reduce(0) { $0 + WorkoutAnalytics.setVolume($1) }
             let line: String
             if sets.contains(where: { $0.type == .failure }) {
                 line = "To failure"
