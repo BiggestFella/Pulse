@@ -81,11 +81,11 @@ struct StatsView: View {
                     .accessibilityIdentifier("stats.trend")
             }
             HStack(alignment: .bottom, spacing: 3) {
-                ForEach(Array(model.chartValues.enumerated()), id: \.offset) { _, h in
+                ForEach(model.series) { point in
                     RoundedRectangle(cornerRadius: 3)
                         .fill(theme.onAccent.opacity(0.85))
                         .frame(maxWidth: .infinity)
-                        .frame(height: max(CGFloat(h / model.volumeChartMax) * 50, 2))
+                        .frame(height: max(CGFloat(point.volume / model.volumeChartMax) * 50, 2))
                 }
             }
             .frame(height: 50)

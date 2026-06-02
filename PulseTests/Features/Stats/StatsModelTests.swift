@@ -64,5 +64,15 @@ final class StatsModelTests: XCTestCase {
         XCTAssertEqual(StatsModel.abbreviate(920), "920")
         XCTAssertEqual(StatsModel.abbreviate(184_000), "184K")
         XCTAssertEqual(StatsModel.abbreviate(1_200_000), "1.2M")
+        XCTAssertEqual(StatsModel.abbreviate(999_950), "1.0M")   // boundary promotes to M
+    }
+
+    func testTrendDerivation() {
+        XCTAssertNil(StatsModel.trend(forVolumes: []))
+        XCTAssertNil(StatsModel.trend(forVolumes: [100]))         // too few points
+        XCTAssertEqual(StatsModel.trend(forVolumes: [50, 50, 50, 50]), 0)   // flat
+        XCTAssertEqual(StatsModel.trend(forVolumes: [100, 100, 150, 150]), 50) // +50%
+        XCTAssertEqual(StatsModel.trend(forVolumes: [100, 100, 80, 80]), -20) // -20%
+        XCTAssertNil(StatsModel.trend(forVolumes: [0, 0, 80, 80]))           // no baseline
     }
 }
