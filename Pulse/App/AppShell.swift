@@ -1,20 +1,31 @@
 import SwiftUI
 
 struct AppShell: View {
-    /// Today is the default/first tab. Its model is built once and wired to the
-    /// (mock) repo + stub callbacks — Start → is BAK-14, Session Detail push is
-    /// owned by TodayView. Launch arguments select a mock variant for UI tests.
-    @State private var todayModel: TodayModel = {
+    /// The active-workout session engine. When `isActive`, the app takes over
+    /// full-screen (tab bar hidden) and runs the flow.
+    @State private var session: ActiveWorkoutModel
+    /// Today is the default/first tab. Its Start → callback launches the active
+    /// flow. Launch arguments select a mock variant for UI tests.
+    @State private var todayModel: TodayModel
+
+    init() {
+        let session = ActiveWorkoutModel(
+            exerciseRepo: MockSwapAlternativesRepository(),
+            historyRepo: MockHistoryRepository(),
+            sessionWriter: MockSessionWriter())
+        _session = State(initialValue: session)
+
         let repo: MockTodayRepository
         let args = ProcessInfo.processInfo.arguments
         if args.contains("-uiTestRestDay") { repo = .restDay }
         else if args.contains("-uiTestError") { repo = .failing }
         else { repo = .sample }
-        return TodayModel(
+        _todayModel = State(initialValue: TodayModel(
             repository: repo,
-            onStartWorkout: { _ in /* BAK-14 active flow hook */ },
-            onOpenSession: { _ in /* handled by TodayView path push */ })
-    }()
+            // Start → on Today launches the active flow with the sample workout.
+            onStartWorkout: { _ in session.startWorkout(ActiveWorkoutSample.workout) },
+            onOpenSession: { _ in /* handled by TodayView path push */ }))
+    }
 
     var body: some View {
         Group {
@@ -22,11 +33,21 @@ struct AppShell: View {
             if ProcessInfo.processInfo.arguments.contains("-uiTestGallery") {
                 DesignSystemGallery()
             } else {
-                tabs
+                shell
             }
             #else
-            tabs
+            shell
             #endif
+        }
+    }
+
+    /// Session takeover replaces the whole shell (no tab bar) while active.
+    @ViewBuilder private var shell: some View {
+        if session.isActive {
+            ActiveWorkoutFlowView(model: session)
+                .accessibilityIdentifier("activeFlow.root")
+        } else {
+            tabs
         }
     }
 

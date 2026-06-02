@@ -18,6 +18,7 @@ struct ActiveWorkoutFlowView: View {
             }
             .id(model.phase)
             .transition(.phaseMount)
+            .accessibilityElement(children: .contain)   // surface phase id; keep child ids queryable
             .accessibilityIdentifier("activeFlow.phase.\(phaseID)")
         }
         .animation(.easeOut(duration: 0.28), value: model.phase)
