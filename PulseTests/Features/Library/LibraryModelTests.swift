@@ -50,6 +50,16 @@ final class LibraryModelTests: XCTestCase {
         XCTAssertFalse(m.folders.first { $0.id == "cardio" }?.isProgram ?? true)
     }
 
+    func testCatalogSublineFormatting() {
+        func sub(_ equip: String, _ count: Int) -> String {
+            CatalogExercise(id: "1", name: "x", equipment: equip, variationCount: count, hasPR: false).subline
+        }
+        XCTAssertEqual(sub("Barbell", 2), "Barbell · 2 variations")
+        XCTAssertEqual(sub("", 1), "1 variation")          // singular
+        XCTAssertEqual(sub("Cable", 0), "Cable")
+        XCTAssertEqual(sub("", 0), "")
+    }
+
     func testSelectUpdatesFilter() {
         let m = model(store: MockStore())
         m.select(.exercises)

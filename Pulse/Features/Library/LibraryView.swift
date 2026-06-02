@@ -22,6 +22,9 @@ struct LibraryView: View {
                 routeStub(route)
             }
         }
+        // Unlike Stats/PersonalRecords (pushed from You with repos passed via init),
+        // Library is a tab root constructed as `LibraryView()` — so it resolves the
+        // catalog repos from the environment container here and builds the model once.
         .task {
             guard model == nil else { return }
             let m = LibraryModel(library: MockLibraryRepository(),
