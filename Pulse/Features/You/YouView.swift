@@ -14,16 +14,15 @@ struct YouView: View {
                         NavigationLink {
                             StatsView(repository: repos.stats)
                         } label: {
-                            HStack {
-                                Text("Stats").foregroundStyle(theme.ink)
-                                Spacer()
-                                Image(systemName: "chevron.right").foregroundStyle(theme.inkSoft)
-                            }
-                            .padding(16)
-                            .frame(maxWidth: .infinity)
-                            .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radiusCard))
+                            dataRow("Stats")
                         }
                         .accessibilityIdentifier("you.stats")
+                        NavigationLink {
+                            PersonalRecordsView(prRepo: repos.prs, exerciseRepo: repos.exercises)
+                        } label: {
+                            dataRow("Personal records")
+                        }
+                        .accessibilityIdentifier("you.personalRecords")
                     }
                 }
                 .padding(24)
@@ -32,6 +31,17 @@ struct YouView: View {
             .background(theme.bg)
             .navigationTitle("You")
         }
+    }
+
+    private func dataRow(_ title: String) -> some View {
+        HStack {
+            Text(title).foregroundStyle(theme.ink)
+            Spacer()
+            Image(systemName: "chevron.right").foregroundStyle(theme.inkSoft)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radiusCard))
     }
 }
 
