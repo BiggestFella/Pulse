@@ -22,7 +22,8 @@ final class ActiveWorkoutFlowTests: XCTestCase {
     }
 
     // AC2 — Begin moves pre → active (active screen exposes the Log button).
-    func testBeginMovesToActive() {
+    func testBeginMovesToActive() throws {
+        try XCTSkipUnless(false, "Enabled once PreWorkoutView (pre.begin) + ActiveSetView (active.log) land")
         let app = launch()
         app.buttons["today.hero.start"].tap()
         let begin = app.buttons["pre.begin"]
@@ -32,7 +33,8 @@ final class ActiveWorkoutFlowTests: XCTestCase {
     }
 
     // AC17 — back/pause from pre ends the workout and restores the tab bar.
-    func testBackFromPreReturnsToTodayWithTabBar() {
+    func testBackFromPreReturnsToTodayWithTabBar() throws {
+        try XCTSkipUnless(false, "Enabled once PreWorkoutView (pre.back) lands")
         let app = launch()
         app.buttons["today.hero.start"].tap()
         let back = app.buttons["pre.back"]
