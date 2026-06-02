@@ -217,10 +217,11 @@ struct PersonalRecordsView: View {
     }
     private var unitSuffix: String { "kg" }   // kg-only v1
 
+    private static let relFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter(); f.unitsStyle = .abbreviated; return f
+    }()
     private func relativeDate(_ date: Date) -> String {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f.localizedString(for: date, relativeTo: Date())
+        Self.relFormatter.localizedString(for: date, relativeTo: Date())
     }
 }
 

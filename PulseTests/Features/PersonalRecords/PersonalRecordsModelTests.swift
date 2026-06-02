@@ -1,6 +1,16 @@
 import XCTest
 @testable import Pulse
 
+/// Returns a fixed PR list (with an exercise id absent from any catalog) to
+/// exercise the model's name/muscle placeholder fallback.
+private struct StubPRRepository: PRRepository {
+    let prs: [PersonalRecord]
+    func allPRs() async throws -> [PersonalRecord] { prs }
+    func prs(muscleGroup: String) async throws -> [PersonalRecord] { prs }
+    func personalBest(forExercise: Exercise.ID) async throws -> PersonalRecord? { prs.first }
+    func newPRs(in range: StatRange) async throws -> [PersonalRecord] { [] }
+}
+
 @MainActor
 final class PersonalRecordsModelTests: XCTestCase {
     private func model(_ store: MockStore) -> PersonalRecordsModel {
@@ -62,6 +72,16 @@ final class PersonalRecordsModelTests: XCTestCase {
         await m.load()
         XCTAssertEqual(m.phase, .empty)
         XCTAssertNil(m.hero)
+    }
+
+    func testUnknownExerciseFallsBackToPlaceholders() async {
+        let pr = PersonalRecord(exerciseID: UUID(), variationID: nil, weight: 100, reps: 5,
+                                estimatedOneRepMax: 116, achievedAt: Date(), isNew: false)
+        let m = PersonalRecordsModel(prRepo: StubPRRepository(prs: [pr]),
+                                     exerciseRepo: InMemoryExerciseRepository(store: MockStore(seeded: false)))
+        await m.load()
+        XCTAssertEqual(m.records.first?.exerciseName, "Exercise")
+        XCTAssertEqual(m.records.first?.muscleGroup, "Other")
     }
 
     func testErrorThenRetryRecovers() async {
