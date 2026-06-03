@@ -4,6 +4,9 @@ import SwiftUI
 /// DEBUG-only harness that renders the Live Activity's shared subviews in-app so
 /// XCUITest can assert their content (the real Live Activity can't be driven on
 /// the simulator lock screen). Selected via launch arguments from `AppShell`.
+/// Renders the subviews directly rather than `LockScreenCard` so tests target the
+/// content surfaces (ring / lockup / UP NEXT) without the card's interactive
+/// `Button(intent:)`, which XCUITest can't meaningfully exercise here.
 struct LiveActivityDebugScreen: View {
     let state: WorkoutActivityAttributes.ContentState
     private var theme: WidgetTheme { WidgetTheme(palette: state.palette) }

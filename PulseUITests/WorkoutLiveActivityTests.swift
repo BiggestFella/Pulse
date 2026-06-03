@@ -1,13 +1,19 @@
 import XCTest
 
 final class WorkoutLiveActivityTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        continueAfterFailure = false // avoid cascading failures against an unrendered UI
+    }
+
     // AC2/AC6: rest surface shows the ring + UP NEXT preview
     func testRestSurfaceShowsRingAndUpNext() {
         let app = XCUIApplication()
         app.launchArguments = ["-LA_DEBUG_REST"]
         app.launch()
         XCTAssertTrue(app.otherElements["la-rest-ring"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["UP NEXT"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["la-up-next"].exists)
+        XCTAssertTrue(app.staticTexts["UP NEXT"].exists)
     }
 
     // AC4/AC5: failure set shows ∞ / TO FAILURE / FAILURE label and NO weight

@@ -109,14 +109,14 @@ extension WorkoutActivityAttributes.ContentState {
               setTypeLabel: "WORKING", targetReps: 12, targetWeight: 60,
               ssLabel: nil, isMidPair: false, restEndsAt: Date().addingTimeInterval(75),
               totalRest: 90, nextExerciseName: "Flat Machine Press", nextReps: 12, nextWeight: 60,
-              nextSsLabel: nil, completedSets: 5, totalStepCount: 12, palette: .coastal)
+              nextSsLabel: nil, completedSets: 5, totalStepCount: 11, palette: .coastal)
     }
     static var failurePreview: Self {
         .init(phase: .active, exerciseName: "Tricep Pushup", setIndex: 1, totalSets: 1,
               setTypeLabel: "FAILURE", targetReps: nil, targetWeight: nil,
               ssLabel: nil, isMidPair: false, restEndsAt: nil, totalRest: 90,
               nextExerciseName: nil, nextReps: nil, nextWeight: nil, nextSsLabel: nil,
-              completedSets: 11, totalStepCount: 12, palette: .coastal)
+              completedSets: 10, totalStepCount: 11, palette: .coastal)
     }
 }
 
