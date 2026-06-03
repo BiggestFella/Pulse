@@ -167,15 +167,9 @@ final class ActiveWorkoutModel {
 
     func isSwapped(_ exIdx: Int) -> Bool { swaps[exIdx] != nil }
 
-    func setTypeLabel(_ type: SetType) -> String {
-        switch type {
-        case .working: return "WORKING"
-        case .warmup:  return "WARMUP"
-        case .dropset: return "DROP SET"   // prototype omitted this — never blank
-        case .failure: return "FAILURE"
-        case .amrap:   return "AMRAP"
-        }
-    }
+    /// Delegates to the shared `SetTypeLabel` so the in-app hero and the Live
+    /// Activity render identical labels from one source of truth.
+    func setTypeLabel(_ type: SetType) -> String { SetTypeLabel.text(for: type) }
 
     var logButtonLabel: String {
         if stepIdx == steps.count - 1 { return "Finish workout" }
