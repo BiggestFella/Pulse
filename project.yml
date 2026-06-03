@@ -12,7 +12,9 @@ targets:
   Pulse:
     type: application
     platform: iOS
-    sources: [Pulse]
+    sources:
+      - Pulse
+      - path: PulseWidgets/WorkoutLiveActivityViews.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse
