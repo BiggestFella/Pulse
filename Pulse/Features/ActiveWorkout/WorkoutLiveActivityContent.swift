@@ -3,10 +3,13 @@ import Foundation
 /// Pure projection: maps the live `ActiveWorkoutModel` (BAK-14 session engine)
 /// onto a `WorkoutActivityAttributes.ContentState`. No ActivityKit — fully
 /// testable against the real engine. Reads engine state only; never fetches data.
+///
+/// Precondition: call only with a started session in `.active` or `.rest`
+/// (`steps` non-empty). The Live Activity controller gates this — `pre`/`summary`
+/// have no Activity presentation, so the builder force-indexes the current step.
 enum WorkoutLiveActivityContent {
     static func make(from model: ActiveWorkoutModel,
-                     palette: Palette,
-                     now: Date = .now) -> WorkoutActivityAttributes.ContentState {
+                     palette: Palette) -> WorkoutActivityAttributes.ContentState {
         let step = model.currentStep
         let ex = model.workout.exercises[step.exIdx]
         let spec = ex.sets[step.setIdx]
@@ -39,6 +42,8 @@ enum WorkoutLiveActivityContent {
     /// Target reps/weight for a step; failure sets carry nil (render ∞ / no weight).
     private static func target(_ model: ActiveWorkoutModel,
                                stepIndex: Int) -> (reps: Int?, weight: Double?) {
+        // Bounds-guarded because this is also called for stepIdx+1 (the UP NEXT
+        // preview), which is out of range on the final step.
         guard model.steps.indices.contains(stepIndex) else { return (nil, nil) }
         let step = model.steps[stepIndex]
         let sets = model.workout.exercises[step.exIdx].sets

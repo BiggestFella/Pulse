@@ -56,7 +56,7 @@ final class WorkoutLiveActivityContentTests: XCTestCase {
         let m = makeModel()
         let t0 = Date(timeIntervalSince1970: 1_000_000)
         m.logSet(reps: 15, weight: 60, now: t0)   // warmup rest:true → phase .rest, restEndsAt t0+90
-        let s = WorkoutLiveActivityContent.make(from: m, palette: .coastal, now: t0.addingTimeInterval(45))
+        let s = WorkoutLiveActivityContent.make(from: m, palette: .coastal)
         XCTAssertEqual(s.phase, .rest)
         XCTAssertEqual(s.restEndsAt, t0.addingTimeInterval(90))
         XCTAssertEqual(s.totalRest, 90)
@@ -73,6 +73,17 @@ final class WorkoutLiveActivityContentTests: XCTestCase {
         XCTAssertEqual(s.ssLabel, "1A")
         XCTAssertEqual(s.nextExerciseName, "Single Arm Lateral Raise")
         XCTAssertEqual(s.nextSsLabel, "1B")
+    }
+
+    // AC5: amrap label passes through (5th set type), reps/weight populated
+    func testAmrapLabelMapping() {
+        let m = makeModel()
+        m.markDoneForTest(7)             // mark latRaise working (set0) done
+        m.jump(toExerciseIndex: 3)       // → first undone of latRaise = step9 (set1, amrap)
+        let s = WorkoutLiveActivityContent.make(from: m, palette: .coastal)
+        XCTAssertEqual(s.setTypeLabel, "AMRAP")
+        XCTAssertEqual(s.targetReps, 15)
+        XCTAssertEqual(s.targetWeight, 12)
     }
 
     // counts + theme snapshot
