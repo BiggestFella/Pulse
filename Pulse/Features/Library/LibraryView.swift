@@ -19,7 +19,21 @@ struct LibraryView: View {
             }
             .background(theme.bg.ignoresSafeArea())
             .navigationDestination(for: LibraryRoute.self) { route in
-                routeStub(route)
+                switch route {
+                case .exerciseDetail(let id):
+                    // The catalog encodes the exercise UUID as a String (CatalogExercise
+                    // id = ex.id.uuidString); recover it for the detail screen.
+                    if let uuid = UUID(uuidString: id) {
+                        ExerciseDetailView(exerciseID: uuid,
+                                           exerciseRepo: repos.exercises,
+                                           sessionRepo: repos.sessions,
+                                           prRepo: repos.prs)
+                    } else {
+                        routeStub(route)
+                    }
+                default:
+                    routeStub(route)
+                }
             }
         }
         // Unlike Stats/PersonalRecords (pushed from You with repos passed via init),

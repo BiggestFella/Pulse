@@ -36,6 +36,16 @@ enum WorkoutAnalytics {
             .max { estimatedOneRepMax($0) < estimatedOneRepMax($1) }
     }
 
+    /// Heaviest counting-set weight (warmups excluded). `nil` if no counting sets.
+    static func topWorkingWeight(in sets: [SessionSet]) -> Double? {
+        sets.filter { counts($0.type) }.map(\.weight).max()
+    }
+
+    /// Total counting-set volume across the given sets (warmups excluded).
+    static func volume(of sets: [SessionSet]) -> Double {
+        sets.reduce(0) { $0 + setVolume($1) }
+    }
+
     /// Consecutive honored scheduled days ending at `asOf`. A `.done` day already
     /// encodes a completed session, so it counts unconditionally; a scheduled
     /// `.workout` day counts only if a session completed that day (else the streak
