@@ -18,12 +18,30 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_UIAppFonts: >-
           HankenGrotesk-Regular.ttf HankenGrotesk-Medium.ttf
           HankenGrotesk-SemiBold.ttf HankenGrotesk-Bold.ttf
           HankenGrotesk-ExtraBold.ttf HankenGrotesk-Black.ttf
           Oswald-Medium.ttf Oswald-SemiBold.ttf Oswald-Bold.ttf
           GeistMono-Regular.ttf GeistMono-Medium.ttf GeistMono-SemiBold.ttf
+    dependencies:
+      - target: PulseWidgets
+        embed: true
+  PulseWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PulseWidgets
+      - path: Pulse/Core/Workout/WorkoutActivityAttributes.swift
+      - path: Pulse/Core/DesignSystem/Palette.swift
+      - path: Pulse/Core/DesignSystem/Theme.swift
+      - path: Pulse/Features/ActiveWorkout/SkipRestIntent.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse.widgets
+        INFOPLIST_FILE: PulseWidgets/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
   PulseTests:
     type: bundle.unit-test
     platform: iOS
