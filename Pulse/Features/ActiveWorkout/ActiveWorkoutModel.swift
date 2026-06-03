@@ -192,6 +192,14 @@ final class ActiveWorkoutModel {
     var seedReps: Int { currentSet?.reps ?? 0 }
     var seedWeight: Double { ActiveWorkoutSample.plannedWeight(exIdx: currentStep.exIdx, setIdx: currentStep.setIdx) }
 
+    /// Planned weight (kg) for an arbitrary step index — generalises `seedWeight`
+    /// (current step only) so the Live Activity projection can read the next step too.
+    func plannedWeight(forStepIndex i: Int) -> Double {
+        guard steps.indices.contains(i) else { return 0 }
+        let s = steps[i]
+        return ActiveWorkoutSample.plannedWeight(exIdx: s.exIdx, setIdx: s.setIdx)
+    }
+
     // MARK: - summary
 
     var summary: SessionSummary {
