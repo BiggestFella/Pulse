@@ -3,6 +3,7 @@ import SwiftUI
 struct ActiveWorkoutFlowView: View {
     @Bindable var model: ActiveWorkoutModel
     @Environment(Theme.self) private var theme
+    @State private var liveActivity: WorkoutLiveActivityController?
 
     var body: some View {
         ZStack {
@@ -34,6 +35,16 @@ struct ActiveWorkoutFlowView: View {
             .presentationDetents([.medium, .large])
             .presentationCornerRadius(26)
         }
+        .onAppear {
+            if liveActivity == nil { liveActivity = WorkoutLiveActivityController(model: model) }
+            liveActivity?.sync()
+        }
+        .onChange(of: model.phase) { liveActivity?.sync() }
+        .onChange(of: model.stepIdx) { liveActivity?.sync() }
+        .onChange(of: model.restEndsAt) { liveActivity?.sync() }
+        .onChange(of: model.swaps) { liveActivity?.sync() }
+        .onChange(of: theme.palette) { liveActivity?.sync() }
+        .onDisappear { liveActivity?.sync() }
     }
 
     private var phaseID: String {
