@@ -42,7 +42,8 @@ final class WorkoutLiveActivityControllerTests: XCTestCase {
         let model = freshModel()
         let (c, handle) = makeController(model)
         model.startWorkout(ActiveWorkoutSample.workout); model.beginSets(); c.sync()
-        model.jump(toExerciseIndex: 4); c.sync()  // last step (pushup), active
+        let lastExIdx = ActiveWorkoutSample.workout.exercises.count - 1
+        model.jump(toExerciseIndex: lastExIdx); c.sync()  // last step (pushup), active
         model.logSet(reps: 0, weight: 0); c.sync() // logging last step → summary
         XCTAssertEqual(handle.endCount, 1)
         XCTAssertFalse(handle.isRunning)

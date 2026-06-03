@@ -12,8 +12,8 @@ protocol LiveActivityHandle: AnyObject {
 
 /// Projects the session engine onto the Live Activity and owns its lifecycle.
 /// A projection — it reads the engine and routes Skip-rest back through the
-/// engine's `afterRest`; it never holds canonical session state.
-@Observable
+/// engine's `afterRest`; it never holds canonical session state. Not `@Observable`:
+/// it surfaces no state to views — the flow view owns it and drives `sync()`.
 @MainActor
 final class WorkoutLiveActivityController: SkipRestTarget {
     private let model: ActiveWorkoutModel
@@ -38,11 +38,14 @@ final class WorkoutLiveActivityController: SkipRestTarget {
             model: model,
             handle: ActivityKitHandle(),
             paletteProvider: {
-                UserDefaults.standard.string(forKey: "pulse-pal")
+                UserDefaults.standard.string(forKey: Theme.paletteDefaultsKey)
                     .flatMap(Palette.init(rawValue:)) ?? .default
             }
         )
     }
+    // No deinit needed to clear SkipRestIntent.target: it's a `weak` slot, so it
+    // auto-nils when this controller deallocates (and can't be touched from a
+    // nonisolated deinit anyway).
 
     /// Call after every engine transition. Starts the Activity on the first
     /// `.active`, updates it on every push, and ends it when the session ends
@@ -92,6 +95,9 @@ final class ActivityKitHandle: LiveActivityHandle {
             content: ActivityContent(state: state, staleDate: nil))
     }
 
+    // update/end are fire-and-forget: ActivityKit serialises its own state
+    // (last write wins), and `end()` nils `activity` synchronously so a
+    // subsequent sync() can't double-end. The push-ordering race is benign.
     func update(_ state: WorkoutActivityAttributes.ContentState) {
         guard let activity else { return }
         Task { await activity.update(ActivityContent(state: state, staleDate: nil)) }

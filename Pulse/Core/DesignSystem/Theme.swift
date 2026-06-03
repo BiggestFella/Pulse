@@ -5,12 +5,14 @@ import SwiftUI
 @Observable
 final class Theme {
     var palette: Palette {
-        didSet { UserDefaults.standard.set(palette.rawValue, forKey: Self.key) }
+        didSet { UserDefaults.standard.set(palette.rawValue, forKey: Self.paletteDefaultsKey) }
     }
-    private static let key = "pulse-pal"
+    /// UserDefaults key the active palette persists under. Internal so the Live
+    /// Activity controller can snapshot the same value for the widget process.
+    static let paletteDefaultsKey = "pulse-pal"
 
     init() {
-        let raw = UserDefaults.standard.string(forKey: Self.key)
+        let raw = UserDefaults.standard.string(forKey: Self.paletteDefaultsKey)
         self.palette = raw.flatMap(Palette.init(rawValue:)) ?? .default
     }
 
