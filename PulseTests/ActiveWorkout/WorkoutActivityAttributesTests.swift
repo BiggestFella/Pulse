@@ -25,8 +25,13 @@ final class WorkoutActivityAttributesTests: XCTestCase {
         XCTAssertEqual(decoded, original)
     }
 
-    func testContentStateIsHashable() {
-        XCTAssertEqual(sampleState().hashValue, sampleState().hashValue)
+    func testContentStateHashableDistinguishesValues() {
+        let same = sampleState()
+        var different = sampleState()
+        different.setIndex = 99
+        // Equal values collapse in a Set; a differing field stays distinct.
+        XCTAssertEqual(Set([same, same]).count, 1)
+        XCTAssertEqual(Set([same, different]).count, 2)
     }
 
     func testRestFractionUsesTotalRest() {
@@ -38,5 +43,11 @@ final class WorkoutActivityAttributesTests: XCTestCase {
     func testRestFractionClampsAtZeroWhenElapsed() {
         let now = Date(timeIntervalSince1970: 1_000_200) // past end
         XCTAssertEqual(sampleState().restFraction(now: now), 0, accuracy: 0.001)
+    }
+
+    func testRestFractionIsZeroWhenNoEndDate() {
+        var state = sampleState() // active-phase shape: no rest end
+        state.restEndsAt = nil
+        XCTAssertEqual(state.restFraction(), 0, accuracy: 0.001)
     }
 }

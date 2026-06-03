@@ -17,7 +17,7 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var ssLabel: String?            // "1A"/"1B" for supersets
         var isMidPair: Bool             // engine step.rest == false within a pair
         var restEndsAt: Date?           // absolute end; nil when phase == .active
-        var totalRest: TimeInterval     // resolved rest duration → ring fraction base
+        var totalRest: TimeInterval     // ring fraction base; 0 when active / no rest (restFraction guards on it)
         var nextExerciseName: String?   // UP NEXT preview
         var nextReps: Int?
         var nextWeight: Double?
