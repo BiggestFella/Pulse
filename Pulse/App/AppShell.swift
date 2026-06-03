@@ -57,7 +57,7 @@ struct AppShell: View {
                 .tabItem { Label("Today", systemImage: "bolt.fill") }
             LibraryView()
                 .tabItem { Label("Library", systemImage: "square.stack.fill") }
-            PlanView()
+            PlanView(onStartWorkout: { session.startWorkout(ActiveWorkoutSample.workout) })
                 .tabItem { Label("Plan", systemImage: "calendar") }
             YouView()
                 .tabItem { Label("You", systemImage: "person.fill") }
