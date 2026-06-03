@@ -36,10 +36,12 @@ final class WorkoutLiveActivityIntegrationTests: XCTestCase {
         let model = startedModel()
         let handle = DenyingActivityHandle()
         let c = WorkoutLiveActivityController(model: model, handle: handle, paletteProvider: { .coastal })
-        c.sync()                                   // start attempted but denied
+        c.sync()                                       // start attempted but denied
         XCTAssertFalse(handle.isRunning)
-        model.jump(toExerciseIndex: 0); c.sync()   // transitions still safe
-        model.endWorkout(); c.sync()               // end is a no-op (never running)
+        model.logSet(reps: 15, weight: 60); c.sync()   // → rest: update attempted on denied handle
+        c.afterRest(); c.sync()                        // advance: another push, still safe
+        XCTAssertFalse(handle.isRunning)
+        model.endWorkout(); c.sync()                   // end is a no-op (never running)
         XCTAssertFalse(handle.isRunning)
     }
 }

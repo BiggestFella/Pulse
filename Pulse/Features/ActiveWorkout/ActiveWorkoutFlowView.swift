@@ -35,6 +35,11 @@ struct ActiveWorkoutFlowView: View {
             .presentationDetents([.medium, .large])
             .presentationCornerRadius(26)
         }
+        // The controller is a projection of engine state. Every field of the
+        // pushed ContentState derives from one of the values observed below
+        // (phase, stepIdx, restEndsAt, swaps, doneSteps) or the theme palette,
+        // so re-pushing on each change covers all engine transitions — logSet,
+        // afterRest, skipSet, jump, swap, rest-adjust — plus theme switching.
         .onAppear {
             if liveActivity == nil { liveActivity = WorkoutLiveActivityController(model: model) }
             liveActivity?.sync()
@@ -43,7 +48,10 @@ struct ActiveWorkoutFlowView: View {
         .onChange(of: model.stepIdx) { liveActivity?.sync() }
         .onChange(of: model.restEndsAt) { liveActivity?.sync() }
         .onChange(of: model.swaps) { liveActivity?.sync() }
+        .onChange(of: model.doneSteps) { liveActivity?.sync() }
         .onChange(of: theme.palette) { liveActivity?.sync() }
+        // Session ended/abandoned: AppShell removes this takeover view while the
+        // controller is still alive; isActive is false by now, so it ends the Activity.
         .onDisappear { liveActivity?.sync() }
     }
 
