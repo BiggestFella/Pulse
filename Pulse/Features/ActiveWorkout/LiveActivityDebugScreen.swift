@@ -33,14 +33,14 @@ struct LiveActivityDebugScreen: View {
 
     static var restFixture: WorkoutActivityAttributes.ContentState {
         .init(phase: .rest, exerciseName: "Flat Machine Press", setIndex: 2, totalSets: 4,
-              setTypeLabel: "WORKING", targetReps: 12, targetWeight: 60,
+              setTypeLabel: "WORKING", isFilledChip: true, targetReps: 12, targetWeight: 60,
               ssLabel: nil, isMidPair: false, restEndsAt: Date().addingTimeInterval(75),
               totalRest: 90, nextExerciseName: "Flat Machine Press", nextReps: 12, nextWeight: 60,
               nextSsLabel: nil, completedSets: 5, totalStepCount: 11, palette: .coastal)
     }
     static var failureFixture: WorkoutActivityAttributes.ContentState {
         .init(phase: .active, exerciseName: "Tricep Pushup", setIndex: 1, totalSets: 1,
-              setTypeLabel: "FAILURE", targetReps: nil, targetWeight: nil,
+              setTypeLabel: "FAILURE", isFilledChip: false, targetReps: nil, targetWeight: nil,
               ssLabel: nil, isMidPair: false, restEndsAt: nil, totalRest: 90,
               nextExerciseName: nil, nextReps: nil, nextWeight: nil, nextSsLabel: nil,
               completedSets: 10, totalStepCount: 11, palette: .coastal)

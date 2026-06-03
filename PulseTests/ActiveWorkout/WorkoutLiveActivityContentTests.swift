@@ -22,6 +22,7 @@ final class WorkoutLiveActivityContentTests: XCTestCase {
         XCTAssertEqual(s.setIndex, 2)
         XCTAssertEqual(s.totalSets, 4)
         XCTAssertEqual(s.setTypeLabel, "WORKING")
+        XCTAssertTrue(s.isFilledChip)
         XCTAssertEqual(s.targetReps, 12)
         XCTAssertEqual(s.targetWeight, 60)
         XCTAssertEqual(s.completedSets, 1)
@@ -37,6 +38,7 @@ final class WorkoutLiveActivityContentTests: XCTestCase {
         XCTAssertNil(s.targetReps)
         XCTAssertNil(s.targetWeight)
         XCTAssertEqual(s.setTypeLabel, "FAILURE")
+        XCTAssertFalse(s.isFilledChip)
         XCTAssertNil(s.nextExerciseName)
     }
 

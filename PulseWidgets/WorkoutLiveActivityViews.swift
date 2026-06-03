@@ -96,12 +96,13 @@ struct SetLockupView: View {
     }
 
     @ViewBuilder private var setTypePill: some View {
-        let label = state.setTypeLabel
-        let filled = (label == "WORKING")
-        Text(label)
+        let filled = state.isFilledChip
+        // Filled chip sits on `accent` → onAccent text; the outlined chip sits on
+        // the card `bg` → must use `ink` (onAccent == bg in both palettes).
+        Text(state.setTypeLabel)
             .font(.laLabel(10))
             .padding(.horizontal, 8).padding(.vertical, 3)
-            .foregroundStyle(theme.onAccent)
+            .foregroundStyle(filled ? theme.onAccent : theme.ink)
             .background(Capsule().fill(filled ? theme.accent : .clear))
             .overlay(Capsule().stroke(filled ? .clear : theme.inkFaint, lineWidth: 1))
     }

@@ -12,6 +12,7 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var setIndex: Int               // 1-based
         var totalSets: Int
         var setTypeLabel: String        // defined for all 5 types incl dropset
+        var isFilledChip: Bool          // working → filled accent chip; others outlined
         var targetReps: Int?            // nil → render ∞ for failure
         var targetWeight: Double?       // nil/0 → omit for failure / bodyweight
         var ssLabel: String?            // "1A"/"1B" for supersets

@@ -24,6 +24,7 @@ enum WorkoutLiveActivityContent {
             setIndex: step.setIdx + 1,
             totalSets: ex.sets.count,
             setTypeLabel: SetTypeLabel.text(for: spec.type),
+            isFilledChip: SetTypeLabel.isFilledChip(spec.type),
             targetReps: cur.reps,
             targetWeight: cur.weight,
             ssLabel: step.ssLabel(in: model.workout),

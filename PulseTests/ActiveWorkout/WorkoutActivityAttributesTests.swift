@@ -7,7 +7,7 @@ final class WorkoutActivityAttributesTests: XCTestCase {
             phase: .rest,
             exerciseName: "Bench Press",
             setIndex: 2, totalSets: 4,
-            setTypeLabel: "WORKING",
+            setTypeLabel: "WORKING", isFilledChip: true,
             targetReps: 8, targetWeight: 80,
             ssLabel: nil, isMidPair: false,
             restEndsAt: Date(timeIntervalSince1970: 1_000_090),
