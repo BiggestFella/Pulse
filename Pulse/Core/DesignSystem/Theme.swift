@@ -27,6 +27,12 @@ final class Theme {
     var accent2: Color { Color(hex: t.accent2) }
     var onAccent: Color { Color(hex: t.onAccent) }
 
+    /// Fixed brand swatches for folders. Intentionally palette-independent — the
+    /// six folder colors are a brand set, not a re-skinnable token, so they stay
+    /// constant across Coastal/Mint (satisfies "Theme tokens only": views read a
+    /// token here instead of a raw hex literal).
+    func folderColor(_ token: FolderColor) -> Color { Color(hex: token.hex) }
+
     // Spacing rhythm and radii from the handoff.
     let spacing: [CGFloat] = [4, 8, 10, 12, 14, 18, 24]
     let radiusCard: CGFloat = 16

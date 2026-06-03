@@ -19,21 +19,7 @@ struct LibraryView: View {
             }
             .background(theme.bg.ignoresSafeArea())
             .navigationDestination(for: LibraryRoute.self) { route in
-                switch route {
-                case .exerciseDetail(let id):
-                    // The catalog encodes the exercise UUID as a String (CatalogExercise
-                    // id = ex.id.uuidString); recover it for the detail screen.
-                    if let uuid = UUID(uuidString: id) {
-                        ExerciseDetailView(exerciseID: uuid,
-                                           exerciseRepo: repos.exercises,
-                                           sessionRepo: repos.sessions,
-                                           prRepo: repos.prs)
-                    } else {
-                        routeStub(route)
-                    }
-                default:
-                    routeStub(route)
-                }
+                destination(route)
             }
         }
         // Unlike Stats/PersonalRecords (pushed from You with repos passed via init),
@@ -188,6 +174,34 @@ struct LibraryView: View {
             .font(.system(size: 15)).foregroundStyle(theme.inkSoft)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity).padding(.top, 40)
+    }
+
+    /// Routes the Create chooser opens land on the real builders (BAK-18);
+    /// detail routes remain stubs until their owning features land.
+    @ViewBuilder private func destination(_ route: LibraryRoute) -> some View {
+        switch route {
+        case .workoutBuilder:
+            WorkoutBuilderView(model: WorkoutBuilderModel(
+                catalog: repos.exercises, workouts: repos.workouts))
+        case .routineBuilder:
+            RoutineBuilderView(model: RoutineBuilderModel(
+                routines: repos.programs, workouts: repos.workouts))
+        case .folderCreate:
+            FolderBuilderView(model: FolderBuilderModel(folders: repos.folders))
+        case .exerciseDetail(let id):
+            // The catalog encodes the exercise UUID as a String (CatalogExercise
+            // id = ex.id.uuidString); recover it for the detail screen.
+            if let uuid = UUID(uuidString: id) {
+                ExerciseDetailView(exerciseID: uuid,
+                                   exerciseRepo: repos.exercises,
+                                   sessionRepo: repos.sessions,
+                                   prRepo: repos.prs)
+            } else {
+                routeStub(route)
+            }
+        default:
+            routeStub(route)
+        }
     }
 
     private func routeStub(_ route: LibraryRoute) -> some View {

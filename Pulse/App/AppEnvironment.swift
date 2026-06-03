@@ -17,8 +17,12 @@ final class RepositoryContainer {
     let prs: any PRRepository
     let user: any UserRepository
     let settings: any SettingsRepository
+    let folders: any FolderRepository
 
     init(useMock: Bool) {
+        // Folders have no Supabase model yet, so both paths use the in-memory
+        // capture repo (see FolderRepository) until the folder data model lands.
+        folders = InMemoryFolderRepository()
         if useMock {
             let store = MockStore()
             programs = InMemoryProgramRepository(store: store)

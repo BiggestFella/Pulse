@@ -33,14 +33,15 @@ final class LibraryTabTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["route.program:ppl"].waitForExistence(timeout: 5))
     }
 
-    // AC7/AC8 — the Create chooser opens and routes to the Workout Builder (stub).
+    // AC7/AC8 — the Create chooser opens and routes to the Workout Builder
+    // (BAK-18 — the real builder now replaces the routing stub).
     func testCreateChooserRoutesToWorkoutBuilder() {
         let app = openLibrary()
         app.buttons["library.create"].tap()
         let workout = app.buttons["create.workout"]
         XCTAssertTrue(workout.waitForExistence(timeout: 5))
         workout.tap()
-        XCTAssertTrue(app.staticTexts["route.builder:workout"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["eyebrow-NEW WORKOUT"].waitForExistence(timeout: 5))
     }
 
     // AC7 — the Create chooser dismisses via its close control.
