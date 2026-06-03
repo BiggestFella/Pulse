@@ -1,0 +1,134 @@
+import XCTest
+@testable import Pulse
+
+@MainActor
+final class WorkoutBuilderModelTests: XCTestCase {
+    private func makeModel(store: MockStore? = nil) -> WorkoutBuilderModel {
+        let store = store ?? MockStore()
+        return WorkoutBuilderModel(
+            catalog: InMemoryExerciseRepository(store: store),
+            workouts: InMemoryWorkoutRepository(store: store))
+    }
+
+    func testStartsWithSeededItems() {
+        let model = makeModel()
+        XCTAssertEqual(model.items.count, 2)
+        XCTAssertEqual(model.items.first?.exercise.name, "Flat bench")
+    }
+
+    func testTotalSetsSumsSetCounts() {
+        let model = makeModel()
+        XCTAssertEqual(model.totalSets, 9) // 5 + 4
+    }
+
+    func testAddExercisesAppendsAndSkipsDuplicates() async {
+        let model = makeModel()
+        await model.loadCatalog()
+        // Pick a catalog exercise not in the seeded list (seeds are Flat bench /
+        // Incline press by name; the SampleData catalog uses different names).
+        let newID = model.catalog[1].exercises[0].id
+        let before = model.items.count
+        model.addExercises([newID, newID]) // duplicate id in the same call
+        XCTAssertEqual(model.items.count, before + 1)
+        // Adding the same id again is skipped.
+        model.addExercises([newID])
+        XCTAssertEqual(model.items.count, before + 1)
+    }
+
+    func testAddedExerciseSeedsADefaultWorkingSet() async {
+        let model = makeModel()
+        await model.loadCatalog()
+        let newID = model.catalog[1].exercises[0].id
+        model.addExercises([newID])
+        XCTAssertEqual(model.items.last?.sets.count, 1)
+        XCTAssertEqual(model.items.last?.sets.first?.type, .working)
+    }
+
+    func testAddedExerciseSeedsDefaultVariation() async {
+        let model = makeModel()
+        await model.loadCatalog()
+        let picked = model.catalog[0].exercises[0]
+        model.addExercises([picked.id])
+        XCTAssertEqual(model.items.last?.variationID, picked.defaultVariationID)
+    }
+
+    func testRemoveItemDropsMatch() {
+        let model = makeModel()
+        let id = model.items[0].id
+        model.removeItem(id: id)
+        XCTAssertFalse(model.items.contains { $0.id == id })
+        XCTAssertEqual(model.items.count, 1)
+    }
+
+    func testToggleLinkAssignsSharedGroupThenUnlinks() {
+        let model = makeModel()
+        model.toggleLink(at: 0)
+        let g0 = model.items[0].supersetGroup
+        let g1 = model.items[1].supersetGroup
+        XCTAssertNotNil(g0)
+        XCTAssertEqual(g0, g1)
+        // Toggling again breaks the lower row out.
+        model.toggleLink(at: 0)
+        XCTAssertNil(model.items[1].supersetGroup)
+    }
+
+    func testToggleLinkLastRowIsNoOp() {
+        let model = makeModel()
+        let last = model.items.count - 1
+        model.toggleLink(at: last)
+        XCTAssertNil(model.items[last].supersetGroup)
+    }
+
+    func testAddSetClonesLastAsWorking() {
+        let model = makeModel()
+        let id = model.items[0].id
+        let before = model.items[0].sets.count
+        model.addSet(itemID: id)
+        XCTAssertEqual(model.items[0].sets.count, before + 1)
+        XCTAssertEqual(model.items[0].sets.last?.type, .working)
+    }
+
+    func testRemoveSetRefusesWhenOneRemains() {
+        let model = makeModel()
+        let id = model.items[1].id
+        while model.items.first(where: { $0.id == id })!.sets.count > 1 {
+            model.removeSet(itemID: id, index: 0)
+        }
+        XCTAssertEqual(model.items.first(where: { $0.id == id })!.sets.count, 1)
+        model.removeSet(itemID: id, index: 0) // refused
+        XCTAssertEqual(model.items.first(where: { $0.id == id })!.sets.count, 1)
+    }
+
+    func testUpdateSetClampsRIRToZeroFive() {
+        let model = makeModel()
+        let id = model.items[0].id
+        model.updateSet(itemID: id, index: 0, reps: 9, rir: 99, type: .working)
+        XCTAssertEqual(model.items[0].sets[0].rir, 5)
+        XCTAssertEqual(model.items[0].sets[0].reps, 9)
+        model.updateSet(itemID: id, index: 0, reps: 9, rir: -3, type: .amrap)
+        XCTAssertEqual(model.items[0].sets[0].rir, 0)
+        XCTAssertEqual(model.items[0].sets[0].type, .amrap)
+    }
+
+    func testSaveCallsRepositoryAndSetsSaved() async {
+        let store = MockStore()
+        let workouts = InMemoryWorkoutRepository(store: store)
+        let model = WorkoutBuilderModel(
+            catalog: InMemoryExerciseRepository(store: store), workouts: workouts)
+        await model.save()
+        XCTAssertEqual(model.saveState, .saved)
+        // The draft was persisted into the active program's workouts.
+        let saved = try? await workouts.fetchWorkouts()
+        XCTAssertTrue(saved?.contains { $0.name == model.name } ?? false)
+    }
+
+    func testSaveErrorWhenRepositoryThrows() async {
+        let store = MockStore()
+        store.forceError = true
+        let model = WorkoutBuilderModel(
+            catalog: InMemoryExerciseRepository(store: store),
+            workouts: InMemoryWorkoutRepository(store: store))
+        await model.save()
+        if case .error = model.saveState { } else { XCTFail("expected .error") }
+    }
+}
