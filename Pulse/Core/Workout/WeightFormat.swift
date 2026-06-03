@@ -15,4 +15,22 @@ enum WeightFormat {
         let w = weight.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(weight)) : String(weight)
         return "\(w) KG · \(reps) REPS"
     }
+
+    /// Bare kg number with no unit — for hero/Oswald numerals. Trims ".0".
+    static func kgNumeral(_ weight: Double) -> String {
+        weight.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(weight)) : String(weight)
+    }
+
+    /// "100 kg" for positive weight, "bodyweight" for zero/negative.
+    static func weightOrBodyweight(_ weight: Double) -> String {
+        weight > 0 ? kg(weight) : "bodyweight"
+    }
+
+    /// Total volume abbreviated to thousands ("3.6k"); whole numbers under 1000
+    /// render rounded ("840"); "—" when zero/negative.
+    static func volume(_ value: Double) -> String {
+        guard value > 0 else { return "—" }
+        if value < 1000 { return String(Int(value.rounded())) }
+        return String(format: "%.1fk", value / 1000)
+    }
 }
