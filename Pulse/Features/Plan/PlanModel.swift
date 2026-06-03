@@ -55,6 +55,7 @@ final class PlanModel {
             savedWorkouts = workouts.map {
                 SavedWorkoutRef(id: $0.id, name: $0.name,
                                 exerciseCount: $0.exercises.count,
+                                // TODO(BAK-6): real estimate
                                 estimatedMinutes: max(1, $0.exercises.count * 9))
             }
             try await buildSchedule()
@@ -116,7 +117,7 @@ final class PlanModel {
             case .done:
                 rows.append(AgendaEntry(day: day, dow: dow(date),
                                         name: "Completed", sub: nil,
-                                        isToday: isToday, isRest: false))
+                                        isToday: isToday, isRest: false, isDone: true))
             case .rest:
                 rows.append(AgendaEntry(day: day, dow: dow(date),
                                         name: "Rest", sub: "RECOVERY",

@@ -41,6 +41,7 @@ struct AgendaEntry: Equatable, Identifiable {
     var sub: String?          // "6 EXERCISES · ~52M"
     var isToday: Bool
     var isRest: Bool
+    var isDone: Bool = false  // completed session — non-interactive, routes to read-only sheet
 }
 
 /// A saved workout the picker can assign.

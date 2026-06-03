@@ -59,6 +59,49 @@ final class PlanModelInteractionTests: XCTestCase {
         XCTAssertEqual(model.scheduleSheetDay, 20)
     }
 
+    /// Regression (PR #13 HIGH): a *completed today* must not launch a workout.
+    /// Tapping today's calendar row / agenda row routes through selectDay, which
+    /// for a done day opens the read-only sheet and never starts a workout.
+    func testCompletedTodayDoesNotLaunchAndOpensSheet() async {
+        // now = 2026-05-28, so day 28 is today; mark it done.
+        let (model, _) = makeModel(plans: [28: .done(UUID())], workouts: [])
+        await model.load()
+
+        // The today calendar cell is rendered as .done, not .today.
+        XCTAssertEqual(model.schedule[28]?.state, .done)
+
+        // The today agenda row is flagged done -> AgendaListView treats it as
+        // non-interactive (no launch CTA) and dims it.
+        let todayEntry = model.agenda.first { $0.isToday }
+        XCTAssertNotNil(todayEntry)
+        XCTAssertTrue(todayEntry?.isDone == true)
+        XCTAssertEqual(todayEntry?.name, "Completed")
+
+        // Tapping (either row routes through selectDay) must NOT launch.
+        var launched = false
+        model.onStartWorkout = { launched = true }
+        model.selectDay(28)
+        XCTAssertFalse(launched, "Completed today must never launch a workout")
+        XCTAssertEqual(model.scheduleSheetDay, 28, "Completed today opens read-only sheet")
+        XCTAssertEqual(model.sheetTitle(for: 28), "Completed.")
+    }
+
+    /// Sanity: a not-yet-done today still launches (the CTA path is preserved).
+    func testNotDoneTodayStillLaunches() async {
+        let w = workout("Push Day")
+        let (model, _) = makeModel(plans: [28: .workout(w.id)], workouts: [w])
+        await model.load()
+
+        let todayEntry = model.agenda.first { $0.isToday }
+        XCTAssertTrue(todayEntry?.isDone == false)
+
+        var launched = false
+        model.onStartWorkout = { launched = true }
+        model.selectDay(28)
+        XCTAssertTrue(launched)
+        XCTAssertNil(model.scheduleSheetDay)
+    }
+
     func testAssignUpdatesDayToPlanAndClosesSheet() async {
         let w = workout("Arms")
         let (model, _) = makeModel(plans: [:], workouts: [w])

@@ -17,7 +17,9 @@ struct AgendaListView: View {
 
     @ViewBuilder
     private func row(_ entry: AgendaEntry) -> some View {
-        let interactive = entry.isToday
+        // A completed today launches nothing — it opens the read-only sheet.
+        // Only a not-yet-done today is a launch CTA.
+        let launches = entry.isToday && !entry.isDone
         HStack(alignment: .top, spacing: theme.spacing[3]) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(entry.dow).pulseStyle(.eyebrow)
@@ -29,11 +31,17 @@ struct AgendaListView: View {
             }
             .frame(width: 64, alignment: .leading)
 
-            workoutRow(entry)
+            workoutRow(entry, launches: launches)
         }
-        .opacity(entry.isRest || entry.name == nil ? 0.55 : 1)
+        .opacity(entry.isRest || entry.name == nil || entry.isDone ? 0.55 : 1)
         .contentShape(Rectangle())
-        .onTapGesture { if interactive { model.onStartWorkout() } }
+        .onTapGesture {
+            if launches {
+                model.onStartWorkout()
+            } else {
+                model.selectDay(entry.day)
+            }
+        }
     }
 
     private func numberColor(_ entry: AgendaEntry) -> Color {
@@ -43,7 +51,7 @@ struct AgendaListView: View {
     }
 
     @ViewBuilder
-    private func workoutRow(_ entry: AgendaEntry) -> some View {
+    private func workoutRow(_ entry: AgendaEntry, launches: Bool) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.name ?? "Unscheduled").pulseStyle(.rowName).foregroundStyle(theme.ink)
@@ -52,9 +60,9 @@ struct AgendaListView: View {
                 }
             }
             Spacer()
-            if entry.isToday {
+            if launches {
                 Text("→").pulseStyle(.rowName).foregroundStyle(theme.accent)
-            } else if entry.name != nil && !entry.isRest {
+            } else if entry.name != nil && !entry.isRest && !entry.isDone {
                 Image(systemName: "chevron.right").foregroundStyle(theme.inkSoft)
             }
         }
@@ -62,8 +70,8 @@ struct AgendaListView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(entry.isToday ? theme.accent : theme.inkFaint,
-                        lineWidth: entry.isToday ? 2 : 1)
+                .stroke(launches ? theme.accent : theme.inkFaint,
+                        lineWidth: launches ? 2 : 1)
         )
     }
 }

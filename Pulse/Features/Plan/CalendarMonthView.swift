@@ -133,7 +133,9 @@ struct CalendarMonthView: View {
                 .padding(theme.spacing[3])
                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(theme.accent, lineWidth: 2))
                 .contentShape(Rectangle())
-                .onTapGesture { model.onStartWorkout() }
+                // Route through selectDay so a completed today opens the
+                // read-only sheet instead of launching a workout (AC-? / review).
+                .onTapGesture { model.selectDay(entry.day) }
                 .accessibilityIdentifier("plan.todayRow")
             }
         }
