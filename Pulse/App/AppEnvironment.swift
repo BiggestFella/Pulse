@@ -15,6 +15,8 @@ final class RepositoryContainer {
     let schedule: any ScheduleRepository
     let stats: any StatsRepository
     let prs: any PRRepository
+    let user: any UserRepository
+    let settings: any SettingsRepository
 
     init(useMock: Bool) {
         if useMock {
@@ -26,6 +28,8 @@ final class RepositoryContainer {
             schedule = InMemoryScheduleRepository(store: store)
             stats = InMemoryStatsRepository(store: store)
             prs = InMemoryPRRepository(store: store)
+            user = InMemoryUserRepository()
+            settings = InMemorySettingsRepository()
         } else {
             programs = SupabaseProgramRepository()
             workouts = SupabaseWorkoutRepository()
@@ -34,6 +38,8 @@ final class RepositoryContainer {
             schedule = SupabaseScheduleRepository()
             stats = SupabaseStatsRepository()
             prs = SupabasePRRepository()
+            user = SupabaseUserRepository()
+            settings = SupabaseSettingsRepository()
         }
     }
 
