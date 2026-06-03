@@ -4,6 +4,12 @@ import AppIntents
 
 final class SkipRestIntentTests: XCTestCase {
     @MainActor
+    override func tearDown() {
+        SkipRestIntent.target = nil // static target must not leak across tests
+        super.tearDown()
+    }
+
+    @MainActor
     func testPerformCallsAfterRestOnTarget() async throws {
         let spy = SkipRestTargetSpy()
         SkipRestIntent.target = spy
