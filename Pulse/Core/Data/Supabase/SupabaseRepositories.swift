@@ -58,3 +58,13 @@ struct SupabasePRRepository: PRRepository {
     func personalBest(forExercise: Exercise.ID) async throws -> PersonalRecord? { throw RepositoryError.notImplemented }
     func newPRs(in range: StatRange) async throws -> [PersonalRecord] { throw RepositoryError.notImplemented }
 }
+
+struct SupabaseUserRepository: UserRepository {
+    func currentProfile() async throws -> UserProfile { throw RepositoryError.notImplemented }
+    func profileSummary() async throws -> ProfileStats { throw RepositoryError.notImplemented }
+}
+
+struct SupabaseSettingsRepository: SettingsRepository {
+    func load() async throws -> UserSettings { throw RepositoryError.notImplemented }
+    func save(_ settings: UserSettings) async throws { throw RepositoryError.notImplemented }
+}
