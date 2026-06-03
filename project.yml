@@ -40,6 +40,15 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        # XcodeGen injects BUNDLE_LOADER/TEST_HOST product-type defaults onto
+        # every "*test*" bundle, but a UI-testing bundle must NOT be app-hosted:
+        # it runs out-of-process in its own -Runner.app and only needs
+        # TEST_TARGET_NAME. Leaving BUNDLE_LOADER/TEST_HOST set makes the runner
+        # link the app's XCTest copy alongside XCTAutomationSupport, producing the
+        # "Class … implemented in both XCTestSupport and XCTAutomationSupport"
+        # duplication and an early runner kill at bootstrap. Clear them explicitly.
+        BUNDLE_LOADER: ""
+        TEST_HOST: ""
     dependencies:
       - target: Pulse
 schemes:
