@@ -11,7 +11,7 @@ struct PaletteTokens {
     let accent, accentDeep, accent2, onAccent: String
 }
 
-enum Palette: String, CaseIterable {
+enum Palette: String, CaseIterable, Codable {
     case coastal, mint
 
     static let `default`: Palette = .coastal

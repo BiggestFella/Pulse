@@ -30,7 +30,11 @@ struct AppShell: View {
     var body: some View {
         Group {
             #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("-uiTestGallery") {
+            if ProcessInfo.processInfo.arguments.contains("-LA_DEBUG_REST") {
+                LiveActivityDebugScreen(state: LiveActivityDebugScreen.restFixture)
+            } else if ProcessInfo.processInfo.arguments.contains("-LA_DEBUG_FAILURE") {
+                LiveActivityDebugScreen(state: LiveActivityDebugScreen.failureFixture)
+            } else if ProcessInfo.processInfo.arguments.contains("-uiTestGallery") {
                 DesignSystemGallery()
             } else {
                 shell

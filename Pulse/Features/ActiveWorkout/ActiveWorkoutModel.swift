@@ -167,15 +167,9 @@ final class ActiveWorkoutModel {
 
     func isSwapped(_ exIdx: Int) -> Bool { swaps[exIdx] != nil }
 
-    func setTypeLabel(_ type: SetType) -> String {
-        switch type {
-        case .working: return "WORKING"
-        case .warmup:  return "WARMUP"
-        case .dropset: return "DROP SET"   // prototype omitted this — never blank
-        case .failure: return "FAILURE"
-        case .amrap:   return "AMRAP"
-        }
-    }
+    /// Delegates to the shared `SetTypeLabel` so the in-app hero and the Live
+    /// Activity render identical labels from one source of truth.
+    func setTypeLabel(_ type: SetType) -> String { SetTypeLabel.text(for: type) }
 
     var logButtonLabel: String {
         if stepIdx == steps.count - 1 { return "Finish workout" }
@@ -191,6 +185,14 @@ final class ActiveWorkoutModel {
     /// Planned stepper seeds for the current step (kg).
     var seedReps: Int { currentSet?.reps ?? 0 }
     var seedWeight: Double { ActiveWorkoutSample.plannedWeight(exIdx: currentStep.exIdx, setIdx: currentStep.setIdx) }
+
+    /// Planned weight (kg) for an arbitrary step index — generalises `seedWeight`
+    /// (current step only) so the Live Activity projection can read the next step too.
+    func plannedWeight(forStepIndex i: Int) -> Double {
+        guard steps.indices.contains(i) else { return 0 }
+        let s = steps[i]
+        return ActiveWorkoutSample.plannedWeight(exIdx: s.exIdx, setIdx: s.setIdx)
+    }
 
     // MARK: - summary
 
