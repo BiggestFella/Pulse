@@ -9,9 +9,10 @@ struct YouView: View {
     @Environment(Theme.self) private var theme
     @Environment(RepositoryContainer.self) private var repos
     @State private var model: YouModel?
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ZStack {
                 theme.bg.ignoresSafeArea()
                 ScrollView {
@@ -30,6 +31,25 @@ struct YouView: View {
                 .redacted(reason: model?.phase == .loading || model == nil ? .placeholder : [])
             }
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: HistoryRoute.self) { route in
+                switch route {
+                case .history:
+                    WorkoutHistoryView(
+                        model: WorkoutHistoryModel(
+                            sessionRepo: repos.sessions,
+                            workoutRepo: repos.workouts,
+                            programRepo: repos.programs),
+                        onSelectSession: { id in path.append(HistoryRoute.sessionDetail(id)) })
+                case .sessionDetail(let id):
+                    SessionDetailView(
+                        model: SessionDetailModel(
+                            sessionID: id,
+                            sessionRepo: repos.sessions,
+                            workoutRepo: repos.workouts,
+                            programRepo: repos.programs,
+                            exerciseRepo: repos.exercises))
+                }
+            }
         }
         .task {
             if model == nil { model = Self.makeModel(repos: repos) }
@@ -125,9 +145,7 @@ struct YouView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("you.personalRecords")
 
-            NavigationLink {
-                WorkoutHistoryPlaceholderView()
-            } label: {
+            NavigationLink(value: HistoryRoute.history) {
                 NavRow(glyph: .text("H"), tileColor: theme.inkFaint, glyphColor: theme.ink,
                        name: "Workout history",
                        sub: "\(model?.stats?.sessionsLogged ?? 0) sessions logged")
