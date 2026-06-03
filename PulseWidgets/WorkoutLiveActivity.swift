@@ -44,9 +44,7 @@ struct WorkoutLiveActivity: Widget {
     private func compactValue(_ state: WorkoutActivityAttributes.ContentState,
                               theme: WidgetTheme) -> some View {
         if state.phase == .rest, let end = state.restEndsAt {
-            Text(timerInterval: Date()...end, countsDown: true)
-                .font(.laNumeral(14))
-                .monospacedDigit()
+            CountdownText(end: end, font: .laNumeral(14))
                 .foregroundStyle(theme.ink)
                 .frame(maxWidth: 44)
         } else {

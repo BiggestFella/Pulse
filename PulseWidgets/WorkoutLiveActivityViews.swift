@@ -25,6 +25,24 @@ extension Font {
     static func laName(_ size: CGFloat) -> Font { .system(size: size, weight: .semibold) }
 }
 
+/// Self-ticking mm:ss countdown to `end`. Renders "0:00" once elapsed —
+/// `Text(timerInterval:)` traps on an inverted range, and `end` can be in the
+/// past (clock skew, or rest elapsing before the next state push arrives).
+struct CountdownText: View {
+    let end: Date
+    let font: Font
+
+    var body: some View {
+        let now = Date()
+        if end > now {
+            Text(timerInterval: now...end, countsDown: true)
+                .font(font).monospacedDigit()
+        } else {
+            Text("0:00").font(font).monospacedDigit()
+        }
+    }
+}
+
 /// mm:ss rest countdown numeral + accent2 ring over an inkFaint track.
 struct RestRingView: View {
     let state: WorkoutActivityAttributes.ContentState
@@ -38,9 +56,7 @@ struct RestRingView: View {
                 .stroke(theme.accent2, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             if let end = state.restEndsAt {
-                Text(timerInterval: Date()...end, countsDown: true)
-                    .font(.laNumeral(26))
-                    .monospacedDigit()
+                CountdownText(end: end, font: .laNumeral(26))
                     .foregroundStyle(theme.ink)
                     .multilineTextAlignment(.center)
             }
