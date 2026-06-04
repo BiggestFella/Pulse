@@ -24,15 +24,6 @@ struct SupabaseWorkoutRepository: WorkoutRepository {
     func deleteWorkout(id: Workout.ID) async throws { throw RepositoryError.notImplemented }
 }
 
-struct SupabaseExerciseRepository: ExerciseRepository {
-    let client: SupabaseClient
-    func fetchCatalog() async throws -> [Exercise] { throw RepositoryError.notImplemented }
-    func fetchExercises(muscleGroup: String) async throws -> [Exercise] { throw RepositoryError.notImplemented }
-    func fetchExercise(id: Exercise.ID) async throws -> Exercise? { throw RepositoryError.notImplemented }
-    func alternatives(for exerciseID: Exercise.ID) async throws -> [Exercise] { throw RepositoryError.notImplemented }
-    func saveExercise(_ exercise: Exercise) async throws -> Exercise { throw RepositoryError.notImplemented }
-}
-
 struct SupabaseSessionRepository: SessionRepository {
     let client: SupabaseClient
     func startSession(workoutID: Workout.ID, at: Date) async throws -> WorkoutSession { throw RepositoryError.notImplemented }

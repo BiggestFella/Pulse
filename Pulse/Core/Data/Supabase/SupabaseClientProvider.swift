@@ -5,6 +5,12 @@ import Supabase
 /// share the instance across all repositories.
 enum SupabaseClientProvider {
     static func make(_ config: AppConfig) -> SupabaseClient {
-        SupabaseClient(supabaseURL: config.supabaseURL, supabaseKey: config.anonKey)
+        SupabaseClient(
+            supabaseURL: config.supabaseURL,
+            supabaseKey: config.anonKey,
+            options: SupabaseClientOptions(
+                db: SupabaseClientOptions.DatabaseOptions(
+                    encoder: SupabaseDecoding.encoder,
+                    decoder: SupabaseDecoding.decoder)))
     }
 }
