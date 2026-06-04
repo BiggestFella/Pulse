@@ -54,9 +54,7 @@ final class PlanModel {
                                       uniquingKeysWith: { lhs, _ in lhs })
             savedWorkouts = workouts.map {
                 SavedWorkoutRef(id: $0.id, name: $0.name,
-                                exerciseCount: $0.exercises.count,
-                                // TODO(BAK-6): real estimate
-                                estimatedMinutes: max(1, $0.exercises.count * 9))
+                                exerciseCount: $0.exercises.count)
             }
             try await buildSchedule()
             try await buildAgenda()
