@@ -16,6 +16,9 @@ targets:
   Pulse:
     type: application
     platform: iOS
+    configFiles:
+      Debug: Secrets.xcconfig
+      Release: Secrets.xcconfig
     sources:
       - Pulse
       # Dual-compiled into the app target (also globbed by PulseWidgets) so the
@@ -34,6 +37,12 @@ targets:
           HankenGrotesk-ExtraBold.ttf HankenGrotesk-Black.ttf
           Oswald-Medium.ttf Oswald-SemiBold.ttf Oswald-Bold.ttf
           GeistMono-Regular.ttf GeistMono-Medium.ttf GeistMono-SemiBold.ttf
+        # Supabase config — values come from Secrets.xcconfig, surfaced into
+        # Info.plist so AppConfig can read them at runtime.
+        INFOPLIST_KEY_SUPABASE_URL: $(SUPABASE_URL)
+        INFOPLIST_KEY_SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
+        INFOPLIST_KEY_DEV_USER_EMAIL: $(DEV_USER_EMAIL)
+        INFOPLIST_KEY_DEV_USER_PASSWORD: $(DEV_USER_PASSWORD)
     dependencies:
       - target: PulseWidgets
         embed: true
