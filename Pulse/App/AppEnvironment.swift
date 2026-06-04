@@ -1,4 +1,5 @@
 import SwiftUI
+import Supabase
 
 /// The composition root. Bundles one instance of each repository and selects
 /// mock vs live at construction. Injected into the SwiftUI environment at the
@@ -19,6 +20,9 @@ final class RepositoryContainer {
     let settings: any SettingsRepository
     let folders: any FolderRepository
 
+    /// Non-nil only on the Supabase path; `bootstrap()` signs in the dev user.
+    private let authGateway: AuthGateway?
+
     init(useMock: Bool) {
         // Folders have no Supabase model yet, so both paths use the in-memory
         // capture repo (see FolderRepository) until the folder data model lands.
@@ -34,17 +38,30 @@ final class RepositoryContainer {
             prs = InMemoryPRRepository(store: store)
             user = InMemoryUserRepository()
             settings = InMemorySettingsRepository()
+            authGateway = nil
         } else {
-            programs = SupabaseProgramRepository()
-            workouts = SupabaseWorkoutRepository()
-            exercises = SupabaseExerciseRepository()
-            sessions = SupabaseSessionRepository()
-            schedule = SupabaseScheduleRepository()
-            stats = SupabaseStatsRepository()
-            prs = SupabasePRRepository()
-            user = SupabaseUserRepository()
-            settings = SupabaseSettingsRepository()
+            let config: AppConfig
+            do { config = try AppConfig.fromBundle() }
+            catch { fatalError("Supabase config missing/invalid in Secrets.xcconfig: \(error)") }
+            let client = SupabaseClientProvider.make(config)
+            authGateway = AuthGateway(client: client, config: config)
+            programs = SupabaseProgramRepository(client: client)
+            workouts = SupabaseWorkoutRepository(client: client)
+            exercises = SupabaseExerciseRepository(client: client)
+            sessions = SupabaseSessionRepository(client: client)
+            schedule = SupabaseScheduleRepository(client: client)
+            stats = SupabaseStatsRepository(client: client)
+            prs = SupabasePRRepository(client: client)
+            user = SupabaseUserRepository(client: client)
+            settings = SupabaseSettingsRepository(client: client)
         }
+    }
+
+    /// Signs in the dev user on the Supabase path (no-op on mock). Call once at launch.
+    func bootstrap() async {
+        guard let authGateway else { return }
+        do { _ = try await authGateway.ensureSignedIn() }
+        catch { print("[Supabase] dev sign-in failed: \(error)") }
     }
 
     /// `-uiMock` launch argument (or DEBUG default) selects the mock path.
