@@ -32,6 +32,6 @@ struct CatalogRow: View {
             onTap: onTap,
             content: { RowNameBlock(name: exercise.name, sub: exercise.subline) },
             trailing: exercise.hasPR ? AnyView(PrTag()) : nil)
-        .accessibilityIdentifier("exercise.\(exercise.id)")
+        .accessibilityIdentifier("library.exercise.\(exercise.name)")
     }
 }

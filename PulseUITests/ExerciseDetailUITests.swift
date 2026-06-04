@@ -19,6 +19,11 @@ final class ExerciseDetailUITests: XCTestCase {
 
     private func openExercise(_ app: XCUIApplication, _ name: String) {
         openLibrary(app)
+        // The merged Library shows folders/recent by default; the exercise catalog
+        // is revealed by the Exercises filter chip.
+        let exercisesChip = app.buttons["chip.exercises"]
+        XCTAssertTrue(exercisesChip.waitForExistence(timeout: 8), "exercises filter should exist")
+        exercisesChip.tap()
         let row = app.buttons["library.exercise.\(name)"]
         XCTAssertTrue(row.waitForExistence(timeout: 8), "row \(name) should exist")
         row.tap()
@@ -38,7 +43,9 @@ final class ExerciseDetailUITests: XCTestCase {
         XCTAssertTrue(eyebrow.label.hasPrefix("CHEST"))
 
         app.buttons["exdetail.back"].tap()
-        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 8))
+        // Back returns to the Library catalog (no "Library" nav-bar title in the
+        // merged Library); assert the catalog row is visible again.
+        XCTAssertTrue(app.buttons["library.exercise.Bench Press"].waitForExistence(timeout: 8))
     }
 
     // AC3 + AC4 + AC5: multi-variation shows pills; PB card present.
