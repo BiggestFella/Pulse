@@ -8,10 +8,10 @@ settings:
     SWIFT_VERSION: "5"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
-    # On-device signing (free personal team). Lives here so it survives
-    # `xcodegen generate` (Xcode-UI signing changes would be overwritten).
+    # On-device signing — Leon Creed-Baker Personal Team. Lives here so it
+    # survives `xcodegen generate` (Xcode-UI signing changes get overwritten).
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: 4SHP43UV47
+    DEVELOPMENT_TEAM: 5N3GNH647D
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
