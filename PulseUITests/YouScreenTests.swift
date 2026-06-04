@@ -38,7 +38,9 @@ final class YouScreenTests: XCTestCase {
     func testNavRowPushesWorkoutHistoryDestination() {
         let app = launchOnYou()
         app.buttons["you.workoutHistory"].tap()
-        XCTAssertTrue(app.staticTexts["destination-history"].waitForExistence(timeout: 5))
+        // The History row now pushes the real WorkoutHistoryView (BAK-17), which
+        // surfaces history.h1 — replacing the old placeholder marker.
+        XCTAssertTrue(app.staticTexts["history.h1"].waitForExistence(timeout: 5))
     }
 
     // AC6–AC7: swatch picker shows both palettes; tapping switches + persists.

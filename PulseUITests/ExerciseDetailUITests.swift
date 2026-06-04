@@ -19,6 +19,11 @@ final class ExerciseDetailUITests: XCTestCase {
 
     private func openExercise(_ app: XCUIApplication, _ name: String) {
         openLibrary(app)
+        // The merged Library shows folders/recent by default; the exercise catalog
+        // is revealed by the Exercises filter chip.
+        let exercisesChip = app.buttons["chip.exercises"]
+        XCTAssertTrue(exercisesChip.waitForExistence(timeout: 8), "exercises filter should exist")
+        exercisesChip.tap()
         let row = app.buttons["library.exercise.\(name)"]
         XCTAssertTrue(row.waitForExistence(timeout: 8), "row \(name) should exist")
         row.tap()
@@ -38,15 +43,19 @@ final class ExerciseDetailUITests: XCTestCase {
         XCTAssertTrue(eyebrow.label.hasPrefix("CHEST"))
 
         app.buttons["exdetail.back"].tap()
-        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 8))
+        // Back returns to the Library catalog (no "Library" nav-bar title in the
+        // merged Library); assert the catalog row is visible again.
+        XCTAssertTrue(app.buttons["library.exercise.Bench Press"].waitForExistence(timeout: 8))
     }
 
     // AC3 + AC4 + AC5: multi-variation shows pills; PB card present.
     func testMultiVariationShowsPillsAndPB() {
         let app = launch()
         openExercise(app, "Bench Press")
-        XCTAssertTrue(app.otherElements["exdetail.variationPills"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.otherElements["exdetail.pbCard"].waitForExistence(timeout: 8))
+        // Type-agnostic: variationPills is a horizontal ScrollView (not an
+        // otherElement), so match by identifier across any element type.
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.variationPills"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.pbCard"].waitForExistence(timeout: 8))
     }
 
     // AC3: a single-variation exercise shows no pill row.
@@ -69,7 +78,9 @@ final class ExerciseDetailUITests: XCTestCase {
     func testChartAndSessionsRender() {
         let app = launch()
         openExercise(app, "Bench Press")
-        XCTAssertTrue(app.otherElements["exdetail.volumeChart"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.otherElements["exdetail.sessionsList"].exists)
+        // Type-agnostic match (these identifiers sit on container views that don't
+        // necessarily surface as `otherElements`).
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.volumeChart"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.sessionsList"].waitForExistence(timeout: 8))
     }
 }
