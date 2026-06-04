@@ -1,10 +1,10 @@
 import Foundation
+import Supabase
 
-/// Placeholder for the live Supabase client. Real wiring (supabase-swift,
-/// auth tokens, decoding) lands later behind the same repository protocols.
-/// This compiles today so the `-uiMock=false` configuration builds.
+/// Builds the shared Supabase client from `AppConfig`. Create once at launch and
+/// share the instance across all repositories.
 enum SupabaseClientProvider {
-    static func makeClient() -> Void {
-        // Intentionally empty: live client construction deferred to BAK-6 live wiring.
+    static func make(_ config: AppConfig) -> SupabaseClient {
+        SupabaseClient(supabaseURL: config.supabaseURL, supabaseKey: config.anonKey)
     }
 }
