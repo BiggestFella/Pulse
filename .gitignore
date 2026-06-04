@@ -21,3 +21,5 @@ Pulse.xcodeproj/
 *.env
 .env*
 Secrets.xcconfig
+
+.worktrees/
