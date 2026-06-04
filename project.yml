@@ -8,6 +8,10 @@ settings:
     SWIFT_VERSION: "5"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: "2.0.0"
 targets:
   Pulse:
     type: application
@@ -33,6 +37,8 @@ targets:
     dependencies:
       - target: PulseWidgets
         embed: true
+      - package: Supabase
+        product: Supabase
   PulseWidgets:
     type: app-extension
     platform: iOS
