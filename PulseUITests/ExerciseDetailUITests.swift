@@ -52,8 +52,10 @@ final class ExerciseDetailUITests: XCTestCase {
     func testMultiVariationShowsPillsAndPB() {
         let app = launch()
         openExercise(app, "Bench Press")
-        XCTAssertTrue(app.otherElements["exdetail.variationPills"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.otherElements["exdetail.pbCard"].waitForExistence(timeout: 8))
+        // Type-agnostic: variationPills is a horizontal ScrollView (not an
+        // otherElement), so match by identifier across any element type.
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.variationPills"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.pbCard"].waitForExistence(timeout: 8))
     }
 
     // AC3: a single-variation exercise shows no pill row.
@@ -76,7 +78,9 @@ final class ExerciseDetailUITests: XCTestCase {
     func testChartAndSessionsRender() {
         let app = launch()
         openExercise(app, "Bench Press")
-        XCTAssertTrue(app.otherElements["exdetail.volumeChart"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.otherElements["exdetail.sessionsList"].exists)
+        // Type-agnostic match (these identifiers sit on container views that don't
+        // necessarily surface as `otherElements`).
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.volumeChart"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["exdetail.sessionsList"].waitForExistence(timeout: 8))
     }
 }
