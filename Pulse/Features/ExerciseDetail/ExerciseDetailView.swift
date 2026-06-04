@@ -138,8 +138,7 @@ struct ExerciseDetailView: View {
             // On the accent-filled card all small highlight text uses `onAccent`,
             // never `accent2` (design rule).
             Lockup(value: WeightFormat.kgNumeral(pb.topWeight),
-                   top: model.exercise?.tracksPRBadge == true
-                        ? "PERSONAL BEST · TRACKED" : "PERSONAL BEST",
+                   top: "PERSONAL BEST",
                    bottom: "kg ·\ntop set.",
                    size: 72,
                    topColor: theme.onAccent.opacity(0.85))
@@ -214,16 +213,6 @@ struct ExerciseDetailView: View {
             RoundedRectangle(cornerRadius: theme.radiusCard)
                 .strokeBorder(first ? theme.accent : theme.inkFaint, lineWidth: first ? 2 : 1.5))
     }
-}
-
-// MARK: - Tracked-PR badge
-
-extension Exercise {
-    /// Whether the PB eyebrow shows "· TRACKED". The merged `Exercise` model has
-    /// no `tracksPR` flag, so this is derived heuristically: barbell compound
-    /// lifts (multiple variations) are treated as tracked. Kept here so no shared
-    /// domain model changes; replace with a catalog flag when one lands.
-    var tracksPRBadge: Bool { variations.count > 1 }
 }
 
 #Preview("Loaded — Bench") {

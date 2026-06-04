@@ -49,6 +49,5 @@ struct SavedWorkoutRef: Equatable, Identifiable {
     var id: UUID
     var name: String
     var exerciseCount: Int
-    var estimatedMinutes: Int
-    var sub: String { "\(exerciseCount) EXERCISES · ~\(estimatedMinutes)M" }
+    var sub: String { "\(exerciseCount) EXERCISES" }
 }

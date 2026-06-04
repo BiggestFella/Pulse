@@ -20,7 +20,7 @@ final class PlanViewDataTests: XCTestCase {
     }
 
     func testSavedWorkoutRefCarriesNameAndSub() {
-        let ref = SavedWorkoutRef(id: UUID(), name: "Chest & Tris", exerciseCount: 6, estimatedMinutes: 52)
-        XCTAssertEqual(ref.sub, "6 EXERCISES · ~52M")
+        let ref = SavedWorkoutRef(id: UUID(), name: "Chest & Tris", exerciseCount: 6)
+        XCTAssertEqual(ref.sub, "6 EXERCISES")
     }
 }
