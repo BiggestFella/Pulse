@@ -41,8 +41,12 @@ final class RepositoryContainer {
             authGateway = nil
         } else {
             let config: AppConfig
-            do { config = try AppConfig.fromBundle() }
-            catch { fatalError("Supabase config missing/invalid in Secrets.xcconfig: \(error)") }
+            if let loaded = try? AppConfig.fromBundle() {
+                config = loaded
+            } else {
+                print("[Supabase] WARNING: config missing from Info.plist/Secrets.xcconfig — using placeholder; data calls will fail until real config is provided.")
+                config = .placeholder
+            }
             let client = SupabaseClientProvider.make(config)
             authGateway = AuthGateway(client: client, config: config)
             programs = SupabaseProgramRepository(client: client)

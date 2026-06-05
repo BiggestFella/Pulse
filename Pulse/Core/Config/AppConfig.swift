@@ -23,8 +23,23 @@ struct AppConfig {
         self.devPassword = try str("DEV_USER_PASSWORD")
     }
 
+    /// Direct init (used for the placeholder fallback).
+    init(supabaseURL: URL, anonKey: String, devEmail: String, devPassword: String) {
+        self.supabaseURL = supabaseURL
+        self.anonKey = anonKey
+        self.devEmail = devEmail
+        self.devPassword = devPassword
+    }
+
     /// Reads from the main bundle's Info.plist at runtime.
     static func fromBundle(_ bundle: Bundle = .main) throws -> AppConfig {
         try AppConfig(info: bundle.infoDictionary ?? [:])
     }
+
+    /// Fallback so the live container can construct even when Secrets.xcconfig
+    /// isn't present (unit tests / CI). Repository calls fail until real config is
+    /// supplied; the running app reads real values from Info.plist.
+    static let placeholder = AppConfig(
+        supabaseURL: URL(string: "https://placeholder.supabase.co")!,
+        anonKey: "placeholder", devEmail: "placeholder@pulse.app", devPassword: "placeholder")
 }
