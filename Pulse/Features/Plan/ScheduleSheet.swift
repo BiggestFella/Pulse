@@ -21,6 +21,7 @@ struct ScheduleSheet: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)   // keep pick/rest rows addressable (BAK-25)
         .accessibilityIdentifier("plan.scheduleSheet")
     }
 
@@ -95,6 +96,7 @@ struct ScheduleSheet: View {
                                   style: StrokeStyle(lineWidth: dashed ? 1 : 2,
                                                      dash: dashed ? [4, 4] : []))
             )
+            .contentShape(Rectangle())   // full-row hit target (same fix as the exercise picker, BAK-26/25)
         }
         .buttonStyle(.plain)
     }
