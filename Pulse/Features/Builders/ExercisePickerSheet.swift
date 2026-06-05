@@ -61,6 +61,7 @@ struct ExercisePickerSheet: View {
                     ForEach(muscles, id: \.self) { m in
                         PillChip(label: m, selected: filter == m,
                                  fill: theme.accent, onFill: theme.onAccent) { filter = m }
+                            .accessibilityIdentifier("picker-filter-\(m)")
                     }
                 }
             }
@@ -131,6 +132,10 @@ struct ExercisePickerSheet: View {
             .padding(theme.spacing[3])
             .overlay(RoundedRectangle(cornerRadius: 12)
                 .stroke(isSel ? theme.accent : theme.inkFaint, lineWidth: isSel ? 2 : 1))
+            // Make the whole row tappable. Without this the `.plain` button only
+            // hit-tests its text/icon, so a tap landing on the Spacer gap (e.g.
+            // an automation tap at the row's center) never toggles selection (BAK-26).
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(added)
