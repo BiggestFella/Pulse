@@ -23,6 +23,30 @@ targets:
     configFiles:
       Debug: Secrets.xcconfig
       Release: Secrets.xcconfig
+    # Explicit Info.plist: custom keys (Supabase config) need real $(VAR)
+    # substitution, which INFOPLIST_KEY_* does NOT do for non-Apple keys.
+    info:
+      path: Pulse/Info.plist
+      properties:
+        UILaunchScreen: {}
+        NSSupportsLiveActivities: true
+        UIAppFonts:
+          - HankenGrotesk-Regular.ttf
+          - HankenGrotesk-Medium.ttf
+          - HankenGrotesk-SemiBold.ttf
+          - HankenGrotesk-Bold.ttf
+          - HankenGrotesk-ExtraBold.ttf
+          - HankenGrotesk-Black.ttf
+          - Oswald-Medium.ttf
+          - Oswald-SemiBold.ttf
+          - Oswald-Bold.ttf
+          - GeistMono-Regular.ttf
+          - GeistMono-Medium.ttf
+          - GeistMono-SemiBold.ttf
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
+        DEV_USER_EMAIL: $(DEV_USER_EMAIL)
+        DEV_USER_PASSWORD: $(DEV_USER_PASSWORD)
     sources:
       - Pulse
       # Dual-compiled into the app target (also globbed by PulseWidgets) so the
@@ -32,21 +56,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_NSSupportsLiveActivities: YES
-        INFOPLIST_KEY_UIAppFonts: >-
-          HankenGrotesk-Regular.ttf HankenGrotesk-Medium.ttf
-          HankenGrotesk-SemiBold.ttf HankenGrotesk-Bold.ttf
-          HankenGrotesk-ExtraBold.ttf HankenGrotesk-Black.ttf
-          Oswald-Medium.ttf Oswald-SemiBold.ttf Oswald-Bold.ttf
-          GeistMono-Regular.ttf GeistMono-Medium.ttf GeistMono-SemiBold.ttf
-        # Supabase config — values come from Secrets.xcconfig, surfaced into
-        # Info.plist so AppConfig can read them at runtime.
-        INFOPLIST_KEY_SUPABASE_URL: $(SUPABASE_URL)
-        INFOPLIST_KEY_SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
-        INFOPLIST_KEY_DEV_USER_EMAIL: $(DEV_USER_EMAIL)
-        INFOPLIST_KEY_DEV_USER_PASSWORD: $(DEV_USER_PASSWORD)
     dependencies:
       - target: PulseWidgets
         embed: true
