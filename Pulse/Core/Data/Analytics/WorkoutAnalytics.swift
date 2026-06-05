@@ -75,9 +75,12 @@ enum WorkoutAnalytics {
     /// Bucket a date into a label string for chart axes. Labels are fixed-locale
     /// (`en_US_POSIX`) so they read identically regardless of device language.
     /// - 7D/30D: "Mon", "Tue" … (day abbreviation)
-    /// - 3M: "W48", "W49" … (calendar week-of-year for the injected calendar)
+    /// - 3M: "W1", "W2" … (week number relative to `rangeStart` when given —
+    ///   counts straight across a year boundary; otherwise the absolute
+    ///   calendar week-of-year for the injected calendar)
     /// - YR/ALL: "Jan", "Feb" … (month abbreviation)
     static func bucketLabel(for date: Date, range: StatRange,
+                            rangeStart: Date? = nil,
                             calendar: Calendar = .current) -> String {
         let fmt = DateFormatter()
         fmt.calendar = calendar
@@ -86,8 +89,19 @@ enum WorkoutAnalytics {
         case .d7, .d30:
             fmt.dateFormat = "EEE"
         case .m3:
-            let week = calendar.component(.weekOfYear, from: date)
-            return "W\(week)"
+            guard let rangeStart else {
+                return "W\(calendar.component(.weekOfYear, from: date))"
+            }
+            // Number of whole weeks from the range start's week to this date's
+            // week; +1 so the first bucket reads "W1". Counting between
+            // week-start dates avoids the W52→W1 reset at the year boundary.
+            func weekStart(_ d: Date) -> Date {
+                calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: d))!
+            }
+            let weeks = calendar.dateComponents([.weekOfYear],
+                                                from: weekStart(rangeStart),
+                                                to: weekStart(date)).weekOfYear ?? 0
+            return "W\(weeks + 1)"
         case .year, .all:
             fmt.dateFormat = "MMM"
         }

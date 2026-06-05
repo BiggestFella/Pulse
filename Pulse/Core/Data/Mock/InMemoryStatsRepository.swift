@@ -38,13 +38,16 @@ struct InMemoryStatsRepository: StatsRepository {
 
     func volumeSeries(range: StatRange) async throws -> [VolumePoint] {
         try await store.gate()
+        // Anchor 3M week labels to the window start so they read "W1, W2, …".
+        let rangeStart = windowStart(range, now: Date())
         var totals: [Date: Double] = [:]
         for session in sessionsInRange(range) {
             totals[bucketKey(session.startedAt, range), default: 0] += WorkoutAnalytics.sessionVolume(session)
         }
         return totals.map { key, volume in
             VolumePoint(date: key,
-                        label: WorkoutAnalytics.bucketLabel(for: key, range: range, calendar: cal),
+                        label: WorkoutAnalytics.bucketLabel(for: key, range: range,
+                                                            rangeStart: rangeStart, calendar: cal),
                         volume: volume)
         }
         .sorted { $0.date < $1.date }
