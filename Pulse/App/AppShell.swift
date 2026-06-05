@@ -7,12 +7,15 @@ struct AppShell: View {
     /// Today is the default/first tab. Its Start → callback launches the active
     /// flow. Launch arguments select a mock variant for UI tests.
     @State private var todayModel: TodayModel
+    /// Held for dev-user sign-in (`bootstrap()`); children resolve it from the environment.
+    private let container: RepositoryContainer
 
-    init() {
+    init(container: RepositoryContainer) {
+        self.container = container
         let session = ActiveWorkoutModel(
             exerciseRepo: MockSwapAlternativesRepository(),
             historyRepo: MockHistoryRepository(),
-            sessionWriter: MockSessionWriter())
+            sessionWriter: container.sessionWriter)
         _session = State(initialValue: session)
 
         let repo: MockTodayRepository
@@ -22,8 +25,8 @@ struct AppShell: View {
         else { repo = .sample }
         _todayModel = State(initialValue: TodayModel(
             repository: repo,
-            // Start → on Today launches the active flow with the sample workout.
-            onStartWorkout: { _ in session.startWorkout(ActiveWorkoutSample.workout) },
+            // Start → launches the active flow with today's seeded workout.
+            onStartWorkout: { _ in session.startWorkout(TodaysWorkout.workout) },
             onOpenSession: { _ in /* handled by TodayView path push */ }))
     }
 
@@ -43,6 +46,7 @@ struct AppShell: View {
             shell
             #endif
         }
+        .task { await container.bootstrap() }
     }
 
     /// Session takeover replaces the whole shell (no tab bar) while active.
@@ -61,7 +65,7 @@ struct AppShell: View {
                 .tabItem { Label("Today", systemImage: "bolt.fill") }
             LibraryView()
                 .tabItem { Label("Library", systemImage: "square.stack.fill") }
-            PlanView(onStartWorkout: { session.startWorkout(ActiveWorkoutSample.workout) })
+            PlanView(onStartWorkout: { session.startWorkout(TodaysWorkout.workout) })
                 .tabItem { Label("Plan", systemImage: "calendar") }
             YouView()
                 .tabItem { Label("You", systemImage: "person.fill") }
@@ -69,4 +73,4 @@ struct AppShell: View {
     }
 }
 
-#Preview { AppShell().environment(Theme()) }
+#Preview { AppShell(container: RepositoryContainer(useMock: true)).environment(Theme()) }

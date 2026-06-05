@@ -10,15 +10,27 @@ struct SupabaseProgramRepository: ProgramRepository {
     let client: SupabaseClient
     func fetchPrograms() async throws -> [Program] { throw RepositoryError.notImplemented }
     func fetchProgram(id: Program.ID) async throws -> Program? { throw RepositoryError.notImplemented }
-    func activeProgram() async throws -> Program? { throw RepositoryError.notImplemented }
+    func activeProgram() async throws -> Program? {
+        let rows: [ProgramReadRow] = try await client
+            .from("programs").select("*,workouts(*)").eq("is_active", value: true).limit(1)
+            .execute().value
+        return rows.first?.toModel()
+    }
     func saveProgram(_ program: Program) async throws -> Program { throw RepositoryError.notImplemented }
     func deleteProgram(id: Program.ID) async throws { throw RepositoryError.notImplemented }
 }
 
 struct SupabaseWorkoutRepository: WorkoutRepository {
     let client: SupabaseClient
-    func fetchWorkouts() async throws -> [Workout] { throw RepositoryError.notImplemented }
-    func fetchWorkout(id: Workout.ID) async throws -> Workout? { throw RepositoryError.notImplemented }
+    func fetchWorkouts() async throws -> [Workout] {
+        let rows: [WorkoutReadRow] = try await client.from("workouts").select("*").execute().value
+        return rows.map { $0.toModel() }
+    }
+    func fetchWorkout(id: Workout.ID) async throws -> Workout? {
+        let rows: [WorkoutReadRow] = try await client
+            .from("workouts").select("*").eq("id", value: id.uuidString).limit(1).execute().value
+        return rows.first?.toModel()
+    }
     func todaysWorkout(on date: Date) async throws -> Workout? { throw RepositoryError.notImplemented }
     func saveWorkout(_ workout: Workout) async throws -> Workout { throw RepositoryError.notImplemented }
     func deleteWorkout(id: Workout.ID) async throws { throw RepositoryError.notImplemented }
@@ -29,8 +41,16 @@ struct SupabaseSessionRepository: SessionRepository {
     func startSession(workoutID: Workout.ID, at: Date) async throws -> WorkoutSession { throw RepositoryError.notImplemented }
     func appendSet(_ set: SessionSet, to sessionID: WorkoutSession.ID) async throws { throw RepositoryError.notImplemented }
     func finishSession(id: WorkoutSession.ID, endedAt: Date) async throws -> WorkoutSession { throw RepositoryError.notImplemented }
-    func fetchSessions(limit: Int?) async throws -> [WorkoutSession] { throw RepositoryError.notImplemented }
-    func fetchSession(id: WorkoutSession.ID) async throws -> WorkoutSession? { throw RepositoryError.notImplemented }
+    func fetchSessions(limit: Int?) async throws -> [WorkoutSession] {
+        let base = client.from("sessions").select("*,session_sets(*)").order("started_at", ascending: false)
+        let rows: [SessionReadRow] = try await (limit.map { base.limit($0) } ?? base).execute().value
+        return rows.map { $0.toModel() }
+    }
+    func fetchSession(id: WorkoutSession.ID) async throws -> WorkoutSession? {
+        let rows: [SessionReadRow] = try await client
+            .from("sessions").select("*,session_sets(*)").eq("id", value: id.uuidString).limit(1).execute().value
+        return rows.first?.toModel()
+    }
     func lastSessions(forExercise: Exercise.ID, limit: Int) async throws -> [WorkoutSession] { throw RepositoryError.notImplemented }
     func deleteSession(id: WorkoutSession.ID) async throws { throw RepositoryError.notImplemented }
 }

@@ -19,6 +19,8 @@ final class RepositoryContainer {
     let user: any UserRepository
     let settings: any SettingsRepository
     let folders: any FolderRepository
+    /// Persists finished active-workout sessions (the active flow writes here).
+    let sessionWriter: any SessionWriter
 
     /// Non-nil only on the Supabase path; `bootstrap()` signs in the dev user.
     private let authGateway: AuthGateway?
@@ -38,6 +40,7 @@ final class RepositoryContainer {
             prs = InMemoryPRRepository(store: store)
             user = InMemoryUserRepository()
             settings = InMemorySettingsRepository()
+            sessionWriter = MockSessionWriter()
             authGateway = nil
         } else {
             let config: AppConfig
@@ -58,6 +61,7 @@ final class RepositoryContainer {
             prs = SupabasePRRepository(client: client)
             user = SupabaseUserRepository(client: client)
             settings = SupabaseSettingsRepository(client: client)
+            sessionWriter = SupabaseSessionWriter(client: client)
         }
     }
 
