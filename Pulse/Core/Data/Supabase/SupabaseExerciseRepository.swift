@@ -8,14 +8,14 @@ struct SupabaseExerciseRepository: ExerciseRepository {
 
     func fetchCatalog() async throws -> [Exercise] {
         let rows: [ExerciseRow] = try await client
-            .from("exercises").select("*,variations(*)").order("name")
+            .from("exercises").select("*,variations!variations_exercise_id_fkey(*)").order("name")
             .execute().value
         return rows.map { $0.toModel() }
     }
 
     func fetchExercises(muscleGroup: String) async throws -> [Exercise] {
         let rows: [ExerciseRow] = try await client
-            .from("exercises").select("*,variations(*)")
+            .from("exercises").select("*,variations!variations_exercise_id_fkey(*)")
             .eq("muscle_group", value: muscleGroup).order("name")
             .execute().value
         return rows.map { $0.toModel() }
@@ -23,7 +23,7 @@ struct SupabaseExerciseRepository: ExerciseRepository {
 
     func fetchExercise(id: Exercise.ID) async throws -> Exercise? {
         let rows: [ExerciseRow] = try await client
-            .from("exercises").select("*,variations(*)")
+            .from("exercises").select("*,variations!variations_exercise_id_fkey(*)")
             .eq("id", value: id.uuidString).limit(1)
             .execute().value
         return rows.first?.toModel()

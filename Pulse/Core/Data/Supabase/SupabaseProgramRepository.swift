@@ -9,7 +9,7 @@ struct SupabaseProgramRepository: ProgramRepository {
 
     /// programs → workouts → workout_exercises → (parent exercise + variations) + set_specs.
     static let graphSelect =
-        "*,workouts(*,workout_exercises(*,exercises(*,variations(*)),set_specs(*)))"
+        "*,workouts(*,workout_exercises(*,exercises(*,variations!variations_exercise_id_fkey(*)),set_specs(*)))"
 
     func fetchPrograms() async throws -> [Program] {
         let rows: [ProgramRow] = try await client

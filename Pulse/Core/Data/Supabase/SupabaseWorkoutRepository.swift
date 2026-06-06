@@ -7,7 +7,7 @@ import Supabase
 struct SupabaseWorkoutRepository: WorkoutRepository {
     let client: SupabaseClient
 
-    static let graphSelect = "*,workout_exercises(*,exercises(*,variations(*)),set_specs(*))"
+    static let graphSelect = "*,workout_exercises(*,exercises(*,variations!variations_exercise_id_fkey(*)),set_specs(*))"
 
     private struct ProgramIDRow: Decodable { let id: UUID; let isActive: Bool }
 
