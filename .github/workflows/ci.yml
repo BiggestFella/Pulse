@@ -14,6 +14,12 @@ jobs:
           xcode-version: latest-stable
       - name: Install XcodeGen
         run: brew install xcodegen
+      - name: Provision Secrets (gitignored; CI runs the mock data path)
+        # project.yml points Debug/Release config files at Secrets.xcconfig,
+        # which is gitignored. Tests use the in-memory mock (-uiMock), so the
+        # values are irrelevant — CI only needs the file to exist so xcodegen
+        # validation passes. Skip if a real file is already present.
+        run: '[ -f Secrets.xcconfig ] || cp Secrets.example.xcconfig Secrets.xcconfig'
       - name: Generate project
         run: xcodegen generate
       - name: Build & test
