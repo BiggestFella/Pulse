@@ -127,4 +127,23 @@ final class WorkoutAnalyticsTests: XCTestCase {
         XCTAssertEqual(WorkoutAnalytics.bucketLabel(for: monday, range: .year, calendar: cal), "Jan")
         XCTAssertTrue(WorkoutAnalytics.bucketLabel(for: monday, range: .m3, calendar: cal).hasPrefix("W"))
     }
+
+    // BAK-23: the 3M axis numbers weeks relative to the range start (W1, W2, …)
+    // and keeps counting across a year boundary instead of resetting on the
+    // absolute calendar week-of-year (…W52, W1).
+    func testBucketLabelM3NumbersWeeksRelativeToRangeStart() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.firstWeekday = 2 // Monday
+        func day(_ y: Int, _ m: Int, _ d: Int) -> Date {
+            DateComponents(calendar: cal, year: y, month: m, day: d).date!
+        }
+        let start = day(2025, 12, 8) // a Monday in December
+        XCTAssertEqual(WorkoutAnalytics.bucketLabel(for: start, range: .m3,
+                                                    rangeStart: start, calendar: cal), "W1")
+        XCTAssertEqual(WorkoutAnalytics.bucketLabel(for: day(2025, 12, 15), range: .m3,
+                                                    rangeStart: start, calendar: cal), "W2")
+        // Across the year boundary it stays W5, not a reset to W1/W2.
+        XCTAssertEqual(WorkoutAnalytics.bucketLabel(for: day(2026, 1, 5), range: .m3,
+                                                    rangeStart: start, calendar: cal), "W5")
+    }
 }
