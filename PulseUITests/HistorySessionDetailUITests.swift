@@ -7,6 +7,7 @@ final class HistorySessionDetailUITests: XCTestCase {
 
     private func openHistory() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
         app.launch()
         app.tabBars.buttons["You"].tap()
         let link = app.buttons["you.workoutHistory"]

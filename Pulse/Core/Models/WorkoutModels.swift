@@ -55,6 +55,9 @@ struct Program: Codable, Equatable, Identifiable {
 struct SessionSet: Codable, Equatable, Identifiable {
     var id = UUID()
     var exerciseID: Exercise.ID
+    /// Which variation was performed (the unit users log/see). Parent `exerciseID`
+    /// is grouping only. Defaulted so older call sites compile; the app sets it.
+    var variationID: Variation.ID? = nil
     var order: Int
     var reps: Int
     var weight: Double            // kilograms (v1 is kg-only)

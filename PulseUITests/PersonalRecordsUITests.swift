@@ -3,6 +3,7 @@ import XCTest
 final class PersonalRecordsUITests: XCTestCase {
     private func openPRs() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
         app.launch()
         app.tabBars.buttons["You"].tap()
         let link = app.buttons["you.personalRecords"]

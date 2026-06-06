@@ -4,6 +4,7 @@ final class ActiveWorkoutFlowTests: XCTestCase {
 
     private func launch() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
         app.launch()
         return app
     }

@@ -21,3 +21,6 @@ Pulse.xcodeproj/
 *.env
 .env*
 Secrets.xcconfig
+
+.worktrees/
+Pulse/Info.plist

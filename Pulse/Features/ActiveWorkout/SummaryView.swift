@@ -50,7 +50,7 @@ struct SummaryView: View {
             HStack(spacing: 8) {
                 Button("Edit log") { }   // destination deferred per spec; inert v1
                     .buttonStyle(PressableButtonStyle(variant: .secondary, size: .md))
-                Button("Done →") { model.endWorkout() }
+                Button("Done →") { Task { await model.finishAndSave() } }
                     .buttonStyle(PressableButtonStyle(variant: .primary, size: .md))
                     .frame(maxWidth: .infinity)
                     .accessibilityIdentifier("summary.done")

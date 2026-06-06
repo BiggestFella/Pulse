@@ -63,6 +63,17 @@ final class ActiveWorkoutModel {
         activeSheet = nil
     }
 
+    /// Persists the finished session (sets stamped with their variation), then
+    /// tears down the takeover. Called from the summary's Done button.
+    func finishAndSave() async {
+        let sets = loggedSets.values.sorted { $0.order < $1.order }
+        let session = WorkoutSession(workoutID: workout.id, startedAt: startedAt,
+                                     endedAt: .now, sets: sets)
+        do { try await sessionWriter.save(session) }
+        catch { print("[Pulse] session save failed: \(error)") }
+        endWorkout()
+    }
+
     // MARK: - logging / transitions
 
     func logSet(reps: Int, weight: Double, now: Date = .now) {
@@ -70,7 +81,8 @@ final class ActiveWorkoutModel {
         let step = steps[stepIdx]
         let type = currentSet?.type ?? .working
         let exID = workout.exercises[step.exIdx].exercise.id
-        loggedSets[stepIdx] = SessionSet(exerciseID: exID, order: stepIdx,
+        let varID = workout.exercises[step.exIdx].variationID
+        loggedSets[stepIdx] = SessionSet(exerciseID: exID, variationID: varID, order: stepIdx,
                                          reps: reps, weight: weight, type: type)
         doneSteps.insert(stepIdx)
 
