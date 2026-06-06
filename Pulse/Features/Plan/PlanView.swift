@@ -61,7 +61,10 @@ struct PlanView: View {
         .background(theme.surface, in: Capsule())
         .overlay(Capsule().stroke(theme.inkFaint, lineWidth: 1))
         .padding(.horizontal, theme.spacing[5])
-        .accessibilityIdentifier("plan.toggle")
+        // No identifier on this container: SwiftUI propagates a container's
+        // accessibilityIdentifier onto its children, which would clobber the
+        // segment buttons' own `plan.toggle.calendar` / `plan.toggle.agenda`
+        // identifiers (BAK-25).
     }
 
     private func segment(_ label: String, isOn: Bool, action: @escaping () -> Void) -> some View {

@@ -6,26 +6,40 @@ import XCTest
 /// cell launches the active flow (shell takeover), so picks target a non-today day.
 final class PlanTabTests: XCTestCase {
 
-    // BAK-25: tapping the Plan tab does not activate PlanView (app stays on Today),
-    // so every test here fails at the first step. Skipped until that bug is fixed.
-    override func setUpWithError() throws {
-        throw XCTSkip("BAK-25: Plan tab does not activate. Un-skip when fixed.")
-    }
-
+    // Launch against the in-memory mocks (`-uiMock`) — otherwise the app builds
+    // the live Supabase repositories, whose reads throw `.notImplemented`.
     private func launchToPlan() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
+        app.launchArguments += ["-uiMock"]
         app.launch()
-        app.tabBars.buttons["Plan"].tap()
-        XCTAssertTrue(app.otherElements["plan.calendar"].waitForExistence(timeout: 5),
+
+        // BAK-25: the FIRST tab switch right after a cold launch is swallowed by
+        // SwiftUI's TabView under XCUITest on iOS 26 — the tap synthesizes but the
+        // selection never changes (every subsequent tap lands fine). Every test
+        // here makes Today→Plan its first interaction, so it always hit this and
+        // read as "the Plan tab won't activate". The app switches correctly for
+        // users; this re-taps until the Plan screen actually renders.
+        let planTab = app.tabBars.buttons["Plan"]
+        XCTAssertTrue(planTab.waitForExistence(timeout: 10), "Tab bar should appear")
+        let calendar = app.otherElements["plan.calendar"]
+        for _ in 0..<5 where !calendar.exists {
+            planTab.tap()
+            _ = calendar.waitForExistence(timeout: 3)
+        }
+        XCTAssertTrue(calendar.waitForExistence(timeout: 5),
                       "Plan calendar should render after selecting the Plan tab")
         return app
     }
 
-    /// A day-of-month guaranteed not to be today (so tapping won't launch the flow).
-    private var safeDay: Int {
-        let today = Calendar.current.component(.day, from: Date())
-        return today == 1 ? 2 : 1
+    /// A future day-of-month: never today (so tapping won't launch the active
+    /// flow) and never a read-only "done" day, so its Schedule sheet shows the
+    /// pick/rest options. The mock seeds `today-27...today+2`, and a future day
+    /// is always unscheduled-or-planned (a "done" day requires a past session).
+    private var pickableDay: Int {
+        let cal = Calendar.current
+        let today = cal.component(.day, from: Date())
+        let daysInMonth = cal.range(of: .day, in: .month, for: Date())!.count
+        return today < daysInMonth ? today + 1 : today - 1
     }
 
     // AC-1: toggle defaults to Calendar and switches the body.
@@ -37,17 +51,19 @@ final class PlanTabTests: XCTestCase {
         XCTAssertTrue(app.otherElements["plan.calendar"].waitForExistence(timeout: 5))
     }
 
-    // AC-2: calendar renders summary card + grid cells.
+    // AC-2: calendar renders summary card + grid cells. The summary card's text
+    // and the day cells surface as `staticTexts` (the cells are plain labels),
+    // so assert those rather than `otherElements`.
     func testCalendarRendersSummaryAndGrid() {
         let app = launchToPlan()
-        XCTAssertTrue(app.otherElements["plan.summaryCard"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.otherElements["plan.day.1"].exists)
+        XCTAssertTrue(app.staticTexts["plan.summaryCard"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["plan.day.1"].exists)
     }
 
     // AC-4 + AC-7: tapping a non-today day opens the Schedule sheet.
     func testTappingDayOpensScheduleSheet() {
         let app = launchToPlan()
-        let cell = app.otherElements["plan.day.\(safeDay)"]
+        let cell = app.staticTexts["plan.day.\(pickableDay)"]
         XCTAssertTrue(cell.waitForExistence(timeout: 5))
         cell.tap()
         XCTAssertTrue(app.otherElements["plan.scheduleSheet"].waitForExistence(timeout: 5),
@@ -57,7 +73,7 @@ final class PlanTabTests: XCTestCase {
     // AC-11: assigning a workout from the picker closes the sheet.
     func testAssignFromPickerClosesSheet() {
         let app = launchToPlan()
-        let cell = app.otherElements["plan.day.\(safeDay)"]
+        let cell = app.staticTexts["plan.day.\(pickableDay)"]
         XCTAssertTrue(cell.waitForExistence(timeout: 5))
         cell.tap()
         let sheet = app.otherElements["plan.scheduleSheet"]

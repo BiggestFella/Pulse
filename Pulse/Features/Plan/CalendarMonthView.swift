@@ -15,6 +15,10 @@ struct CalendarMonthView: View {
             todayRow
         }
         .padding(.horizontal, theme.spacing[5])
+        // `.contain` keeps the container queryable by its own id while leaving
+        // child elements (summary card, day cells) individually addressable —
+        // otherwise the container id propagates onto and clobbers them (BAK-25).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("plan.calendar")
     }
 

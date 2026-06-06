@@ -5,7 +5,9 @@ import XCTest
 final class BuildersTests: XCTestCase {
     private func launch() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
+        // Run against the in-memory mocks; the live Supabase catalog read throws
+        // `.notImplemented`, leaving the exercise picker empty (BAK-26).
+        app.launchArguments += ["-uiMock"]
         app.launch()
         app.tabBars.buttons["Library"].tap()
         XCTAssertTrue(app.staticTexts["library.h1"].waitForExistence(timeout: 5))
@@ -53,14 +55,22 @@ final class BuildersTests: XCTestCase {
         XCTAssertTrue(app.buttons["unlink-0"].exists)
     }
 
-    func testAddExerciseOpensPickerAndAppends() throws { // AC5, AC7
-        try XCTSkipIf(true, "BAK-26: confirming the exercise picker doesn't append the exercise. Un-skip when fixed.")
+    func testAddExerciseOpensPickerAndAppends() { // AC5, AC7
         let app = launch()
         openWorkoutBuilder(app)
         app.buttons["add-exercise"].tap()
         XCTAssertTrue(app.staticTexts["eyebrow-ADD EXERCISE"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["picker-confirm"].exists)
-        app.buttons["picker-row-Lat Pulldown"].tap()
+
+        // "Lat Pulldown" is in the Back group, below the fold of the catalog
+        // ScrollView, and XCUITest won't auto-scroll a SwiftUI ScrollView — so
+        // narrow the list with the functional muscle filter to bring it on-screen
+        // and hittable. (The row also needed `.contentShape` in the app so a tap
+        // on its center registers at all — see ExercisePickerSheet, BAK-26.)
+        app.buttons["picker-filter-Back"].tap()
+        let row = app.buttons["picker-row-Lat Pulldown"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.tap()
         app.buttons["picker-confirm"].tap()
         XCTAssertTrue(app.buttons["exercise-row-Lat Pulldown"].waitForExistence(timeout: 5))
     }

@@ -12,6 +12,7 @@ struct AgendaListView: View {
             }
         }
         .padding(.horizontal, theme.spacing[5])
+        .accessibilityElement(children: .contain)   // keep rows addressable (BAK-25)
         .accessibilityIdentifier("plan.agenda")
     }
 
