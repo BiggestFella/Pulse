@@ -14,6 +14,7 @@ final class PlanTabTests: XCTestCase {
 
     private func launchToPlan() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
         app.launch()
         app.tabBars.buttons["Plan"].tap()
         XCTAssertTrue(app.otherElements["plan.calendar"].waitForExistence(timeout: 5),

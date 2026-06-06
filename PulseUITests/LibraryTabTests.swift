@@ -3,6 +3,7 @@ import XCTest
 final class LibraryTabTests: XCTestCase {
     private func openLibrary() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
         app.launch()
         app.tabBars.buttons["Library"].tap()
         XCTAssertTrue(app.staticTexts["library.h1"].waitForExistence(timeout: 5))

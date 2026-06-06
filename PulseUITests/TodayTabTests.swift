@@ -3,7 +3,7 @@ import XCTest
 final class TodayTabTests: XCTestCase {
     private func launch(_ args: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += args
+        app.launchArguments += ["-uiMock"] + args
         app.launch()
         return app
     }

@@ -5,6 +5,7 @@ import XCTest
 final class BuildersTests: XCTestCase {
     private func launch() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-uiMock"]   // pin to the in-memory mock world
         app.launch()
         app.tabBars.buttons["Library"].tap()
         XCTAssertTrue(app.staticTexts["library.h1"].waitForExistence(timeout: 5))
