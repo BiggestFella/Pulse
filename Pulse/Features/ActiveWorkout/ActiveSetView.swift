@@ -12,6 +12,7 @@ struct ActiveSetView: View {
     private var exercise: WorkoutExercise { model.workout.exercises[exIdx] }
     private var setSpec: SetSpec { exercise.sets[step.setIdx] }
     private var isFailure: Bool { setSpec.type == .failure }
+    private var failureBottom: String { weight > 0 ? "Max reps @ \(WeightFormat.kg(weight))." : "Max reps." }
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing[2]) {
@@ -20,7 +21,9 @@ struct ActiveSetView: View {
             exerciseHeader
             actionChips
             heroCard
-            if !isFailure { steppers }
+            // BAK-30: failure/AMRAP sets also show the entry controls so you can
+            // record the weight you used and the reps you actually hit.
+            steppers
             if exercise.supersetGroup != nil { partnerPeek }
             Spacer()
             footer
@@ -112,11 +115,11 @@ struct ActiveSetView: View {
             }
             Lockup(value: isFailure ? "" : "\(reps)",
                    top: isFailure ? "To failure" : "Set \(step.setIdx + 1)",
-                   bottom: isFailure ? "Max reps." : "Reps @ \(WeightFormat.kg(weight)).",
+                   bottom: isFailure ? failureBottom : "Reps @ \(WeightFormat.kg(weight)).",
                    failure: isFailure)
 
             HStack {
-                Text(isFailure ? "BODYWEIGHT" : WeightFormat.eyebrow(weight: weight, reps: reps))
+                Text(isFailure && weight == 0 ? "BODYWEIGHT" : WeightFormat.eyebrow(weight: weight, reps: reps))
                     .font(.system(.caption2, design: .monospaced))
                     .foregroundStyle(theme.onAccent.opacity(0.85))
                     .accessibilityIdentifier("active.hero.footer")
@@ -147,10 +150,14 @@ struct ActiveSetView: View {
 
     private var steppers: some View {
         HStack(spacing: 8) {
-            StepperField(label: "WEIGHT", value: WeightFormat.kg(weight), idBase: "active.stepper.weight",
-                         onDec: { weight = max(0, weight - 2.5) }, onInc: { weight += 2.5 })
-            StepperField(label: "REPS", value: "\(reps)", accent: true, idBase: "active.stepper.reps",
-                         onDec: { reps = max(0, reps - 1) }, onInc: { reps += 1 })
+            StepperField(label: "WEIGHT", value: WeightFormat.kg(weight),
+                         allowsDecimal: true, idBase: "active.stepper.weight",
+                         onDec: { weight = max(0, weight - 2.5) }, onInc: { weight += 2.5 },
+                         onManualSet: { weight = max(0, $0) })
+            StepperField(label: "REPS", value: "\(reps)", accent: true,
+                         allowsDecimal: false, idBase: "active.stepper.reps",
+                         onDec: { reps = max(0, reps - 1) }, onInc: { reps += 1 },
+                         onManualSet: { reps = max(0, Int($0.rounded())) })
         }
     }
 
@@ -195,32 +202,92 @@ struct ActiveSetView: View {
 }
 
 /// Local stepper field (the design system has no shared stepper yet). Label +
-/// `−` / value / `+`. Inc/dec buttons carry ids for UI tests.
+/// `−` / value / `+`. The `−`/`+` buttons carry full 44pt hit targets (BAK-29:
+/// the old image-sized targets felt slow/unresponsive), and the value is tappable
+/// to type an exact figure (BAK-28) while the steppers stay for nudging.
 private struct StepperField: View {
     @Environment(Theme.self) private var theme
     let label: String
     let value: String
     var accent: Bool = false
+    let allowsDecimal: Bool
     let idBase: String
     let onDec: () -> Void
     let onInc: () -> Void
+    let onManualSet: (Double) -> Void
+
+    @State private var editing = false
+    @State private var draft = ""
+    @FocusState private var focused: Bool
+
+    private var valueColor: Color { accent ? theme.accent2 : theme.ink }
 
     var body: some View {
         VStack(spacing: 6) {
             Text(label).font(.system(.caption2, design: .monospaced)).foregroundStyle(theme.inkSoft)
-            HStack {
-                Button { onDec() } label: { Image(systemName: "minus").foregroundStyle(theme.ink) }
-                    .accessibilityIdentifier("\(idBase).dec")
-                Spacer()
-                Text(value).font(.title3.bold()).foregroundStyle(accent ? theme.accent2 : theme.ink)
-                Spacer()
-                Button { onInc() } label: { Image(systemName: "plus").foregroundStyle(theme.ink) }
-                    .accessibilityIdentifier("\(idBase).inc")
+            HStack(spacing: 0) {
+                stepButton("minus", id: "\(idBase).dec", action: onDec)
+                Spacer(minLength: 0)
+                valueSlot
+                Spacer(minLength: 0)
+                stepButton("plus", id: "\(idBase).inc", action: onInc)
             }
-            .padding(theme.spacing[2])
+            .padding(.vertical, 2).padding(.horizontal, theme.spacing[2])
             .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radiusChip))
         }
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder private var valueSlot: some View {
+        if editing {
+            TextField(value, text: $draft)   // current value shown as a placeholder hint
+                .keyboardType(allowsDecimal ? .decimalPad : .numberPad)
+                .multilineTextAlignment(.center)
+                .font(.title3.bold())
+                .foregroundStyle(valueColor)
+                .focused($focused)
+                .frame(maxWidth: 110)
+                .accessibilityIdentifier("\(idBase).field")
+                .onSubmit(commit)
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") { commit() }.accessibilityIdentifier("\(idBase).done")
+                    }
+                }
+        } else {
+            Text(value)
+                .font(.title3.bold())
+                .foregroundStyle(valueColor)
+                .lineLimit(1)
+                .padding(.vertical, 11).padding(.horizontal, 8)
+                .contentShape(Rectangle())
+                .onTapGesture { beginEdit() }
+                .accessibilityIdentifier("\(idBase).value")
+        }
+    }
+
+    private func stepButton(_ symbol: String, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .foregroundStyle(theme.ink)
+                .frame(width: 44, height: 44)        // HIG-min hit target
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+    }
+
+    private func beginEdit() {
+        draft = ""          // start fresh; the current value remains as the placeholder
+        editing = true
+        focused = true
+    }
+
+    private func commit() {
+        if let v = Double(draft.replacingOccurrences(of: ",", with: ".")) { onManualSet(v) }
+        editing = false
+        focused = false
     }
 }
 

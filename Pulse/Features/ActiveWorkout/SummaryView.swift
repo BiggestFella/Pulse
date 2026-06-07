@@ -47,16 +47,47 @@ struct SummaryView: View {
                 }
             }
 
+            // BAK-31: a failed save is visible and retryable — never silently dropped.
+            if case .failed(let message) = model.saveState {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(theme.accent2)
+                    Text(message).font(.caption).foregroundStyle(theme.ink)
+                    Spacer()
+                }
+                .padding(theme.spacing[2])
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(theme.surface2, in: RoundedRectangle(cornerRadius: theme.radiusCard))
+                .accessibilityIdentifier("summary.saveError")
+            }
+
             HStack(spacing: 8) {
                 Button("Edit log") { }   // destination deferred per spec; inert v1
                     .buttonStyle(PressableButtonStyle(variant: .secondary, size: .md))
-                Button("Done →") { Task { await model.finishAndSave() } }
+                    .disabled(model.saveState == .saving)
+                Button(doneLabel) { Task { await save() } }
                     .buttonStyle(PressableButtonStyle(variant: .primary, size: .md))
                     .frame(maxWidth: .infinity)
+                    .disabled(model.saveState == .saving)
                     .accessibilityIdentifier("summary.done")
             }
         }
         .padding(theme.spacing[5])
+    }
+
+    /// Done label tracks the save lifecycle (BAK-31).
+    private var doneLabel: String {
+        switch model.saveState {
+        case .saving:  return "Saving…"
+        case .failed:  return "Retry save"
+        default:       return "Done →"
+        }
+    }
+
+    /// First press saves; after a failure the same button retries the held
+    /// session (preserving the logged sets + end time).
+    private func save() async {
+        if case .failed = model.saveState { await model.retrySave() }
+        else { await model.finishAndSave() }
     }
 
     private func statBox(_ label: String, value: String, sub: String,
