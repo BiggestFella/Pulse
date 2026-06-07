@@ -6,6 +6,11 @@ final class ActiveWorkoutModel {
     enum Phase { case pre, active, rest, summary }
     enum ActiveSheet: Identifiable { case swap, history, jump; var id: Self { self } }
 
+    /// Persisting the finished session (BAK-31). The summary drives the Done
+    /// button off this so a failed save is *visible* and *retryable* instead of
+    /// silently dropping the workout.
+    enum SaveState: Equatable { case idle, saving, saved, failed(String) }
+
     // dependencies (flow-local repository protocols only — never Supabase)
     private let exerciseRepo: SwapAlternativesProviding
     private let historyRepo: HistoryRepository
@@ -23,6 +28,11 @@ final class ActiveWorkoutModel {
     var activeSheet: ActiveSheet?
     /// false when no session is running (drives the app-shell takeover branch).
     private(set) var isActive: Bool = false
+
+    /// Save lifecycle for the finished session, and the session held pending so a
+    /// failed save can be retried without losing the logged work (BAK-31).
+    private(set) var saveState: SaveState = .idle
+    private var pendingSession: WorkoutSession?
 
     // rest state (absolute end is Live-Activity-friendly)
     let restTotal: TimeInterval = 90
@@ -53,6 +63,8 @@ final class ActiveWorkoutModel {
         restEndsAt = nil
         isActive = true
         activeSheet = nil
+        saveState = .idle
+        pendingSession = nil
     }
 
     func beginSets() { phase = .active }
@@ -63,15 +75,33 @@ final class ActiveWorkoutModel {
         activeSheet = nil
     }
 
-    /// Persists the finished session (sets stamped with their variation), then
-    /// tears down the takeover. Called from the summary's Done button.
-    func finishAndSave() async {
+    /// Persists the finished session (sets stamped with their variation). On
+    /// success it tears down the takeover; on failure it surfaces `.failed` and
+    /// keeps the session pending so the summary can offer a retry — the workout
+    /// is never silently dropped (BAK-31). Called from the summary's Done button.
+    func finishAndSave(now: Date = .now) async {
         let sets = loggedSets.values.sorted { $0.order < $1.order }
-        let session = WorkoutSession(workoutID: workout.id, startedAt: startedAt,
-                                     endedAt: .now, sets: sets)
-        do { try await sessionWriter.save(session) }
-        catch { print("[Pulse] session save failed: \(error)") }
-        endWorkout()
+        pendingSession = WorkoutSession(workoutID: workout.id, startedAt: startedAt,
+                                        endedAt: now, sets: sets)
+        await attemptSave()
+    }
+
+    /// Re-attempt a previously failed save, reusing the held session so the
+    /// original end time and logged sets are preserved.
+    func retrySave() async { await attemptSave() }
+
+    private func attemptSave() async {
+        guard let session = pendingSession else { return }
+        saveState = .saving
+        do {
+            try await sessionWriter.save(session)
+            saveState = .saved
+            pendingSession = nil
+            endWorkout()
+        } catch {
+            print("[Pulse] session save failed: \(error)")
+            saveState = .failed("Couldn’t save your workout. Check your connection and try again.")
+        }
     }
 
     // MARK: - logging / transitions
@@ -243,13 +273,18 @@ final class ActiveWorkoutModel {
             let sets = stepIdxs.compactMap { loggedSets[$0] }
             guard !sets.isEmpty else { return nil }
             let vol = sets.reduce(0) { $0 + WorkoutAnalytics.setVolume($1) }
+            // BAK-30: failure/AMRAP sets still record the reps & weight you hit.
+            // Show "To failure" only when nothing was logged; otherwise surface
+            // the actual work (prefixed so the set type is still legible).
             let line: String
-            if sets.contains(where: { $0.type == .failure }) {
+            let hasFailure = sets.contains { $0.type == .failure }
+            if hasFailure && !sets.contains(where: { $0.reps > 0 }) {
                 line = "To failure"
             } else {
                 let reps = sets.map { String($0.reps) }.joined(separator: "·")
                 let topWeight = sets.map(\.weight).max() ?? 0
-                line = "\(reps) @ \(WeightFormat.kg(topWeight))"
+                let weightPart = topWeight > 0 ? " @ \(WeightFormat.kg(topWeight))" : ""
+                line = (hasFailure ? "To failure · " : "") + "\(reps)\(weightPart)"
             }
             let baseline = prBaseline[workout.exercises[exIdx].exercise.id] ?? 0
             let isPR = (bestEpley(in: sets) ?? 0) > baseline

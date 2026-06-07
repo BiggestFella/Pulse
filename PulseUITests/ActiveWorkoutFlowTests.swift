@@ -48,7 +48,9 @@ final class ActiveWorkoutFlowTests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
     }
 
-    // AC6 / AC12 — Log-button label + failure rendering (∞ hero, hidden steppers, BODYWEIGHT).
+    // AC6 / AC12 — Log-button label + failure rendering. BAK-30: failure sets now
+    // SHOW the entry controls so you can record the reps/weight you actually hit;
+    // the hero stays ∞ and the footer reads BODYWEIGHT until a weight is entered.
     func testLogLabelAndFailureRendering() {
         let app = launch()
         startAndBegin(app)
@@ -58,8 +60,58 @@ final class ActiveWorkoutFlowTests: XCTestCase {
         app.buttons["jump.exercise.4"].tap()                          // failure finisher = last step
         XCTAssertTrue(app.buttons["active.log"].waitForExistence(timeout: 3))
         XCTAssertEqual(app.buttons["active.log"].label, "Finish workout")
-        XCTAssertFalse(app.buttons["active.stepper.weight.inc"].exists) // steppers hidden on failure
+        XCTAssertTrue(app.buttons["active.stepper.reps.inc"].exists)  // BAK-30: steppers shown on failure
+        XCTAssertTrue(app.buttons["active.stepper.weight.inc"].exists)
         XCTAssertEqual(app.staticTexts["active.hero.footer"].label, "BODYWEIGHT")
+    }
+
+    // BAK-29 — the − stepper reliably decrements (regression for the slow/
+    // unresponsive minus button; the fix gives both buttons a full 44pt target).
+    func testMinusStepperDecrementsWeight() {
+        let app = launch()
+        startAndBegin(app)                                            // step 0 seeds weight 60 kg
+        let value = app.staticTexts["active.stepper.weight.value"]
+        XCTAssertTrue(value.waitForExistence(timeout: 3))
+        XCTAssertEqual(value.label, "60 kg")
+        app.buttons["active.stepper.weight.dec"].tap()
+        XCTAssertEqual(value.label, "57.5 kg")
+    }
+
+    // BAK-28 — tap the value and type an exact weight (off the 2.5 boundary).
+    func testManualWeightEntryUpdatesValue() {
+        let app = launch()
+        startAndBegin(app)
+        app.staticTexts["active.stepper.weight.value"].tap()
+        let field = app.textFields["active.stepper.weight.field"]
+        XCTAssertTrue(field.waitForExistence(timeout: 3))
+        field.typeText("47.5")
+        app.buttons["active.stepper.weight.done"].tap()
+        XCTAssertEqual(app.staticTexts["active.stepper.weight.value"].label, "47.5 kg")
+    }
+
+    // BAK-31 — a failed save is visible and retryable; a successful retry returns
+    // to the tab bar (the workout is never silently dropped).
+    func testSaveFailureSurfacesErrorThenRetrySucceeds() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-uiMock", "-uiTestSaveFail"]
+        app.launch()
+        XCTAssertTrue(app.buttons["today.hero.start"].waitForExistence(timeout: 5))
+        app.buttons["today.hero.start"].tap()
+        app.buttons["pre.begin"].tap()
+        for _ in 0..<30 {
+            if app.buttons["summary.done"].exists { break }
+            if app.buttons["active.log"].exists { app.buttons["active.log"].tap() }
+            else if app.buttons["rest.skip"].exists { app.buttons["rest.skip"].tap() }
+        }
+        XCTAssertTrue(app.buttons["summary.done"].waitForExistence(timeout: 3))
+        app.buttons["summary.done"].tap()                            // first save throws
+        let retry = expectation(for: NSPredicate(format: "label == 'Retry save'"),
+                                evaluatedWith: app.buttons["summary.done"])
+        wait(for: [retry], timeout: 5)
+        XCTAssertTrue(app.staticTexts["summary.saveError"].exists
+                      || app.otherElements["summary.saveError"].exists)
+        app.buttons["summary.done"].tap()                            // retry succeeds
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
     }
 
     // AC11 — swap shows the swapped eyebrow.

@@ -76,5 +76,17 @@ struct MockHistoryRepository: HistoryRepository {
 
 final class MockSessionWriter: SessionWriter {
     private(set) var saved: [WorkoutSession] = []
-    func save(_ session: WorkoutSession) async throws { saved.append(session) }
+    private(set) var attempts: Int = 0
+    /// When set, the next `save` throws this instead of recording, then clears
+    /// itself — drives the save-failure-then-retry path (BAK-31).
+    var failOnce: Error?
+    /// When set, every `save` throws — a persistently offline writer.
+    var failAlways: Error?
+
+    func save(_ session: WorkoutSession) async throws {
+        attempts += 1
+        if let err = failAlways { throw err }
+        if let err = failOnce { failOnce = nil; throw err }
+        saved.append(session)
+    }
 }

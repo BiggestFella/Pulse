@@ -40,7 +40,13 @@ final class RepositoryContainer {
             prs = InMemoryPRRepository(store: store)
             user = InMemoryUserRepository()
             settings = InMemorySettingsRepository()
-            sessionWriter = MockSessionWriter()
+            // `-uiTestSaveFail` makes the first save throw so the summary's
+            // save-failure + retry path (BAK-31) is exercisable from a UI test.
+            let writer = MockSessionWriter()
+            if CommandLine.arguments.contains("-uiTestSaveFail") {
+                writer.failOnce = NSError(domain: "Pulse.UITest", code: -1)
+            }
+            sessionWriter = writer
             authGateway = nil
         } else {
             let config: AppConfig

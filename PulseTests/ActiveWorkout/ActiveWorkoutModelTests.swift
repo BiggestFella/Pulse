@@ -3,15 +3,20 @@ import XCTest
 
 final class ActiveWorkoutModelTests: XCTestCase {
 
-    private func makeModel() -> ActiveWorkoutModel {
+    private struct SaveFailed: Error {}
+
+    private func makeModel(writer: MockSessionWriter = MockSessionWriter()) -> ActiveWorkoutModel {
         ActiveWorkoutModel(
             exerciseRepo: MockSwapAlternativesRepository(),
             historyRepo: MockHistoryRepository(),
-            sessionWriter: MockSessionWriter()
+            sessionWriter: writer
         )
     }
     private func started() -> ActiveWorkoutModel {
         let m = makeModel(); m.startWorkout(ActiveWorkoutSample.workout); return m
+    }
+    private func started(writer: MockSessionWriter) -> ActiveWorkoutModel {
+        let m = makeModel(writer: writer); m.startWorkout(ActiveWorkoutSample.workout); return m
     }
 
     // AC1
@@ -169,6 +174,65 @@ final class ActiveWorkoutModelTests: XCTestCase {
         m.afterRest()                    // stray tick while already active → no-op
         XCTAssertEqual(m.stepIdx, 1)
         XCTAssertEqual(m.phase, .active)
+    }
+
+    // MARK: - BAK-30: failure/AMRAP sets record actual reps + weight
+
+    // A to-failure set with real reps logged shows the actual work, not just "To failure".
+    func testFailureSetLogsActualRepsAndWeightInLogRows() {
+        let m = started(); m.beginSets()
+        m.jump(toExerciseIndex: 4)                 // pushup, single failure set
+        XCTAssertEqual(m.currentStep.exIdx, 4)
+        m.logSet(reps: 8, weight: 60)              // entered actual reps + weight
+        let row = m.logRows.first { $0.id == 4 }
+        XCTAssertNotNil(row)
+        XCTAssertTrue(row!.summaryLine.contains("8"), "expected logged reps in: \(row!.summaryLine)")
+        XCTAssertTrue(row!.summaryLine.contains("60 kg"), "expected logged weight in: \(row!.summaryLine)")
+        XCTAssertTrue(row!.summaryLine.contains("To failure"), "set type still legible: \(row!.summaryLine)")
+    }
+
+    // A failure set with nothing entered still reads "To failure" (no "0 @ 0 kg").
+    func testFailureSetWithNoRepsStillReadsToFailure() {
+        let m = started(); m.beginSets()
+        m.jump(toExerciseIndex: 4)
+        m.logSet(reps: 0, weight: 0)
+        let row = m.logRows.first { $0.id == 4 }
+        XCTAssertEqual(row?.summaryLine, "To failure")
+    }
+
+    // MARK: - BAK-31: finished workout persists; saves surface success/failure
+
+    func testFinishAndSaveSuccessMarksSavedAndTearsDown() async {
+        let writer = MockSessionWriter()
+        let m = started(writer: writer); m.beginSets()
+        m.logSet(reps: 12, weight: 100)
+        await m.finishAndSave()
+        XCTAssertEqual(m.saveState, .saved)
+        XCTAssertFalse(m.isActive)                 // teardown only on success
+        XCTAssertEqual(writer.saved.count, 1)
+    }
+
+    func testFinishAndSaveFailureSurfacesErrorAndKeepsSession() async {
+        let writer = MockSessionWriter(); writer.failAlways = SaveFailed()
+        let m = started(writer: writer); m.beginSets()
+        m.logSet(reps: 12, weight: 100)
+        await m.finishAndSave()
+        if case .failed = m.saveState {} else { XCTFail("expected .failed, got \(m.saveState)") }
+        XCTAssertTrue(m.isActive)                  // workout NOT silently dropped
+        XCTAssertTrue(writer.saved.isEmpty)
+    }
+
+    func testRetrySaveSucceedsAfterTransientFailure() async {
+        let writer = MockSessionWriter(); writer.failOnce = SaveFailed()
+        let m = started(writer: writer); m.beginSets()
+        m.logSet(reps: 12, weight: 100)
+        await m.finishAndSave()                     // first attempt throws
+        if case .failed = m.saveState {} else { XCTFail("expected .failed, got \(m.saveState)") }
+        await m.retrySave()                         // second attempt succeeds
+        XCTAssertEqual(m.saveState, .saved)
+        XCTAssertFalse(m.isActive)
+        XCTAssertEqual(writer.saved.count, 1)
+        XCTAssertEqual(writer.attempts, 2)
     }
 
     // PR count consults the history baseline (not trivially "everything is a PR").
