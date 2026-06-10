@@ -27,11 +27,15 @@ struct AppShell: View {
         let startWorkout = RepositoryContainer.useMock() ? ActiveWorkoutSample.workout
                                                          : TodaysWorkout.workout
         self.startWorkout = startWorkout
+        // TODO(BAK-35): pass the persisted autoProgressWeight once async settings
+        // load is wired into the shell; `SettingsRepository.load()` is async and the
+        // session is built synchronously here, so seed from the default for now.
         let session = ActiveWorkoutModel(
             exerciseRepo: MockSwapAlternativesRepository(),
             historyRepo: MockHistoryRepository(),
             sessionWriter: container.sessionWriter,
-            restCue: RestCueService())
+            restCue: RestCueService(),
+            autoProgress: UserSettings.default.autoProgressWeight)
         _session = State(initialValue: session)
 
         let writer = WidgetSnapshotWriter()
