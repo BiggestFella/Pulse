@@ -7,6 +7,7 @@ struct ExerciseDetailView: View {
     @Environment(Theme.self) private var theme
     @Environment(\.dismiss) private var dismiss
     @State private var model: ExerciseDetailModel
+    @State private var showsCalculator = false
 
     init(exerciseID: Exercise.ID,
          exerciseRepo: any ExerciseRepository,
@@ -40,12 +41,20 @@ struct ExerciseDetailView: View {
                 .accessibilityIdentifier("exdetail.back")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: "ellipsis")          // inert per product decision
-                    .foregroundStyle(theme.inkSoft)
-                    .accessibilityIdentifier("exdetail.overflow")
+                Button("1RM") { showsCalculator = true }
+                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(theme.accent)
+                    .accessibilityIdentifier("exdetail.calc")
             }
         }
         .task { await model.load() }
+        .pulseSheet(isPresented: $showsCalculator, eyebrow: "WHAT-IF", title: "1RM calculator.") {
+            if let pb = model.personalBest {
+                OneRepMaxCalculatorSheet(weight: pb.topWeight, reps: pb.reps)
+            } else {
+                OneRepMaxCalculatorSheet()
+            }
+        }
     }
 
     // MARK: - Header
@@ -137,21 +146,27 @@ struct ExerciseDetailView: View {
         if let pb = model.personalBest {
             // On the accent-filled card all small highlight text uses `onAccent`,
             // never `accent2` (design rule).
-            Lockup(value: WeightFormat.kgNumeral(pb.topWeight),
-                   top: "PERSONAL BEST",
-                   bottom: "kg ·\ntop set.",
-                   size: 72,
-                   topColor: theme.onAccent.opacity(0.85))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(theme.spacing[5])
-                .background(theme.accent, in: RoundedRectangle(cornerRadius: theme.radiusCard))
-                .overlay(alignment: .topTrailing) {
-                    Text(SessionDateLabel.weekday(pb.date))
-                        .pulseStyle(.rowSub)
-                        .foregroundStyle(theme.onAccent)
-                        .padding(theme.spacing[4])
-                }
-                .accessibilityIdentifier("exdetail.pbCard")
+            VStack(alignment: .leading, spacing: theme.spacing[1]) {
+                Lockup(value: WeightFormat.kgNumeral(pb.topWeight),
+                       top: "PERSONAL BEST",
+                       bottom: "kg ·\ntop set.",
+                       size: 72,
+                       topColor: theme.onAccent.opacity(0.85))
+                Text("EST. 1RM · \(WeightFormat.kg(pb.estimatedOneRepMax))")
+                    .pulseStyle(.eyebrow)
+                    .foregroundStyle(theme.onAccent.opacity(0.85))
+                    .accessibilityIdentifier("exdetail.pb.est1rm")
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(theme.spacing[5])
+            .background(theme.accent, in: RoundedRectangle(cornerRadius: theme.radiusCard))
+            .overlay(alignment: .topTrailing) {
+                Text(SessionDateLabel.weekday(pb.date))
+                    .pulseStyle(.rowSub)
+                    .foregroundStyle(theme.onAccent)
+                    .padding(theme.spacing[4])
+            }
+            .accessibilityIdentifier("exdetail.pbCard")
         }
     }
 

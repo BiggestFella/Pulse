@@ -85,6 +85,17 @@ final class ExerciseDetailModelTests: XCTestCase {
         XCTAssertNil(m.personalBest)
     }
 
+    func testPersonalBestExposesEpleyEstimatedOneRepMax() async throws {
+        let (m, _) = makeModel()  // Bench Press fixture
+        await m.load()
+        let pb = try XCTUnwrap(m.personalBest)
+        // est-1RM is surfaced and equals the canonical Epley value for the PB set.
+        XCTAssertEqual(pb.estimatedOneRepMax,
+                       epley1RM(weight: pb.topWeight, reps: pb.reps),
+                       accuracy: 0.0001)
+        XCTAssertGreaterThan(pb.estimatedOneRepMax, 0)
+    }
+
     // MARK: - Variations
 
     func testVariationsPrependAllAndDefaultSelectionMulti() async {
