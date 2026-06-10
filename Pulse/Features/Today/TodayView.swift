@@ -20,11 +20,19 @@ struct TodayView: View {
     @Environment(Theme.self) private var theme
     @State private var model: TodayModel
     @State private var path: [UUID] = []
+    /// Offline buffer of unsynced sessions + a flush trigger (BAK-32). `AppShell`
+    /// injects these from the `RepositoryContainer`; previews/tests omit them.
+    private let pendingStore: PendingSessionStore?
+    private let onFlushPending: (() async -> Void)?
 
     /// Default initializer wires the sample mock; `AppShell` injects the real
     /// repo/callbacks (Task 8). Tests/previews inject their own model.
-    init(model: TodayModel? = nil) {
+    init(model: TodayModel? = nil,
+         pendingStore: PendingSessionStore? = nil,
+         onFlushPending: (() async -> Void)? = nil) {
         _model = State(initialValue: model ?? TodayModel(repository: MockTodayRepository.sample))
+        self.pendingStore = pendingStore
+        self.onFlushPending = onFlushPending
     }
 
     var body: some View {
@@ -55,6 +63,11 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: 18) {
                 topBar
                 greetingRow
+                if let store = pendingStore, store.pendingCount > 0 {
+                    PendingSyncBanner(count: store.pendingCount) {
+                        await onFlushPending?()
+                    }
+                }
                 TodayHeroCard(card: model.today) { model.startTodaysWorkout() }
                 TodayWeekStrip(week: model.week, progressLabel: model.weekProgressLabel)
                 if let recap = model.yesterday {
