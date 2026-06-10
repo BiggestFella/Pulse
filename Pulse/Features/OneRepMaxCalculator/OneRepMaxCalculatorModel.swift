@@ -14,6 +14,16 @@ final class OneRepMaxCalculatorModel {
 
     static let weightStep = 2.5
 
+    /// One row of the %-of-1RM working-weight table.
+    struct PercentRow: Identifiable, Equatable {
+        var percent: Int        // e.g. 90, 85 …
+        var weight: Double      // working weight, kg, rounded to nearest 2.5
+        var id: Int { percent }
+    }
+
+    /// Common training intensities surfaced in the table (high → low).
+    static let percents: [Int] = [90, 85, 80, 75, 70]
+
     init(weight: Double = 60, reps: Int = 5) {
         self.weight = max(0, weight)
         self.reps = max(1, reps)
@@ -21,6 +31,26 @@ final class OneRepMaxCalculatorModel {
 
     /// Estimated one-rep max for the current inputs (Epley, via the shared helper).
     var estimatedOneRepMax: Double { epley1RM(weight: weight, reps: reps) }
+
+    /// The %-of-1RM table for the current estimate, rounded to the nearest 2.5 kg.
+    var percentRows: [PercentRow] {
+        let oneRM = estimatedOneRepMax
+        return Self.percents.map { p in
+            PercentRow(percent: p, weight: Self.workingWeight(forPercent: p, of: oneRM))
+        }
+    }
+
+    /// `percent`% of `oneRM`, rounded to the nearest 2.5 kg (a real plate jump).
+    static func workingWeight(forPercent percent: Int, of oneRM: Double) -> Double {
+        rounded(toNearest: 2.5, oneRM * Double(percent) / 100)
+    }
+
+    /// Round `value` to the nearest multiple of `step` (ties round up). `step`
+    /// must be > 0; returns `value` unchanged otherwise.
+    static func rounded(toNearest step: Double, _ value: Double) -> Double {
+        guard step > 0 else { return value }
+        return (value / step).rounded() * step
+    }
 
     func incrementWeight() { weight += Self.weightStep }
     func decrementWeight() { weight = max(0, weight - Self.weightStep) }
