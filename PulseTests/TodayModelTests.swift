@@ -64,16 +64,6 @@ final class TodayModelTests: XCTestCase {
         XCTAssertEqual(model.plannedCount, 0)
     }
 
-    func testFailureSetsErrorThenRecovers() async {
-        let model = TodayModel(repository: MockTodayRepository.failing)
-        await model.load()
-        XCTAssertEqual(model.phase, TodayModel.Phase.error)
-        // Recover by swapping in a working repo and reloading.
-        model.replaceRepository(MockTodayRepository.sample)
-        await model.load()
-        XCTAssertEqual(model.phase, TodayModel.Phase.loaded)
-    }
-
     /// The real error-recovery path: the View's Retry button calls `load()` again
     /// on the SAME repository. A transient failure should clear on the next load.
     func testRetryOnSameRepositoryRecoversAfterTransientFailure() async {
@@ -83,6 +73,18 @@ final class TodayModelTests: XCTestCase {
         XCTAssertEqual(model.phase, TodayModel.Phase.error)
         await model.load()
         XCTAssertEqual(model.phase, TodayModel.Phase.loaded)
+    }
+
+    /// Two loads issued concurrently (e.g. initial load + pull-to-refresh) settle
+    /// to a single consistent state without crashing — the in-flight guard cancels
+    /// the superseded load rather than letting it clobber the winner.
+    func testConcurrentLoadsSettleConsistently() async {
+        let model = TodayModel(repository: MockTodayRepository.sample)
+        async let a: Void = model.load()
+        async let b: Void = model.load()
+        _ = await (a, b)
+        XCTAssertEqual(model.phase, TodayModel.Phase.loaded)
+        XCTAssertEqual(model.today?.name, "Chest & Tris")
     }
 
     func testStartTodaysWorkoutInvokesCallbackOnceWithWorkoutID() async {

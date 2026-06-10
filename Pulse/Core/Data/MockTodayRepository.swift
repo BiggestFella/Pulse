@@ -39,7 +39,7 @@ extension TodaySnapshot {
     static let sampleCard = TodayWorkoutCard(
         workoutID: sampleWorkoutID,
         programLabel: "PPL", week: 4, day: 23,
-        name: "Chest & Tris", exerciseCount: 7, est: "~60 min")
+        name: "Chest & Tris", exerciseCount: 7, estimatedMinutes: 60)
 
     static let sampleRecap = SessionRecap(
         sessionID: UUID(), name: "Legs", subline: "71M · 18.7K KG · +1 PR")

@@ -9,10 +9,20 @@ struct TodayWorkoutCard: Equatable, Identifiable {
     let day: Int               // 23
     let name: String           // "Chest & Tris"
     let exerciseCount: Int     // 7
-    let est: String            // "~60 min"
+    let estimatedMinutes: Int  // 60 — structured; formatted at this layer, not in the data source
 
     var eyebrow: String { "TODAY · \(programLabel) · WEEK \(week)" }
     var dayLabel: String { "Day \(day)" }
+
+    /// Estimated duration copy. Formatted here in the projection (not baked into
+    /// the repository) so the real Supabase repo supplies a number rather than
+    /// English copy. Fixed-locale, consistent with `HistoryFormat`; full
+    /// localisation is deferred to the future unit-toggle effort.
+    var est: String { "~\(estimatedMinutes) min" }
+
+    /// Footer eyebrow. The uppercasing is the locale-independent `uppercased()`
+    /// deliberately: these are stylistic design tokens (Geist Mono eyebrows), not
+    /// linguistic text, so they must render identically regardless of device locale.
     var footerEyebrow: String { "\(exerciseCount) EXERCISES · \(est.uppercased())" }
 }
 
