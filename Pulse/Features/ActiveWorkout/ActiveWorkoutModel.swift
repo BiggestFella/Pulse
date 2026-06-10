@@ -8,8 +8,10 @@ final class ActiveWorkoutModel {
 
     /// Persisting the finished session (BAK-31). The summary drives the Done
     /// button off this so a failed save is *visible* and *retryable* instead of
-    /// silently dropping the workout.
-    enum SaveState: Equatable { case idle, saving, saved, failed(String) }
+    /// silently dropping the workout. `.pendingSync` (BAK-32) is the calm offline
+    /// outcome: the session is safely buffered on-device and will sync later, so
+    /// the flow finishes normally rather than blocking on `.failed`.
+    enum SaveState: Equatable { case idle, saving, saved, pendingSync, failed(String) }
 
     // dependencies (flow-local repository protocols only — never Supabase)
     private let exerciseRepo: SwapAlternativesProviding
@@ -99,8 +101,17 @@ final class ActiveWorkoutModel {
             pendingSession = nil
             endWorkout()
         } catch {
-            print("[Pulse] session save failed: \(error)")
-            saveState = .failed("Couldn’t save your workout. Check your connection and try again.")
+            // BAK-32: an offline failure means the writer has buffered the session
+            // on-device (it will sync when connectivity returns), so we surface a
+            // calm "saved on device" note and let the summary's Done button tear
+            // the takeover down. Any other error keeps the blocking BAK-31 retry UI.
+            if SaveClassification.isOffline(error) {
+                saveState = .pendingSync
+                pendingSession = nil
+            } else {
+                print("[Pulse] session save failed: \(error)")
+                saveState = .failed("Couldn’t save your workout. Check your connection and try again.")
+            }
         }
     }
 

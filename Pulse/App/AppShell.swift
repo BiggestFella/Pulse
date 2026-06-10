@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AppShell: View {
+    @Environment(\.scenePhase) private var scenePhase
     /// The active-workout session engine. When `isActive`, the app takes over
     /// full-screen (tab bar hidden) and runs the flow.
     @State private var session: ActiveWorkoutModel
@@ -54,7 +55,14 @@ struct AppShell: View {
             shell
             #endif
         }
-        .task { await container.bootstrap() }
+        .task {
+            await container.bootstrap()
+            await container.flushPending()   // BAK-32: drain any buffered session at launch
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Returning to the foreground is a good moment to retry a pending sync.
+            if phase == .active { Task { await container.flushPending() } }
+        }
     }
 
     /// Session takeover replaces the whole shell (no tab bar) while active.
@@ -69,7 +77,9 @@ struct AppShell: View {
 
     private var tabs: some View {
         TabView {
-            TodayView(model: todayModel)
+            TodayView(model: todayModel,
+                      pendingStore: container.pendingStore,
+                      onFlushPending: { await container.flushPending() })
                 .tabItem { Label("Today", systemImage: "bolt.fill") }
             LibraryView()
                 .tabItem { Label("Library", systemImage: "square.stack.fill") }
