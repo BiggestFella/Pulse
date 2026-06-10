@@ -1,0 +1,102 @@
+muscle_group,exercise,variation,equipment,is_default
+Legs,Leg Extension,Standard,Machine,TRUE
+Legs,Leg Extension,Lengthened,Machine,FALSE
+Legs,Leg Extension,Single Leg,Machine,FALSE
+Legs,Leg Press,Mid Stance,Machine,TRUE
+Legs,Leg Press,Wide Stance,Machine,FALSE
+Legs,Leg Press,Narrow Stance,Machine,FALSE
+Legs,Calf Raise,Standing,Machine,TRUE
+Legs,Calf Raise,Seated,Machine,FALSE
+Legs,Calf Raise,Leg Press,Machine,FALSE
+Legs,Smith Squat,Standard,Smith Machine,TRUE
+Legs,Hack Squat,Standard,Machine,TRUE
+Legs,Split Squat,Smith Machine,Smith Machine,TRUE
+Legs,Split Squat,DBs,Dumbbells,FALSE
+Legs,Walking Lunge,Bodyweight,Bodyweight,TRUE
+Legs,Romanian Deadlift,DBs,Dumbbells,TRUE
+Legs,Romanian Deadlift,Smith,Smith Machine,FALSE
+Legs,Romanian Deadlift,Barbell,Barbell,FALSE
+Legs,Hip Thrust,Standard,Barbell,TRUE
+Legs,Glute Bridge,Standard,Barbell,TRUE
+Legs,Leg Curl,Machine,Machine,TRUE
+Legs,Hip Adduction Machine,Standard,Machine,TRUE
+Legs,Hip Abduction Machine,Standard,Machine,TRUE
+Chest,Flat Chest Press,Machine,Machine,TRUE
+Chest,Flat Chest Press,Single Arm Machine,Machine,FALSE
+Chest,Flat Chest Press,DBs,Dumbbells,FALSE
+Chest,Flat Chest Press,Smith Machine,Smith Machine,FALSE
+Chest,Flat Chest Press,Barbell,Barbell,FALSE
+Chest,Flat Chest Press,Hammer Strength,Hammer Strength,FALSE
+Chest,Incline Chest Press,DBs,Dumbbells,TRUE
+Chest,Incline Chest Press,Machine,Machine,FALSE
+Chest,Incline Chest Press,Smith,Smith Machine,FALSE
+Chest,Incline Chest Press,Cable,Cable,FALSE
+Chest,Incline Chest Press,Barbell,Barbell,FALSE
+Chest,Decline Chest Press,Machine,Machine,TRUE
+Chest,Decline Chest Press,Single Arm Machine,Machine,FALSE
+Chest,Close Grip Chest Press,DBs,Dumbbells,TRUE
+Chest,Pec Deck Fly,Standard,Machine,TRUE
+Chest,Cable Crossover,Standard,Cable,TRUE
+Chest,Chest Dip,Standard,Bodyweight,TRUE
+Chest,Push-Up,Standard,Bodyweight,TRUE
+Chest,Push-Up,Deficit,Bodyweight,FALSE
+Chest,Push-Up,Tricep,Bodyweight,FALSE
+Shoulders,Shoulder Press,Seated Machine,Machine,TRUE
+Shoulders,Shoulder Press,Standing Machine,Machine,FALSE
+Shoulders,Lateral Raise,DBs,Dumbbells,TRUE
+Shoulders,Lateral Raise,Single Arm Cable,Cable,FALSE
+Shoulders,Lateral Raise,Seated Machine,Machine,FALSE
+Shoulders,Lateral Raise,Seated Pulse,Dumbbells,FALSE
+Shoulders,Lateral Raise,Standing Machine,Machine,FALSE
+Shoulders,Rear Delt Swing,DBs,Dumbbells,TRUE
+Shoulders,Front Raise,DBs,Dumbbells,TRUE
+Shoulders,Front Raise,Rope Cable,Cable,FALSE
+Triceps,Tricep Extension,Machine,Machine,TRUE
+Triceps,Tricep Extension,Rope,Cable,FALSE
+Triceps,Tricep Extension,Plate Loaded,Plate Loaded,FALSE
+Triceps,Tricep Extension,Cable Bar,Cable,FALSE
+Triceps,Tricep Pushdown,Rope Cross,Cable,TRUE
+Triceps,Tricep Pushdown,Underhand Bar,Cable,FALSE
+Triceps,Tricep Pushdown,Single Arm,Cable,FALSE
+Triceps,Overhead Tricep Cable Extension,Rope,Cable,TRUE
+Triceps,Tricep Dip,Standard,Bodyweight,TRUE
+Triceps,Tricep Kickback,DBs,Dumbbells,TRUE
+Back,Lat Pulldown,D-bar,Cable,TRUE
+Back,Lat Pulldown,Neutral Grip,Cable,FALSE
+Back,Lat Pulldown,Wide Grip,Cable,FALSE
+Back,Lat Pulldown,Machine,Machine,FALSE
+Back,Seated Cable Row,Standard,Cable,TRUE
+Back,Seated Cable Row,High-to-Low,Cable,FALSE
+Back,Chest Supported Row,Standard,Machine,TRUE
+Back,Seated Machine Row,Wide Grip,Machine,TRUE
+Back,Seated Machine Row,Single Arm,Machine,FALSE
+Back,T Bar Row,Standard,T Bar,TRUE
+Back,Bent Over Row,DBs,Dumbbells,TRUE
+Back,Bent Over Row,Single DB,Dumbbell,FALSE
+Back,High Row Machine,Standard,Machine,TRUE
+Back,Straight-Arm Pulldown,Rope,Cable,TRUE
+Back,Pull-Up,Standard,Bodyweight,TRUE
+Back,Pull-Up,Chin-Up,Bodyweight,FALSE
+Back,Pull-Up,Close Grip,Bodyweight,FALSE
+Back,Shrug,Standing,Barbell,TRUE
+Back,Shrug,Seated,Dumbbells,FALSE
+Back,Shrug,Machine,Machine,FALSE
+Back,Back Extension,Standard,Bodyweight,TRUE
+Back,Back Extension,Machine,Machine,FALSE
+Biceps,DB Curl,Seated,Dumbbells,TRUE
+Biceps,DB Curl,Incline,Dumbbells,FALSE
+Biceps,DB Curl,Outside Elbow,Dumbbells,FALSE
+Biceps,DB Curl,Bent Over Single,Dumbbell,FALSE
+Biceps,Hammer Curl,DBs,Dumbbells,TRUE
+Biceps,Hammer Curl,Cable Rope,Cable,FALSE
+Biceps,EZ Bar Curl,Standard,EZ Bar,TRUE
+Biceps,EZ Bar Curl,Reverse Grip,EZ Bar,FALSE
+Biceps,EZ Bar Curl,Drag,EZ Bar,FALSE
+Biceps,Cable Bar Curl,Standard,Cable,TRUE
+Biceps,Cable Bar Curl,Double Cable,Cable,FALSE
+Biceps,Cable Bar Curl,Drag,Cable,FALSE
+Biceps,Preacher Curl,Machine,Machine,TRUE
+Biceps,Preacher Curl,Hammer Grip Machine,Machine,FALSE
+Biceps,Preacher Curl,EZ Bar,EZ Bar,FALSE
+Biceps,Spider Curl,Standard,Dumbbells,TRUE
+Other,Farmer Carry,Standard,Dumbbells,TRUE
