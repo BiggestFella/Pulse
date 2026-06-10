@@ -47,6 +47,10 @@ targets:
         SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
         DEV_USER_EMAIL: $(DEV_USER_EMAIL)
         DEV_USER_PASSWORD: $(DEV_USER_PASSWORD)
+        # Widget deep links (BAK-19): pulse://start-today, pulse://today.
+        CFBundleURLTypes:
+          - CFBundleURLName: au.com.codeheroes.pulse
+            CFBundleURLSchemes: [pulse]
     sources:
       - Pulse
       # Dual-compiled into the app target (also globbed by PulseWidgets) so the
@@ -56,6 +60,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse
+        CODE_SIGN_ENTITLEMENTS: Pulse/Pulse.entitlements
     dependencies:
       - target: PulseWidgets
         embed: true
@@ -70,11 +75,18 @@ targets:
       - path: Pulse/Core/DesignSystem/Palette.swift
       - path: Pulse/Core/DesignSystem/Theme.swift
       - path: Pulse/Features/ActiveWorkout/SkipRestIntent.swift
+      # Shared widget read-model + App Group store + deep-link routes (BAK-19).
+      # The app owns writing (WidgetSnapshotWriter, app-only); the widget reads.
+      - path: Pulse/Core/Widget/WidgetSnapshot.swift
+      - path: Pulse/Core/Widget/WidgetSnapshotStore.swift
+      - path: Pulse/Core/Widget/WidgetDeepLink.swift
+      - path: Pulse/Core/Widget/WidgetTimeline.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: au.com.codeheroes.pulse.widgets
         INFOPLIST_FILE: PulseWidgets/Info.plist
         GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: PulseWidgets/PulseWidgets.entitlements
   PulseTests:
     type: bundle.unit-test
     platform: iOS

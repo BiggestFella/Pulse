@@ -26,16 +26,22 @@ final class TodayModel {
     private let repository: any TodayRepository
     private let onStartWorkout: (UUID) -> Void
     private let onOpenSession: (UUID) -> Void
+    /// Called with the freshly-loaded snapshot so the app can mirror it to the
+    /// widget App Group (BAK-19). A decoupling hook so the model stays
+    /// WidgetKit-unaware.
+    private let onSnapshot: (TodaySnapshot) -> Void
 
     /// Most recent in-flight load, so a newer load supersedes an older one.
     private var inFlightLoad: Task<Void, Never>?
 
     init(repository: any TodayRepository,
          onStartWorkout: @escaping (UUID) -> Void = { _ in },
-         onOpenSession: @escaping (UUID) -> Void = { _ in }) {
+         onOpenSession: @escaping (UUID) -> Void = { _ in },
+         onSnapshot: @escaping (TodaySnapshot) -> Void = { _ in }) {
         self.repository = repository
         self.onStartWorkout = onStartWorkout
         self.onOpenSession = onOpenSession
+        self.onSnapshot = onSnapshot
     }
 
     /// Loads today's snapshot. Guards against overlapping loads (e.g. pull-to-
@@ -56,6 +62,7 @@ final class TodayModel {
                 week = s.week
                 yesterday = s.yesterday
                 phase = (s.today == nil) ? .empty : .loaded
+                onSnapshot(s)                  // mirror to the widget App Group (BAK-19)
             } catch is CancellationError {
                 // A newer load took over; don't clobber its state.
             } catch {

@@ -5,5 +5,6 @@ import WidgetKit
 struct PulseWidgetsBundle: WidgetBundle {
     var body: some Widget {
         WorkoutLiveActivity()
+        TodayWorkoutWidget()
     }
 }

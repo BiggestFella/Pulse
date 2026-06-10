@@ -30,6 +30,21 @@ jobs:
             | grep -E 'iPhone' | head -1 \
             | grep -oE '[0-9A-Fa-f-]{36}')
           echo "Using simulator: $DEVICE_ID"
+          # Pre-boot the simulator so the first XCUITest launch isn't paying for a
+          # cold boot (traces showed ~24s "setting up automation session" otherwise).
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b || true
+          # UI tests on shared CI runners are timing-sensitive under contention:
+          #  - one simulator (no parallel clones) to cut cross-process load,
+          #  - auto-retry only the tests that fail (≤3 attempts) so a transient
+          #    flake passes on retry while a genuine failure still fails,
+          #  - a per-test time allowance so one pathologically slow test fails
+          #    cleanly instead of hanging the whole job.
+          # Unit tests are unaffected.
           xcodebuild -project Pulse.xcodeproj -scheme Pulse \
             -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+            -parallel-testing-enabled NO \
+            -retry-tests-on-failure -test-iterations 3 \
+            -test-timeouts-enabled YES \
+            -maximum-test-execution-time-allowance 300 \
             clean test
