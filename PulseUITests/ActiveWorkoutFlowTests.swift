@@ -114,6 +114,33 @@ final class ActiveWorkoutFlowTests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
     }
 
+    // BAK-32 — finishing offline buffers the session on-device: the summary shows
+    // the calm "saved on device" note (non-blocking), Done returns to the tab bar,
+    // and the Today tab shows a persistent "pending sync" indicator.
+    func testOfflineFinishBuffersAndShowsPendingSyncIndicator() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-uiMock", "-uiTestOffline"]
+        app.launch()
+        XCTAssertTrue(app.buttons["today.hero.start"].waitForExistence(timeout: 5))
+        app.buttons["today.hero.start"].tap()
+        app.buttons["pre.begin"].tap()
+        for _ in 0..<30 {
+            if app.buttons["summary.done"].exists { break }
+            if app.buttons["active.log"].exists { app.buttons["active.log"].tap() }
+            else if app.buttons["rest.skip"].exists { app.buttons["rest.skip"].tap() }
+        }
+        XCTAssertTrue(app.buttons["summary.done"].waitForExistence(timeout: 3))
+        app.buttons["summary.done"].tap()                            // offline save → buffered
+        // Calm pending-sync note appears (info, not the blocking error).
+        let note = expectation(for: NSPredicate(format: "exists == true"),
+                               evaluatedWith: app.otherElements["summary.pendingSync"])
+        wait(for: [note], timeout: 5)
+        app.buttons["summary.done"].tap()                            // Done → tear down
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
+        // Global indicator is visible after leaving the summary.
+        XCTAssertTrue(app.buttons["today.pendingSync"].waitForExistence(timeout: 5))
+    }
+
     // AC11 — swap shows the swapped eyebrow.
     func testSwapShowsSwappedEyebrow() {
         let app = launch()
