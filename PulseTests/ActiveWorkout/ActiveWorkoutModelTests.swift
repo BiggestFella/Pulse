@@ -269,4 +269,50 @@ final class ActiveWorkoutModelTests: XCTestCase {
         m.logSet(reps: 1, weight: 10)    // est-1RM 10 ≪ baseline → not a PR
         XCTAssertEqual(m.summary.prCount, 0)
     }
+
+    // Spec AC6 — progressionSuggestion(forStep:) bumps by increment after a session
+    // that met targets (via a history mock).
+    func testProgressionSuggestionBumpsAfterMetTarget() async throws {
+        let m = ActiveWorkoutModel(
+            exerciseRepo: MockSwapAlternativesRepository(),
+            historyRepo: MetTargetHistoryRepository(),
+            sessionWriter: MockSessionWriter(),
+            autoProgress: true)
+        m.startWorkout(ActiveWorkoutSample.workout); m.beginSets()
+        m.skipSet() // step 0 is bench warmup → step 1 (working, target 12 reps)
+        await m.loadSuggestion(forStepIndex: m.stepIdx)
+        let s = try XCTUnwrap(m.currentSuggestion)
+        XCTAssertEqual(s.weight, 62.5, accuracy: 0.001) // 60 + 2.5
+        XCTAssertEqual(s.reps, 12)
+        // Spec AC7 — seeds reflect the suggestion when present.
+        XCTAssertEqual(m.seedWeight, 62.5, accuracy: 0.001)
+        XCTAssertEqual(m.seedReps, 12)
+    }
+
+    // Spec AC7 — no history → no suggestion → seeds fall back to SetSpec / planned weight.
+    func testNoSuggestionFallsBackToPlannedSeeds() async {
+        let m = ActiveWorkoutModel(
+            exerciseRepo: MockSwapAlternativesRepository(),
+            historyRepo: EmptyHistoryRepository(),
+            sessionWriter: MockSessionWriter(),
+            autoProgress: true)
+        m.startWorkout(ActiveWorkoutSample.workout); m.beginSets()
+        m.skipSet() // → step 1 (bench working, planned 60 kg, 12 reps)
+        await m.loadSuggestion(forStepIndex: m.stepIdx)
+        XCTAssertNil(m.currentSuggestion)
+        XCTAssertEqual(m.seedWeight, 60, accuracy: 0.001)   // ActiveWorkoutSample.plannedWeight(1,*)
+        XCTAssertEqual(m.seedReps, 12)                      // SetSpec.reps
+    }
+
+    // Warmup sets get no suggestion even with history.
+    func testWarmupStepHasNoSuggestion() async {
+        let m = ActiveWorkoutModel(
+            exerciseRepo: MockSwapAlternativesRepository(),
+            historyRepo: MetTargetHistoryRepository(),
+            sessionWriter: MockSessionWriter(),
+            autoProgress: true)
+        m.startWorkout(ActiveWorkoutSample.workout); m.beginSets() // step 0 = warmup
+        await m.loadSuggestion(forStepIndex: m.stepIdx)
+        XCTAssertNil(m.currentSuggestion)
+    }
 }

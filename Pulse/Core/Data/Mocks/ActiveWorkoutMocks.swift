@@ -74,6 +74,23 @@ struct MockHistoryRepository: HistoryRepository {
     }
 }
 
+/// History where the most-recent session hit the working target at a known
+/// weight — used to assert `progressionSuggestion` bumps by the increment.
+struct MetTargetHistoryRepository: HistoryRepository {
+    func recentSets(exerciseID: Exercise.ID) async throws -> [SessionSet] {
+        // bench set index 1 is a working set planned at 12 reps; "met" → 12 @ 60.
+        [SessionSet(exerciseID: exerciseID, order: 0, reps: 15, weight: 40, type: .warmup),
+         SessionSet(exerciseID: exerciseID, order: 1, reps: 12, weight: 60, type: .working),
+         SessionSet(exerciseID: exerciseID, order: 2, reps: 10, weight: 60, type: .working),
+         SessionSet(exerciseID: exerciseID, order: 3, reps: 8,  weight: 60, type: .working)]
+    }
+}
+
+/// History repo with nothing logged yet — drives the "no suggestion" path.
+struct EmptyHistoryRepository: HistoryRepository {
+    func recentSets(exerciseID: Exercise.ID) async throws -> [SessionSet] { [] }
+}
+
 final class MockSessionWriter: SessionWriter {
     private(set) var saved: [WorkoutSession] = []
     private(set) var attempts: Int = 0
