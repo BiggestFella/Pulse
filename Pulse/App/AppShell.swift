@@ -41,6 +41,10 @@ struct AppShell: View {
         if args.contains("-uiTestRestDay") { repo = .restDay }
         else if args.contains("-uiTestError") { repo = .failing }
         else { repo = .sample }
+        // Widget mirroring is inert under the UI-test mock path: it would spawn the
+        // widget extension (WidgetCenter reload) on every launch, adding
+        // nondeterministic cross-process load to the UI suite (BAK-19).
+        let widgetsEnabled = !RepositoryContainer.useMock()
         _todayModel = State(initialValue: TodayModel(
             repository: repo,
             // Start → launches the active flow with the path-appropriate workout.
@@ -48,11 +52,11 @@ struct AppShell: View {
             onOpenSession: { _ in /* handled by TodayView path push */ },
             // Mirror each fresh Today load into the widget snapshot, in the
             // user's persisted palette (BAK-19).
-            onSnapshot: { snapshot in
+            onSnapshot: widgetsEnabled ? { snapshot in
                 let palette = UserDefaults.standard.string(forKey: Theme.paletteDefaultsKey)
                     .flatMap(Palette.init(rawValue:)) ?? .default
                 writer.update(from: snapshot, palette: palette)
-            }))
+            } : { _ in }))
     }
 
     var body: some View {
@@ -79,8 +83,11 @@ struct AppShell: View {
             // Returning to the foreground is a good moment to retry a pending sync.
             if phase == .active { Task { await container.flushPending() } }
         }
-        // Re-skin the widget when the user switches palette (BAK-19).
-        .onChange(of: theme.palette) { _, new in widgetWriter.repaint(palette: new) }
+        // Re-skin the widget when the user switches palette (BAK-19) — inert under
+        // the UI-test mock path (see init).
+        .onChange(of: theme.palette) { _, new in
+            if !RepositoryContainer.useMock() { widgetWriter.repaint(palette: new) }
+        }
         // Resolve widget deep links (BAK-19).
         .onOpenURL { url in
             switch WidgetDeepLink(url) {

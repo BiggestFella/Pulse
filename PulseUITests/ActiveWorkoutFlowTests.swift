@@ -135,11 +135,11 @@ final class ActiveWorkoutFlowTests: XCTestCase {
         app.buttons["summary.done"].tap()                            // offline save → buffered
         // Calm pending-sync note appears (info, not the blocking error). Generous
         // timeout: the save Task does file I/O and CI runners can be heavily starved.
-        XCTAssertTrue(app.staticTexts["summary.pendingSync"].waitForExistence(timeout: 25))
+        XCTAssertTrue(app.staticTexts["summary.pendingSync"].waitForExistence(timeout: 40))
         app.buttons["summary.done"].tap()                            // Done → tear down to Today
         // The global indicator is visible after leaving the summary (a reliable
         // Button query — its presence also confirms we're back on the Today tab).
-        XCTAssertTrue(app.buttons["today.pendingSync"].waitForExistence(timeout: 25))
+        XCTAssertTrue(app.buttons["today.pendingSync"].waitForExistence(timeout: 40))
     }
 
     // AC11 — swap shows the swapped eyebrow.
