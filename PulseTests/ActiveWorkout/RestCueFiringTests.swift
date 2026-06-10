@@ -84,4 +84,17 @@ final class RestCueFiringTests: XCTestCase {
         XCTAssertEqual(cue.endCount, 1)                // still one
         XCTAssertEqual(cue.teardownCount, 1)           // teardown not repeated
     }
+
+    // Sound off: no warn() / end(), but rest still progresses and advances the step.
+    func testSoundOffSilencesCuesButRestStillAdvances() {
+        let (m, cue) = make(sound: false)
+        enterRest(m)
+        let startStep = m.stepIdx
+        _ = m.tick(now: base.addingTimeInterval(80))   // warn window
+        _ = m.tick(now: base.addingTimeInterval(90))   // end
+        XCTAssertEqual(cue.warnCount, 0)
+        XCTAssertEqual(cue.endCount, 0)
+        XCTAssertEqual(m.phase, .active)               // advanced
+        XCTAssertEqual(m.stepIdx, startStep + 1)
+    }
 }
