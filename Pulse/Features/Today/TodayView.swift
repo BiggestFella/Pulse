@@ -60,7 +60,7 @@ struct TodayView: View {
 
     private func loaded(skeleton: Bool) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: theme.spacing[5]) {
                 topBar
                 greetingRow
                 if let store = pendingStore, store.pendingCount > 0 {
@@ -78,7 +78,7 @@ struct TodayView: View {
                     }
                 }
             }
-            .padding(18)
+            .padding(theme.spacing[5])
         }
     }
 
@@ -89,7 +89,7 @@ struct TodayView: View {
             Button { /* inert placeholder (product decision) */ } label: {
                 Image(systemName: "ellipsis").foregroundStyle(theme.inkSoft)
             }
-            .buttonStyle(PressableStyle())
+            .buttonStyle(IconButtonStyle())
             .accessibilityIdentifier("today.overflow")
         }
     }
@@ -97,13 +97,13 @@ struct TodayView: View {
     private var greetingRow: some View {
         HStack(alignment: .lastTextBaseline) {
             Text("Hey, \(model.greetingName).")
-                .font(.system(size: 30, weight: .heavy))
+                .pulseStyle(.h1)
                 .foregroundStyle(theme.ink)
                 .accessibilityIdentifier("today.greeting")
             Spacer()
             HStack(alignment: .lastTextBaseline, spacing: 1) {
                 Text("\(model.streak)")
-                    .font(.system(size: 26, weight: .bold))
+                    .pulseStyle(.statNumeral)
                     .foregroundStyle(theme.accent2)
                 Text("D")
                     .font(.system(size: 11, weight: .semibold))
@@ -114,15 +114,12 @@ struct TodayView: View {
     }
 
     private var errorState: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: theme.spacing[4]) {
             Text("Couldn't load Today.")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(theme.ink)
             Button("Retry") { Task { await model.load() } }
-                .foregroundStyle(theme.onAccent)
-                .padding(.horizontal, 18).padding(.vertical, 10)
-                .background(theme.accent, in: RoundedRectangle(cornerRadius: 999))
-                .buttonStyle(PressableStyle())
+                .buttonStyle(PressableButtonStyle(variant: .primary, size: .sm))
                 .accessibilityIdentifier("today.retry")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
