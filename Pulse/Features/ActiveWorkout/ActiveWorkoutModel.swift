@@ -10,6 +10,7 @@ final class ActiveWorkoutModel {
     private let exerciseRepo: SwapAlternativesProviding
     private let historyRepo: HistoryRepository
     private let sessionWriter: SessionWriter
+    private let restCue: RestCuePlaying
 
     // session state
     private(set) var workout: Workout = ActiveWorkoutSample.workout
@@ -27,16 +28,27 @@ final class ActiveWorkoutModel {
     // rest state (absolute end is Live-Activity-friendly)
     let restTotal: TimeInterval = 90
     private(set) var restEndsAt: Date?
+    /// Mirrors `UserSettings.soundOnRestEnd`. When false, no cues fire (rest still
+    /// advances normally). Settable so the app shell can sync it from settings.
+    var soundOnRestEnd: Bool
+    /// Edge-trigger guard: true once `warn()` has fired for the current rest.
+    /// Re-armed to false on `startRest` and on any `adjustRest` that pushes
+    /// remaining back above the 10s warn threshold.
+    private(set) var didWarn = false
 
     // baseline est-1RM per exercise for PR detection (loaded from history)
     private var prBaseline: [Exercise.ID: Double] = [:]
 
     init(exerciseRepo: SwapAlternativesProviding,
          historyRepo: HistoryRepository,
-         sessionWriter: SessionWriter) {
+         sessionWriter: SessionWriter,
+         restCue: RestCuePlaying = NoopRestCueService(),
+         soundOnRestEnd: Bool = true) {
         self.exerciseRepo = exerciseRepo
         self.historyRepo = historyRepo
         self.sessionWriter = sessionWriter
+        self.restCue = restCue
+        self.soundOnRestEnd = soundOnRestEnd
     }
 
     // MARK: - lifecycle
