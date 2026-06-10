@@ -111,8 +111,12 @@ final class ActiveWorkoutModel {
 
     /// Rest finished (auto at 0) or "Skip rest" — advance, clamp, back to active.
     /// Guarded so a stray `TimelineView` tick after we've left rest is a no-op.
-    func afterRest() {
+    /// Plays the end cue only on a natural finish (remaining <= 0); Skip is silent.
+    func afterRest(now: Date = .now) {
         guard phase == .rest else { return }
+        let ended = remainingRest(now: now) <= 0
+        if ended, soundOnRestEnd { restCue.end() }
+        restCue.teardown()
         stepIdx = min(stepIdx + 1, steps.count - 1)
         restEndsAt = nil
         phase = .active
@@ -124,7 +128,29 @@ final class ActiveWorkoutModel {
         phase = .active
     }
 
-    private func startRest(now: Date) { restEndsAt = now.addingTimeInterval(restTotal) }
+    private func startRest(now: Date) {
+        restEndsAt = now.addingTimeInterval(restTotal)
+        didWarn = false
+        restCue.prepare()
+    }
+
+    /// Called every `TimelineView` tick while resting. Computes remaining time,
+    /// fires the warn cue once at <= 10s and the end transition at <= 0, and
+    /// returns the remaining seconds for the view. Edge-triggering lives here
+    /// (not the view) so the 0.2s cadence and stray ticks can't double-fire.
+    @discardableResult
+    func tick(now: Date = .now) -> TimeInterval {
+        let remaining = remainingRest(now: now)
+        guard phase == .rest else { return remaining }
+        if remaining <= 10, !didWarn {
+            didWarn = true
+            if soundOnRestEnd { restCue.warn() }
+        }
+        if remaining <= 0 {
+            afterRest(now: now)
+        }
+        return remaining
+    }
 
     func adjustRest(_ delta: TimeInterval, now: Date = .now) {
         guard let end = restEndsAt else { return }
