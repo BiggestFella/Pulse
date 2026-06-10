@@ -4,6 +4,7 @@ struct PersonalRecordsView: View {
     @Environment(Theme.self) private var theme
     @Environment(\.dismiss) private var dismiss
     @State private var model: PersonalRecordsModel
+    @State private var showsCalculator = false
 
     init(prRepo: any PRRepository, exerciseRepo: any ExerciseRepository) {
         _model = State(initialValue: PersonalRecordsModel(prRepo: prRepo, exerciseRepo: exerciseRepo))
@@ -19,6 +20,13 @@ struct PersonalRecordsView: View {
         .background(theme.bg.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .task { await model.load() }
+        .pulseSheet(isPresented: $showsCalculator, eyebrow: "WHAT-IF", title: "1RM calculator.") {
+            if let hero = model.hero {
+                OneRepMaxCalculatorSheet(weight: hero.weight, reps: hero.reps)
+            } else {
+                OneRepMaxCalculatorSheet()
+            }
+        }
     }
 
     private var topBar: some View {
@@ -30,9 +38,10 @@ struct PersonalRecordsView: View {
             Spacer()
             StatLabel("PERSONAL RECORDS")
             Spacer()
-            Image(systemName: "ellipsis")
-                .foregroundStyle(theme.inkSoft)
-                .accessibilityIdentifier("pr.overflow")
+            Button("1RM") { showsCalculator = true }
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(theme.accent)
+                .accessibilityIdentifier("pr.calc")
         }
         .padding(.top, theme.spacing[3])
     }
@@ -127,6 +136,10 @@ struct PersonalRecordsView: View {
                     .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(theme.accent2)
             }
+            Text("EST. 1RM · \(WeightFormat.kg(pr.estimatedOneRepMax))")
+                .pulseStyle(.eyebrow)
+                .foregroundStyle(theme.onAccent.opacity(0.85))
+                .accessibilityIdentifier("pr.hero.est1rm")
         }
         .padding(theme.spacing[5])
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -165,6 +178,10 @@ struct PersonalRecordsView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(theme.accent2)
             }
+            Text("EST. 1RM · \(WeightFormat.kg(pr.estimatedOneRepMax))")
+                .pulseStyle(.eyebrow)
+                .foregroundStyle(theme.inkSoft)
+                .accessibilityIdentifier("pr.grid.est1rm")
             StatLabel(relativeDate(pr.achievedAt))
         }
         .padding(.horizontal, theme.spacing[4])
