@@ -6,11 +6,11 @@ struct RestView: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.2)) { context in
-            let remaining = model.remainingRest(now: context.date)
+            // tick(now:) advances cue firing AND returns remaining for the view.
+            // afterRest() is now called inside tick at remaining <= 0, so the
+            // previous onChange(remaining <= 0) trigger is removed.
+            let remaining = model.tick(now: context.date)
             content(remaining: remaining)
-                .onChange(of: remaining <= 0) { _, done in
-                    if done { model.afterRest() }
-                }
         }
     }
 
