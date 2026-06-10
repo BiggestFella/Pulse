@@ -48,7 +48,11 @@ targets:
         DEV_USER_EMAIL: $(DEV_USER_EMAIL)
         DEV_USER_PASSWORD: $(DEV_USER_PASSWORD)
     sources:
-      - Pulse
+      - path: Pulse
+        excludes:
+          - "Resources/Audio/**"
+      - path: Pulse/Resources/Audio
+        buildPhase: resources
       # Dual-compiled into the app target (also globbed by PulseWidgets) so the
       # DEBUG LiveActivityDebugScreen can render the shared Live Activity subviews
       # in-app for XCUITest. Keep this path in sync if the file moves.
