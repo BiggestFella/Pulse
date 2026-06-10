@@ -156,6 +156,9 @@ final class ActiveWorkoutModel {
         guard let end = restEndsAt else { return }
         let newRemaining = max(0, end.timeIntervalSince(now) + delta)
         restEndsAt = now.addingTimeInterval(newRemaining)
+        // Re-arm the warn if the adjustment pushed us back above the warn window,
+        // so a later descent through 10s warns again.
+        if newRemaining > 10 { didWarn = false }
     }
 
     func remainingRest(now: Date = .now) -> TimeInterval {

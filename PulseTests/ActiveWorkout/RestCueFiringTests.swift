@@ -97,4 +97,30 @@ final class RestCueFiringTests: XCTestCase {
         XCTAssertEqual(m.phase, .active)               // advanced
         XCTAssertEqual(m.stepIdx, startStep + 1)
     }
+
+    // Warn fires at 10s; +30s pushes remaining back to 40s and re-arms; a later
+    // pass through the 10s window warns a SECOND time.
+    func testAdjustAboveThresholdReArmsWarn() {
+        let (m, cue) = make()
+        enterRest(m)                                    // restEndsAt = base + 90
+        _ = m.tick(now: base.addingTimeInterval(82))    // remaining 8 → warn (#1)
+        XCTAssertEqual(cue.warnCount, 1)
+        m.adjustRest(30, now: base.addingTimeInterval(82)) // remaining 8 → 38 (> 10): re-arm
+        XCTAssertFalse(m.didWarn)
+        _ = m.tick(now: base.addingTimeInterval(82))    // remaining 38 → no warn yet
+        XCTAssertEqual(cue.warnCount, 1)
+        _ = m.tick(now: base.addingTimeInterval(112))   // remaining 8 again → warn (#2)
+        XCTAssertEqual(cue.warnCount, 2)
+    }
+
+    // An adjustment that stays within the warn window does NOT re-arm (no extra warn).
+    func testAdjustWithinWindowDoesNotReArm() {
+        let (m, cue) = make()
+        enterRest(m)
+        _ = m.tick(now: base.addingTimeInterval(82))    // remaining 8 → warn (#1)
+        m.adjustRest(-2, now: base.addingTimeInterval(82)) // remaining 8 → 6 (still <= 10)
+        XCTAssertTrue(m.didWarn)
+        _ = m.tick(now: base.addingTimeInterval(82))
+        XCTAssertEqual(cue.warnCount, 1)                // no second warn
+    }
 }
