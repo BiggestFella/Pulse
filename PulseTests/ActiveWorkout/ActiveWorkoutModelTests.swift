@@ -235,6 +235,32 @@ final class ActiveWorkoutModelTests: XCTestCase {
         XCTAssertEqual(writer.attempts, 2)
     }
 
+    // MARK: - BAK-32: offline finish buffers + surfaces a calm pending-sync state
+
+    // An offline (URLError) save means the writer has buffered the session
+    // on-device, so the model finishes calmly as .pendingSync and keeps the
+    // summary up (Done tears it down) rather than blocking on .failed.
+    func testOfflineFinishSurfacesPendingSyncAndKeepsSummary() async {
+        let writer = MockSessionWriter(); writer.failAlways = URLError(.notConnectedToInternet)
+        let m = started(writer: writer); m.beginSets()
+        m.logSet(reps: 12, weight: 100)
+        await m.finishAndSave()
+        XCTAssertEqual(m.saveState, .pendingSync)
+        XCTAssertTrue(m.isActive)                  // summary stays up to show the note
+        m.endWorkout()                             // Done button
+        XCTAssertFalse(m.isActive)
+    }
+
+    // A non-connectivity error is a hard failure: keep the blocking BAK-31 UI.
+    func testHardFailureStillBlocksWithRetry() async {
+        let writer = MockSessionWriter(); writer.failAlways = NSError(domain: "server", code: 500)
+        let m = started(writer: writer); m.beginSets()
+        m.logSet(reps: 12, weight: 100)
+        await m.finishAndSave()
+        if case .failed = m.saveState {} else { XCTFail("expected .failed, got \(m.saveState)") }
+        XCTAssertTrue(m.isActive)
+    }
+
     // PR count consults the history baseline (not trivially "everything is a PR").
     func testPRCountUsesHistoryBaseline() async {
         let m = started(); m.beginSets()

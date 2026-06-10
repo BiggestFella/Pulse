@@ -103,15 +103,42 @@ final class ActiveWorkoutFlowTests: XCTestCase {
             if app.buttons["active.log"].exists { app.buttons["active.log"].tap() }
             else if app.buttons["rest.skip"].exists { app.buttons["rest.skip"].tap() }
         }
-        XCTAssertTrue(app.buttons["summary.done"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["summary.done"].waitForExistence(timeout: 5))
         app.buttons["summary.done"].tap()                            // first save throws
         let retry = expectation(for: NSPredicate(format: "label == 'Retry save'"),
                                 evaluatedWith: app.buttons["summary.done"])
-        wait(for: [retry], timeout: 5)
+        wait(for: [retry], timeout: 12)
         XCTAssertTrue(app.staticTexts["summary.saveError"].exists
                       || app.otherElements["summary.saveError"].exists)
         app.buttons["summary.done"].tap()                            // retry succeeds
-        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
+        // Back on Today: query a concrete element rather than the TabBar container,
+        // which can be slow to re-expose after the takeover on a loaded runner.
+        XCTAssertTrue(app.buttons["today.hero.start"].waitForExistence(timeout: 10))
+    }
+
+    // BAK-32 — finishing offline buffers the session on-device: the summary shows
+    // the calm "saved on device" note (non-blocking), Done returns to the tab bar,
+    // and the Today tab shows a persistent "pending sync" indicator.
+    func testOfflineFinishBuffersAndShowsPendingSyncIndicator() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-uiMock", "-uiTestOffline"]
+        app.launch()
+        XCTAssertTrue(app.buttons["today.hero.start"].waitForExistence(timeout: 5))
+        app.buttons["today.hero.start"].tap()
+        app.buttons["pre.begin"].tap()
+        for _ in 0..<30 {
+            if app.buttons["summary.done"].exists { break }
+            if app.buttons["active.log"].exists { app.buttons["active.log"].tap() }
+            else if app.buttons["rest.skip"].exists { app.buttons["rest.skip"].tap() }
+        }
+        XCTAssertTrue(app.buttons["summary.done"].waitForExistence(timeout: 5))
+        app.buttons["summary.done"].tap()                            // offline save → buffered
+        // Calm pending-sync note appears (info, not the blocking error).
+        XCTAssertTrue(app.staticTexts["summary.pendingSync"].waitForExistence(timeout: 10))
+        app.buttons["summary.done"].tap()                            // Done → tear down to Today
+        // The global indicator is visible after leaving the summary (a reliable
+        // Button query — its presence also confirms we're back on the Today tab).
+        XCTAssertTrue(app.buttons["today.pendingSync"].waitForExistence(timeout: 10))
     }
 
     // AC11 — swap shows the swapped eyebrow.

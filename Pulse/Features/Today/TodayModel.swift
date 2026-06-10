@@ -23,13 +23,16 @@ final class TodayModel {
     /// Header trailing eyebrow, e.g. "3 OF 5 DONE".
     var weekProgressLabel: String { "\(doneCount) OF \(plannedCount) DONE" }
 
-    private var repository: any TodayRepository
+    private let repository: any TodayRepository
     private let onStartWorkout: (UUID) -> Void
     private let onOpenSession: (UUID) -> Void
     /// Called with the freshly-loaded snapshot so the app can mirror it to the
     /// widget App Group (BAK-19). A decoupling hook so the model stays
     /// WidgetKit-unaware.
     private let onSnapshot: (TodaySnapshot) -> Void
+
+    /// Most recent in-flight load, so a newer load supersedes an older one.
+    private var inFlightLoad: Task<Void, Never>?
 
     init(repository: any TodayRepository,
          onStartWorkout: @escaping (UUID) -> Void = { _ in },
@@ -41,21 +44,33 @@ final class TodayModel {
         self.onSnapshot = onSnapshot
     }
 
+    /// Loads today's snapshot. Guards against overlapping loads (e.g. pull-to-
+    /// refresh firing while the initial load is still in flight): a newer load
+    /// cancels the older one, and a superseded load discards its result so an
+    /// out-of-order completion can't write stale data.
     func load() async {
-        phase = .loading
-        do {
-            let s = try await repository.loadToday()
-            dateEyebrow = s.dateEyebrow
-            greetingName = s.greetingName
-            streak = s.streak
-            today = s.today
-            week = s.week
-            yesterday = s.yesterday
-            phase = (s.today == nil) ? .empty : .loaded
-            onSnapshot(s)                  // mirror to the widget App Group (BAK-19)
-        } catch {
-            phase = .error
+        inFlightLoad?.cancel()
+        let task = Task { @MainActor in
+            phase = .loading
+            do {
+                let s = try await repository.loadToday()
+                try Task.checkCancellation()   // superseded? leave state to the newer load
+                dateEyebrow = s.dateEyebrow
+                greetingName = s.greetingName
+                streak = s.streak
+                today = s.today
+                week = s.week
+                yesterday = s.yesterday
+                phase = (s.today == nil) ? .empty : .loaded
+                onSnapshot(s)                  // mirror to the widget App Group (BAK-19)
+            } catch is CancellationError {
+                // A newer load took over; don't clobber its state.
+            } catch {
+                phase = .error
+            }
         }
+        inFlightLoad = task
+        await task.value
     }
 
     func startTodaysWorkout() {
@@ -67,7 +82,4 @@ final class TodayModel {
         guard let id = yesterday?.sessionID else { return }
         onOpenSession(id)
     }
-
-    /// Test/recovery seam: swap the repo (e.g. after an error) then `load()` again.
-    func replaceRepository(_ repo: any TodayRepository) { repository = repo }
 }
