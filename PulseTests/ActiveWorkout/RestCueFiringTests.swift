@@ -55,4 +55,33 @@ final class RestCueFiringTests: XCTestCase {
         XCTAssertEqual(cue.teardownCount, 1)
         XCTAssertEqual(m.phase, .active)
     }
+
+    // From a 90s rest, exactly one warn() at <= 10s and exactly one end() at 0.
+    func testOneWarnAtTenSecondsAndOneEndAtZero() {
+        let (m, cue) = make()
+        enterRest(m)
+        // Tick across the warn boundary multiple times — must not double-warn.
+        _ = m.tick(now: base.addingTimeInterval(79))   // remaining 11 → no warn
+        XCTAssertEqual(cue.warnCount, 0)
+        _ = m.tick(now: base.addingTimeInterval(80))   // remaining 10 → warn
+        _ = m.tick(now: base.addingTimeInterval(80.2)) // still in window → no second warn
+        _ = m.tick(now: base.addingTimeInterval(85))   // still in window → no second warn
+        XCTAssertEqual(cue.warnCount, 1)
+        XCTAssertEqual(cue.endCount, 0)
+        _ = m.tick(now: base.addingTimeInterval(90))   // remaining 0 → end
+        XCTAssertEqual(cue.endCount, 1)
+        XCTAssertEqual(cue.warnCount, 1)
+    }
+
+    // A stray tick after the model has already left rest does not fire a 2nd end().
+    func testStrayTickAfterFinishDoesNotDoubleFire() {
+        let (m, cue) = make()
+        enterRest(m)
+        _ = m.tick(now: base.addingTimeInterval(90))   // ends: end() once, phase → active
+        XCTAssertEqual(cue.endCount, 1)
+        _ = m.tick(now: base.addingTimeInterval(90.2)) // stray tick, phase == .active
+        _ = m.tick(now: base.addingTimeInterval(91))   // stray tick
+        XCTAssertEqual(cue.endCount, 1)                // still one
+        XCTAssertEqual(cue.teardownCount, 1)           // teardown not repeated
+    }
 }
