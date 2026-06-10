@@ -26,13 +26,19 @@ final class TodayModel {
     private var repository: any TodayRepository
     private let onStartWorkout: (UUID) -> Void
     private let onOpenSession: (UUID) -> Void
+    /// Called with the freshly-loaded snapshot so the app can mirror it to the
+    /// widget App Group (BAK-19). A decoupling hook so the model stays
+    /// WidgetKit-unaware.
+    private let onSnapshot: (TodaySnapshot) -> Void
 
     init(repository: any TodayRepository,
          onStartWorkout: @escaping (UUID) -> Void = { _ in },
-         onOpenSession: @escaping (UUID) -> Void = { _ in }) {
+         onOpenSession: @escaping (UUID) -> Void = { _ in },
+         onSnapshot: @escaping (TodaySnapshot) -> Void = { _ in }) {
         self.repository = repository
         self.onStartWorkout = onStartWorkout
         self.onOpenSession = onOpenSession
+        self.onSnapshot = onSnapshot
     }
 
     func load() async {
@@ -46,6 +52,7 @@ final class TodayModel {
             week = s.week
             yesterday = s.yesterday
             phase = (s.today == nil) ? .empty : .loaded
+            onSnapshot(s)                  // mirror to the widget App Group (BAK-19)
         } catch {
             phase = .error
         }
