@@ -67,12 +67,12 @@ struct SummaryView: View {
                     Image(systemName: "icloud.and.arrow.up").foregroundStyle(theme.accent)
                     Text("Saved on this device — will sync when you’re back online.")
                         .font(.caption).foregroundStyle(theme.ink)
+                        .accessibilityIdentifier("summary.pendingSync")
                     Spacer()
                 }
                 .padding(theme.spacing[2])
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(theme.surface2, in: RoundedRectangle(cornerRadius: theme.radiusCard))
-                .accessibilityIdentifier("summary.pendingSync")
             }
 
             HStack(spacing: 8) {
