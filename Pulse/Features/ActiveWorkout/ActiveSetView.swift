@@ -20,6 +20,7 @@ struct ActiveSetView: View {
             progressSegments
             exerciseHeader
             actionChips
+            if let s = model.currentSuggestion { suggestionPill(s) }
             heroCard
             // BAK-30: failure/AMRAP sets also show the entry controls so you can
             // record the weight you used and the reps you actually hit.
@@ -29,10 +30,30 @@ struct ActiveSetView: View {
             footer
         }
         .padding(theme.spacing[5])
-        .onChange(of: model.stepIdx, initial: true) { _, _ in
+        .task(id: model.stepIdx) {
+            await model.loadSuggestion(forStepIndex: model.stepIdx)
             reps = model.seedReps
             weight = model.seedWeight
         }
+    }
+
+    /// Informational progression pill — the steppers are already pre-seeded with
+    /// this value, so the pill is read-only (lowest friction, per spec). Mono
+    /// label per the design system; sits next to the History chip.
+    private func suggestionPill(_ s: ProgressionSuggestion) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("SUGGESTED · \(WeightFormat.kg(s.weight)) × \(s.reps)")
+                .font(.system(.caption2, design: .monospaced))
+                .foregroundStyle(theme.accent2)
+            Text(s.rationale)
+                .font(.system(.caption2, design: .monospaced))
+                .foregroundStyle(theme.inkSoft)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8).padding(.horizontal, 12)
+        .background(theme.surface, in: RoundedRectangle(cornerRadius: theme.radiusChip))
+        .overlay(RoundedRectangle(cornerRadius: theme.radiusChip).strokeBorder(theme.inkFaint, lineWidth: 1))
+        .accessibilityIdentifier("active.suggestionPill")
     }
 
     private var topBar: some View {
