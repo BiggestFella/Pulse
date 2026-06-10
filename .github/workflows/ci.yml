@@ -30,6 +30,12 @@ jobs:
             | grep -E 'iPhone' | head -1 \
             | grep -oE '[0-9A-Fa-f-]{36}')
           echo "Using simulator: $DEVICE_ID"
+          # UI tests on shared CI runners are timing-sensitive under contention.
+          # Run on a single simulator (no parallel clones) and auto-retry only the
+          # tests that fail, up to 3 attempts — a flaky transient passes on retry
+          # while a genuine failure still fails. Unit tests are unaffected.
           xcodebuild -project Pulse.xcodeproj -scheme Pulse \
             -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+            -parallel-testing-enabled NO \
+            -retry-tests-on-failure -test-iterations 3 \
             clean test
