@@ -11,19 +11,22 @@ final class TodayViewModelsTests: XCTestCase {
         let card = TodayWorkoutCard(
             workoutID: UUID(),
             programLabel: "PPL", week: 4, day: 23,
-            name: "Chest & Tris", exerciseCount: 7, est: "~60 min")
+            name: "Chest & Tris", exerciseCount: 7, estimatedMinutes: 60)
         XCTAssertEqual(card.programLabel, "PPL")
         XCTAssertEqual(card.day, 23)
         XCTAssertEqual(card.exerciseCount, 7)
+        XCTAssertEqual(card.estimatedMinutes, 60)
     }
 
     func testTodayWorkoutCardComputesLabels() {
         let card = TodayWorkoutCard(
             workoutID: UUID(),
             programLabel: "PPL", week: 4, day: 23,
-            name: "Chest & Tris", exerciseCount: 7, est: "~60 min")
+            name: "Chest & Tris", exerciseCount: 7, estimatedMinutes: 60)
         XCTAssertEqual(card.eyebrow, "TODAY · PPL · WEEK 4")
         XCTAssertEqual(card.dayLabel, "Day 23")
+        // Duration is formatted from the structured minutes at the projection layer.
+        XCTAssertEqual(card.est, "~60 min")
         XCTAssertEqual(card.footerEyebrow, "7 EXERCISES · ~60 MIN")
     }
 
