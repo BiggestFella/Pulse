@@ -9,8 +9,7 @@ struct Eyebrow: View {
     init(_ text: String, emphasis: Double = 1.0) { self.text = text; self.emphasis = emphasis }
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
-            .tracking(1.6)
+            .pulseStyle(.eyebrow)
             .foregroundStyle(theme.inkSoft.opacity(emphasis))
     }
 }

@@ -9,7 +9,7 @@ struct YesterdayRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: theme.spacing[0]) {
                     Text(recap.name)
                         .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(theme.ink)
@@ -20,7 +20,7 @@ struct YesterdayRow: View {
                 Spacer()
                 Image(systemName: "chevron.right").foregroundStyle(theme.inkSoft)
             }
-            .padding(14)
+            .padding(theme.spacing[4])
             .background(theme.surface, in: RoundedRectangle(cornerRadius: 14))
             .opacity(0.85)
         }

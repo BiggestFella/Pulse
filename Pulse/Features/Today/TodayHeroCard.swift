@@ -8,7 +8,7 @@ struct TodayHeroCard: View {
     let onStart: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: theme.spacing[4]) {
             if let card {
                 Eyebrow(card.eyebrow, emphasis: 0.85)
                     .foregroundStyle(theme.onAccent.opacity(0.85))
@@ -26,16 +26,16 @@ struct TodayHeroCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(theme.spacing[5])
         .background(theme.accent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .contain)   // expose child ids (start/name) instead of shadowing them
         .accessibilityIdentifier("today.hero")
     }
 
     private func lockup(_ card: TodayWorkoutCard) -> some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .top, spacing: theme.spacing[4]) {
             PosterNumeral(value: card.exerciseCount, size: 72, color: theme.onAccent)
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: theme.spacing[0]) {
                 Eyebrow(card.dayLabel, emphasis: 0.85)
                     .foregroundStyle(theme.onAccent.opacity(0.85))
                 Text(card.name)
@@ -58,9 +58,9 @@ struct TodayHeroCard: View {
                     Image(systemName: "arrow.right")
                 }
                 .foregroundStyle(theme.bg)
-                .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(theme.ink, in: RoundedRectangle(cornerRadius: 999))
-                .overlay(RoundedRectangle(cornerRadius: 999).strokeBorder(theme.ink, lineWidth: 2))
+                .padding(.horizontal, theme.spacing[4]).padding(.vertical, theme.spacing[1])
+                .background(theme.ink, in: RoundedRectangle(cornerRadius: theme.radiusPill))
+                .overlay(RoundedRectangle(cornerRadius: theme.radiusPill).strokeBorder(theme.ink, lineWidth: 2))
             }
             .buttonStyle(PressableStyle())
             .accessibilityIdentifier("today.hero.start")

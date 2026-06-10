@@ -7,13 +7,13 @@ struct TodayWeekStrip: View {
     let progressLabel: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: theme.spacing[2]) {
             HStack {
                 Eyebrow("THIS WEEK")
                 Spacer()
                 Eyebrow(progressLabel)
             }
-            HStack(spacing: 8) {
+            HStack(spacing: theme.spacing[1]) {
                 ForEach(week) { cell in WeekCell(cell: cell) }
             }
         }
