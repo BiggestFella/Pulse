@@ -61,14 +61,12 @@ protocol RestCuePlaying {
 
 Real implementation `RestCueService`:
 
-- **Audio session:** `AVAudioSession.sharedInstance()` category `.ambient` with
-  options `[.mixWithOthers]` (does not stop other audio; respects the silent
-  switch — acceptable because haptics + the on-screen timer cover muted users).
-  Activate on `prepare()`, deactivate with
-  `setActive(false, options: .notifyOthersOnDeactivation)` on `teardown()`.
-  - *Decision point in Open Questions:* `.ambient` (mute-respecting, never ducks)
-    vs `.playback + .mixWithOthers + .duckOthers` (audible even on silent, briefly
-    dips music). Default `.ambient`.
+- **Audio session:** `AVAudioSession.sharedInstance()` category **`.playback`** with
+  options **`[.mixWithOthers, .duckOthers]`** (DECIDED 2026-06-10). Background audio
+  (Spotify/podcasts) keeps playing but is briefly ducked under the cue, and the cue
+  is **audible even when the hardware silent switch is on** — chosen because the
+  original complaint was inaudibility in the gym. Activate on `prepare()`, deactivate
+  with `setActive(false, options: .notifyOthersOnDeactivation)` on `teardown()`.
 - **Players:** two short bundled `.caf`/`.m4a` assets preloaded into
   `AVAudioPlayer`s — `warn` (single soft tick) and `end` (double chime).
 - **Haptics:** `UINotificationFeedbackGenerator` (`.success` on end) and
@@ -104,13 +102,12 @@ Unit (model + `MockRestCueService`):
 
 Manual (device — the audio-session behaviour can't be unit-tested):
 6. With Spotify playing, run a rest: music keeps playing; cues are audible over it.
-7. Silent switch on: haptics fire; (with `.ambient`) cues are silent — acceptable.
+7. Silent switch on: cues are still audible (`.playback`) and haptics fire.
 
 ## Open questions
 
-- **Session category:** `.ambient` (default, respects mute, never ducks) vs
-  `.playback + .duckOthers` (audible on silent, briefly ducks music). Confirm
-  preference. *Recommendation: `.ambient`.*
+- **Session category:** ✅ RESOLVED 2026-06-10 → `.playback + [.mixWithOthers, .duckOthers]`
+  (audible on silent, briefly ducks music) — chosen for audibility in the gym.
 - **Background/locked delivery:** out of scope for v1; if wanted later, schedule a
   local notification with sound at `restEndsAt`. Ties into the Apple Watch spec
   (wrist haptic is the better answer).

@@ -90,7 +90,9 @@ Manual (paired devices — `WCSession` can't be unit-tested):
 
 ## Open questions
 
-- Minimum deployment target for watchOS (drives API choices)?
+- ✅ RESOLVED 2026-06-10 → watchOS minimum deployment target = **26.0** (personal
+  use; owner's Apple Watch Series 8 on watchOS 26.5, no backward compat needed).
+- ✅ RESOLVED 2026-06-10 → `nextSet` command dropped as redundant with `skipSet`.
 - Include HealthKit workout session (rings/HR) now or as a fast follow? *Recommendation:
   follow-up spec — keep v1 to mirroring + control.*
 - Should the watch be able to **start** the day's workout, or join-only? *Recommendation:

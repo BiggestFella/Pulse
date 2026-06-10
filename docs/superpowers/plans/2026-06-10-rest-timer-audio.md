@@ -4,7 +4,7 @@
 
 **Goal:** Make the foreground rest timer audible. Play a distinct "get ready" cue 10s before rest ends and a "rest over" cue at 0, each paired with a haptic, gated by `UserSettings.soundOnRestEnd`. Never interrupt the user's background audio (Spotify / Apple Music / podcasts keep playing).
 
-**Architecture:** A new `RestCuePlaying` protocol in `Pulse/Core/Workout/` with a real `RestCueService` (AVAudioSession `.ambient` + `.mixWithOthers`, two preloaded `AVAudioPlayer`s, `UINotificationFeedbackGenerator` / `UIImpactFeedbackGenerator`) and a `MockRestCueService` for tests. The service is injected into `ActiveWorkoutModel`. All cue-firing decisions are **edge-triggered inside the model** (a new `tick(now:)`), not in `RestView`, so the 0.2s `TimelineView` cadence and stray post-rest ticks can never double-fire. `RestView` calls `model.tick(now:)` each tick instead of computing `remaining` itself. Two short audio assets ship in `Pulse/Resources/Audio/` and are bundled via `project.yml` + `xcodegen generate`.
+**Architecture:** A new `RestCuePlaying` protocol in `Pulse/Core/Workout/` with a real `RestCueService` (AVAudioSession `.playback` + `[.mixWithOthers, .duckOthers]`, two preloaded `AVAudioPlayer`s, `UINotificationFeedbackGenerator` / `UIImpactFeedbackGenerator`) and a `MockRestCueService` for tests. The service is injected into `ActiveWorkoutModel`. All cue-firing decisions are **edge-triggered inside the model** (a new `tick(now:)`), not in `RestView`, so the 0.2s `TimelineView` cadence and stray post-rest ticks can never double-fire. `RestView` calls `model.tick(now:)` each tick instead of computing `remaining` itself. Two short audio assets ship in `Pulse/Resources/Audio/` and are bundled via `project.yml` + `xcodegen generate`.
 
 **Tech Stack:** SwiftUI (iOS 17+), Swift Concurrency, MVVM + `@Observable`. AVFoundation (`AVAudioSession`, `AVAudioPlayer`), UIKit haptics. XcodeGen project generation. Unit tests in the `PulseTests` target (XCTest). UI-test runner is broken on this machine — **all automated tests are `PulseTests` unit tests gated with `-only-testing:PulseTests`**; audio-session/device behaviour is verified manually.
 
@@ -587,9 +587,10 @@ final class RestCueService: RestCuePlaying {
     }
 
     func prepare() {
-        // .ambient never stops other audio and respects the silent switch.
-        // .mixWithOthers lets Spotify/podcasts keep playing under our cue.
-        try? session.setCategory(.ambient, options: [.mixWithOthers])
+        // .playback is audible even when the hardware silent switch is on
+        // (important in a gym). .mixWithOthers keeps Spotify/podcasts playing;
+        // .duckOthers briefly dips that audio so the cue cuts through.
+        try? session.setCategory(.playback, options: [.mixWithOthers, .duckOthers])
         try? session.setActive(true)
         warnPlayer?.prepareToPlay()
         endPlayer?.prepareToPlay()
@@ -623,7 +624,7 @@ xcodebuild build -scheme Pulse -destination 'platform=iOS Simulator,name=iPhone 
 - [ ] Commit:
 ```
 git add Pulse/Core/Workout/RestCueService.swift
-git commit -m "feat(active): real RestCueService with .ambient mix + haptics [BAK-33]"
+git commit -m "feat(active): real RestCueService with playback duck-mix + haptics [BAK-33]"
 ```
 
 ---
@@ -743,7 +744,7 @@ Run on a **physical iPhone** (audio session + haptics + silent switch can't be e
 - [ ] **+30s re-arms:** Let rest reach the warn window (hear the warn), tap **+30s**, let it count back down through 10s — you hear the warn **a second time**.
 - [ ] **Skip is silent:** Mid-rest (remaining > 10s and again with remaining < 10s), tap **Skip rest →** / the forward chevron — **no** end chime plays; the screen advances.
 - [ ] **Sound toggle off (Spec AC2):** You → toggle **Sound on rest end** off. (Note: in v1 this may require relaunching the workout for the model to pick up the flag — see Spec Gaps.) Run a rest: **no** warn or end audio; the timer still advances. Haptics: see note below.
-- [ ] **Silent switch / muted (Spec AC7):** Flip the hardware silent switch on (or mute volume). Run a rest: with `.ambient` the cues are **silent** (expected — `.ambient` respects the mute switch). The **haptics still fire** (light impact at T-10s, success at 0), and the on-screen timer is visible — so a muted user is still served.
+- [ ] **Silent switch / muted (Spec AC7):** Flip the hardware silent switch on. Run a rest: with `.playback` the cues are **still audible** (this is the point — a gym phone is often on silent). The **haptics also fire** (light impact at T-10s, success at 0). Volume slider at 0 → no sound but haptics still fire.
 - [ ] **Haptics present:** With volume up, confirm a light tap at T-10s and a success buzz at 0.
 - [ ] **No leftover audio interruption:** After rest ends, background music continues normally; leaving and re-entering rest repeatedly does not progressively break audio (teardown → prepare cycles cleanly).
 

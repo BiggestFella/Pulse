@@ -95,8 +95,8 @@ UI/acceptance:
 
 ## Open questions
 
-- **RIR vs RPE** for capture/display. *Recommendation: RIR (matches `SetSpec`).*
+- ✅ RESOLVED 2026-06-10 → **RIR** for capture/display (matches `SetSpec.rir`).
 - Capture per **set** vs once per **exercise** (last set only)? *Recommendation:
   per set, optional.*
-- Deload signal scope: per exercise, per muscle group, or whole-session? *Tune
-  during implementation; start per muscle group.*
+- ✅ RESOLVED 2026-06-10 → Deload signal scope = **whole-session top working sets**
+  for v1 (simplest pure/testable surface). Per-muscle-group is a follow-up.

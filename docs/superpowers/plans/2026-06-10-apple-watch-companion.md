@@ -10,13 +10,16 @@
 
 ---
 
-## Open questions to resolve first
+## Decisions locked (2026-06-10)
 
-These are flagged in the spec as open and **must be answered before Task 4** (the target-scaffolding task), because they change the YAML and the available APIs:
+These were open in the spec; now resolved:
 
-1. **watchOS minimum deployment target.** The spec lists this as open and it *drives API choices* (e.g. observation, navigation, `WKInterfaceDevice` availability). **Recommendation: `watchOS 10.0`** — it pairs cleanly with the iOS 17 baseline (`@Observable`, modern SwiftUI navigation) and covers Series 4 and later. This plan's YAML uses `watchOS: "10.0"`; change the single `deploymentTarget.watchOS` line if the human picks otherwise. Do not start Task 4 until this is confirmed.
-2. **HealthKit workout session (rings/HR)?** Out of scope for v1 per the spec recommendation — follow-up spec. Do not add HealthKit entitlements or a `HKWorkoutSession`.
-3. **Can the watch start the day's workout?** No — **join-only** for v1 per the spec recommendation. The watch shows a neutral "Open Pulse on your phone to start" idle state when no session is active; it never starts/finishes a workout.
+1. **watchOS minimum deployment target → `watchOS 26.0` (DECIDED).** This app is currently personal use only, running on the owner's Apple Watch Series 8 / watchOS 26.5 — no backward compatibility is needed, so target the current SDK. This plan's YAML uses `watchOS: "26.0"`. (Series 8 supports the latest watchOS; the iOS app keeps its own iOS 17 deployment target — the watch target's deployment target is independent.)
+2. **`nextSet` command dropped as redundant (DECIDED).** The watch set screen surfaces only Log-set and Skip-set; "advance without logging" is `skipSet`. The `nextSet` case is left in the enum as a harmless alias handled identically to `skipSet`, but no UI emits it — do not add a separate "next" affordance.
+3. **HealthKit workout session (rings/HR)** — out of scope for v1 (follow-up spec). Do not add HealthKit entitlements or a `HKWorkoutSession`.
+4. **Watch starting the day's workout** — no, **join-only** for v1. The watch shows a neutral "Open Pulse on your phone to start" idle state when no session is active; it never starts/finishes a workout.
+
+**Do not start Task 4 until the YAML below reflects `watchOS 26.0`** (it now does).
 
 ---
 
@@ -612,7 +615,7 @@ options:
   bundleIdPrefix: au.com.codeheroes.pulse
   deploymentTarget:
     iOS: "17.0"
-    watchOS: "10.0"   # confirm via Open Question 1 before generating
+    watchOS: "26.0"   # DECIDED 2026-06-10 — personal use, Series 8 / watchOS 26.5
 ```
 
   Add the new target under `targets:` (after `PulseWidgets`):
@@ -632,7 +635,7 @@ options:
         INFOPLIST_FILE: PulseWatch/Info.plist
         GENERATE_INFOPLIST_FILE: NO
         # Single-target watchOS app (watchOS 7+): no separate extension target.
-        WATCHOS_DEPLOYMENT_TARGET: "10.0"
+        WATCHOS_DEPLOYMENT_TARGET: "26.0"
 ```
 
   Add the watch app as an embedded dependency of the iOS app so it ships in the

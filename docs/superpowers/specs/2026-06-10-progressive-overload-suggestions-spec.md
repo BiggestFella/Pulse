@@ -104,8 +104,8 @@ UI/acceptance:
 
 ## Open questions
 
-- Per-movement default increment (e.g. 5 kg lower body / 2.5 kg upper) vs single
-  2.5 kg default? *Recommendation: single 2.5 kg for v1.*
+- ✅ RESOLVED 2026-06-10 → **flat 2.5 kg** increment for every lift in v1.
+  Per-movement increments are a follow-up.
 - "Pre-seed steppers" vs "explicit Use button"? *Recommendation: pre-seed +
   informational pill (lowest friction).*
 - Which set's history defines "last time" for multi-set exercises — match by set
