@@ -60,6 +60,21 @@ struct SummaryView: View {
                 .accessibilityIdentifier("summary.saveError")
             }
 
+            // BAK-32: offline finish — the session is buffered on-device and will
+            // sync when the connection returns. Calm (info), not an error.
+            if model.saveState == .pendingSync {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "icloud.and.arrow.up").foregroundStyle(theme.accent)
+                    Text("Saved on this device — will sync when you’re back online.")
+                        .font(.caption).foregroundStyle(theme.ink)
+                    Spacer()
+                }
+                .padding(theme.spacing[2])
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(theme.surface2, in: RoundedRectangle(cornerRadius: theme.radiusCard))
+                .accessibilityIdentifier("summary.pendingSync")
+            }
+
             HStack(spacing: 8) {
                 Button("Edit log") { }   // destination deferred per spec; inert v1
                     .buttonStyle(PressableButtonStyle(variant: .secondary, size: .md))
@@ -84,10 +99,15 @@ struct SummaryView: View {
     }
 
     /// First press saves; after a failure the same button retries the held
-    /// session (preserving the logged sets + end time).
+    /// session (preserving the logged sets + end time). Once a save has been
+    /// buffered offline (`.pendingSync`), Done just tears the takeover down — the
+    /// session is safe on-device and the Today tab shows it pending sync (BAK-32).
     private func save() async {
-        if case .failed = model.saveState { await model.retrySave() }
-        else { await model.finishAndSave() }
+        switch model.saveState {
+        case .failed:      await model.retrySave()
+        case .pendingSync: model.endWorkout()
+        default:           await model.finishAndSave()
+        }
     }
 
     private func statBox(_ label: String, value: String, sub: String,
