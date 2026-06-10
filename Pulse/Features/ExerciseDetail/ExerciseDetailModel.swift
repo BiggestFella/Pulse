@@ -16,6 +16,10 @@ struct ExerciseSessionSummary: Equatable, Identifiable {
 /// Derived from `PRRepository` (est-1RM via Epley) — not stored.
 struct ExerciseDetailPB: Equatable {
     var topWeight: Double
+    var reps: Int
+    /// Epley est-1RM for the PB set — reused from the derived `PersonalRecord`,
+    /// not recomputed here (single source of truth in `WorkoutAnalytics`).
+    var estimatedOneRepMax: Double
     var date: Date
 }
 
@@ -145,6 +149,9 @@ final class ExerciseDetailModel {
     private func derivePB() async throws -> ExerciseDetailPB? {
         guard let record = try await prRepo.personalBest(forExercise: exerciseID),
               record.weight > 0 else { return nil }
-        return ExerciseDetailPB(topWeight: record.weight, date: record.achievedAt)
+        return ExerciseDetailPB(topWeight: record.weight,
+                                reps: record.reps,
+                                estimatedOneRepMax: record.estimatedOneRepMax,
+                                date: record.achievedAt)
     }
 }
