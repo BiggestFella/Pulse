@@ -23,7 +23,8 @@ struct AppShell: View {
         let session = ActiveWorkoutModel(
             exerciseRepo: MockSwapAlternativesRepository(),
             historyRepo: MockHistoryRepository(),
-            sessionWriter: container.sessionWriter)
+            sessionWriter: container.sessionWriter,
+            restCue: RestCueService())
         _session = State(initialValue: session)
 
         let repo: MockTodayRepository
