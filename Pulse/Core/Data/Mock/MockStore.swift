@@ -10,6 +10,11 @@ final class MockStore {
     var exercises: [Exercise]
     var sessions: [WorkoutSession]
     var schedule: [Date: DayPlan]
+    /// Library folders (in-memory). Membership of workouts/programs in a folder is
+    /// tracked by id-maps rather than on the domain models (which don't carry folder_id).
+    var folders: [Folder] = []
+    var workoutFolderID: [Workout.ID: Folder.ID] = [:]
+    var programFolderID: [Program.ID: Folder.ID] = [:]
 
     /// When true, every repository method throws `RepositoryError.forced`.
     var forceError = false

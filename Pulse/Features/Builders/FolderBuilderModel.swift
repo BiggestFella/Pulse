@@ -17,7 +17,7 @@ final class FolderBuilderModel {
     func save() async {
         saveState = .saving
         do {
-            try await folderRepo.saveFolder(name: name, colorToken: colorToken)
+            _ = try await folderRepo.createFolder(name: name, color: colorToken, parentID: nil)
             saveState = .saved
         } catch {
             saveState = .error("Couldn't create folder.")
