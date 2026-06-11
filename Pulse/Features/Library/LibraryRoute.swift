@@ -6,7 +6,7 @@ import Foundation
 enum LibraryRoute: Hashable {
     case exerciseDetail(id: String)
     case programDetail(folderID: String)
-    case folderDetail(folderID: String)
+    case folderDetail(folderID: UUID, name: String)
     case workoutBuilder
     case routineBuilder
     case folderCreate
@@ -16,7 +16,7 @@ enum LibraryRoute: Hashable {
         switch self {
         case .exerciseDetail(let id): return "exdetail:\(id)"
         case .programDetail(let id):  return "program:\(id)"
-        case .folderDetail(let id):   return "folder:\(id)"
+        case .folderDetail(let id, _): return "folder:\(id)"
         case .workoutBuilder:         return "builder:workout"
         case .routineBuilder:         return "builder:routine"
         case .folderCreate:           return "builder:folder"
