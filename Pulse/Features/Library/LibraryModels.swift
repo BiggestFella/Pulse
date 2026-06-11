@@ -14,17 +14,12 @@ enum LibraryFilter: String, CaseIterable {
     }
 }
 
-/// Folder accent tint — resolved to a `Theme` token at render time (no stored Color).
-enum FolderTint { case accent, accent2, neutral }
-
-/// A folder row projection. (Folders aren't modeled in the data layer yet —
-/// these are UI-first sample data from the Library repository mock.)
+/// A folder row projection for the Library.
 struct LibraryFolder: Identifiable, Equatable {
-    let id: String
+    let id: UUID
     let name: String
     let sub: String
-    let tint: FolderTint
-    let isProgram: Bool
+    let color: FolderColor
 }
 
 /// A recent-workout row projection.

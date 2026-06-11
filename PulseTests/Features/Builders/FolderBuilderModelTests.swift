@@ -15,14 +15,15 @@ final class FolderBuilderModelTests: XCTestCase {
         XCTAssertEqual(model.colorToken, .purple)
     }
 
-    func testSaveCallsRepositoryWithNameAndColor() async {
+    func testSaveCreatesFolderWithNameAndColor() async {
         let repo = InMemoryFolderRepository()
         let model = FolderBuilderModel(folders: repo)
         model.name = "Cardio"
         model.select(color: .pink)
         await model.save()
         XCTAssertEqual(model.saveState, .saved)
-        XCTAssertEqual(repo.saved.first, .init(name: "Cardio", color: .pink))
+        XCTAssertEqual(repo.store.folders.first?.name, "Cardio")
+        XCTAssertEqual(repo.store.folders.first?.color, .pink)
     }
 
     func testSaveErrorWhenRepositoryThrows() async {

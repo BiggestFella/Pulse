@@ -32,10 +32,6 @@ final class RepositoryContainer {
     private let authGateway: AuthGateway?
 
     init(useMock: Bool) {
-        // Folders have no Supabase model yet, so both paths use the in-memory
-        // capture repo (see FolderRepository) until the folder data model lands.
-        folders = InMemoryFolderRepository()
-
         // BAK-32: the active flow always writes through a BufferedSessionWriter so
         // a finished session is buffered on-device before the remote attempt and
         // flushed when connectivity returns. Under `-uiMock` the buffer points at a
@@ -61,6 +57,7 @@ final class RepositoryContainer {
             schedule = InMemoryScheduleRepository(store: mockStore)
             stats = InMemoryStatsRepository(store: mockStore)
             prs = InMemoryPRRepository(store: mockStore)
+            folders = InMemoryFolderRepository(store: mockStore)
             user = InMemoryUserRepository()
             settings = InMemorySettingsRepository()
             // `-uiTestSaveFail` makes the first save throw so the summary's
@@ -93,6 +90,7 @@ final class RepositoryContainer {
             schedule = SupabaseScheduleRepository(client: client)
             stats = SupabaseStatsRepository(client: client)
             prs = SupabasePRRepository(client: client)
+            folders = SupabaseFolderRepository(client: client)
             user = SupabaseUserRepository(client: client)
             settings = SupabaseSettingsRepository(client: client)
             baseWriter = SupabaseSessionWriter(client: client)

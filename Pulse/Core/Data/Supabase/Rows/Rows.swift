@@ -11,6 +11,18 @@ struct VariationRow: Codable {
     func toModel() -> Variation { Variation(id: id, name: name, equipment: equipment) }
 }
 
+struct FolderRecord: Codable {
+    let id: UUID
+    let parentFolderId: UUID?   // parent_folder_id
+    let name: String
+    let colorToken: String      // color_token
+    func toModel() -> Folder {
+        Folder(id: id, name: name,
+               color: FolderColor(rawValue: colorToken) ?? .default,
+               parentID: parentFolderId)
+    }
+}
+
 struct ExerciseRow: Codable {
     let id: UUID
     let name: String

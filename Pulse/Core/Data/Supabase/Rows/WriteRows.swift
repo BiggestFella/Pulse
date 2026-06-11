@@ -9,6 +9,34 @@ import Supabase
 /// `order` is synthesized from array position on write (the domain models don't
 /// store it); reads sort children back by the `"order"` column.
 
+struct FolderWriteRow: Encodable {
+    let id: UUID
+    let userId: UUID
+    let parentFolderId: UUID?
+    let name: String
+    let colorToken: String
+
+    enum CodingKeys: String, CodingKey { case id, userId, parentFolderId, name, colorToken }
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(userId, forKey: .userId)
+        try c.encode(parentFolderId, forKey: .parentFolderId)   // null when nil
+        try c.encode(name, forKey: .name)
+        try c.encode(colorToken, forKey: .colorToken)
+    }
+}
+
+/// Updates only the `folder_id` of a workout/program row (explicit null on nil).
+struct FolderIDUpdate: Encodable {
+    let folderId: Folder.ID?
+    enum CodingKeys: String, CodingKey { case folderId }
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(folderId, forKey: .folderId)   // null when nil
+    }
+}
+
 struct ProgramWriteRow: Encodable {
     let id: UUID
     let userId: UUID

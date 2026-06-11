@@ -13,25 +13,6 @@ enum WorkoutTag: String, CaseIterable, Equatable {
     var label: String { rawValue.uppercased() }
 }
 
-/// The six fixed brand swatches a folder can take. Hex is the source value;
-/// `Theme` exposes the matching `Color` so views never read hex directly.
-enum FolderColor: String, CaseIterable, Equatable {
-    case blue, orange, teal, yellow, pink, purple
-
-    static let `default`: FolderColor = .blue
-
-    var hex: String {
-        switch self {
-        case .blue:   return "#26B6F6"
-        case .orange: return "#FF6A1F"
-        case .teal:   return "#00D9B8"
-        case .yellow: return "#FFCC33"
-        case .pink:   return "#FF4D6D"
-        case .purple: return "#9B6BFF"
-        }
-    }
-}
-
 /// A mutable editing view over `WorkoutExercise`. Consecutive items sharing a
 /// non-nil `supersetGroup` render as one superset card.
 struct BuilderExercise: Identifiable, Equatable {

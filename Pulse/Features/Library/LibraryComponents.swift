@@ -1,22 +1,16 @@
 import SwiftUI
 
-/// Tinted folder glyph. The tint resolves to a `Theme` token at render time.
+/// Tinted folder glyph using the folder's brand color.
 struct FolderIcon: View {
-    let tint: FolderTint
+    let color: FolderColor
     @Environment(Theme.self) private var theme
-    private var color: Color {
-        switch tint {
-        case .accent: return theme.accent
-        case .accent2: return theme.accent2
-        case .neutral: return theme.inkFaint
-        }
-    }
+    private var tint: Color { theme.folderColor(color) }
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10).fill(color.opacity(0.18))
+            RoundedRectangle(cornerRadius: 10).fill(tint.opacity(0.18))
             Image(systemName: "folder.fill")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(color)
+                .foregroundStyle(tint)
         }
         .frame(width: 38, height: 38)
     }
