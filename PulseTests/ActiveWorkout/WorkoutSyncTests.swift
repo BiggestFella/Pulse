@@ -125,3 +125,126 @@ final class MockWorkoutSyncChannel: WorkoutSyncChannel {
     /// Simulate the phone receiving a command.
     func deliver(command: WorkoutCommand) { commandHandler?(command) }
 }
+
+@MainActor
+final class WorkoutCommandApplierTests: XCTestCase {
+
+    private func started() -> ActiveWorkoutModel {
+        let m = ActiveWorkoutModel(exerciseRepo: MockSwapAlternativesRepository(),
+                                   historyRepo: MockHistoryRepository(),
+                                   sessionWriter: MockSessionWriter())
+        m.startWorkout(ActiveWorkoutSample.workout); m.beginSets()
+        return m
+    }
+
+    // AC1: logSet command advances the model exactly as an in-app log would.
+    func testLogSetCommandMatchesInAppLog() {
+        let actual = started()
+        WorkoutCommandApplier.apply(.logSet, to: actual)        // step 0 → rest
+
+        let expected = started()
+        expected.logSet(reps: expected.seedReps, weight: expected.seedWeight)
+
+        XCTAssertEqual(actual.phase, expected.phase)
+        XCTAssertEqual(actual.stepIdx, expected.stepIdx)
+        XCTAssertEqual(actual.doneSteps, expected.doneSteps)
+    }
+
+    // AC2: adjustRest command changes restEndsAt identically to model.adjustRest.
+    func testAdjustRestCommandMatchesModel() {
+        let m = started()
+        let t0 = Date(timeIntervalSince1970: 6_000_000)
+        m.logSet(reps: 15, weight: 40, now: t0)                 // → rest, ends t0+90
+        WorkoutCommandApplier.apply(.adjustRest(delta: 30), to: m, now: t0)
+        XCTAssertEqual(m.restEndsAt, t0.addingTimeInterval(120))
+    }
+
+    // AC2: skipRest command ends rest like afterRest (advance + clear restEndsAt).
+    func testSkipRestCommandMatchesAfterRest() {
+        let m = started()
+        m.logSet(reps: 15, weight: 40)                          // → rest at step 0
+        WorkoutCommandApplier.apply(.skipRest, to: m)
+        XCTAssertEqual(m.phase, .active)
+        XCTAssertEqual(m.stepIdx, 1)
+        XCTAssertNil(m.restEndsAt)
+    }
+
+    // AC2: skipSet command advances without logging.
+    func testSkipSetCommandAdvancesWithoutLogging() {
+        let m = started()
+        WorkoutCommandApplier.apply(.skipSet, to: m)
+        XCTAssertEqual(m.stepIdx, 1)
+        XCTAssertTrue(m.doneSteps.isEmpty)
+    }
+
+    // AC4: logSet received during rest is ignored (wrong phase).
+    func testLogSetIgnoredDuringRest() {
+        let m = started()
+        m.logSet(reps: 15, weight: 40)                          // → rest
+        let stepBefore = m.stepIdx
+        WorkoutCommandApplier.apply(.logSet, to: m)             // ignored
+        XCTAssertEqual(m.phase, .rest)
+        XCTAssertEqual(m.stepIdx, stepBefore)
+    }
+
+    // AC4: skipRest received while active is ignored (wrong phase).
+    func testSkipRestIgnoredWhenActive() {
+        let m = started()
+        WorkoutCommandApplier.apply(.skipRest, to: m)
+        XCTAssertEqual(m.phase, .active)
+        XCTAssertEqual(m.stepIdx, 0)
+    }
+
+    // AC4: adjustRest while active is ignored (no restEndsAt to adjust).
+    func testAdjustRestIgnoredWhenActive() {
+        let m = started()
+        WorkoutCommandApplier.apply(.adjustRest(delta: 15), to: m)
+        XCTAssertNil(m.restEndsAt)
+    }
+}
+
+@MainActor
+final class WatchSyncBridgeTests: XCTestCase {
+
+    private func started() -> ActiveWorkoutModel {
+        let m = ActiveWorkoutModel(exerciseRepo: MockSwapAlternativesRepository(),
+                                   historyRepo: MockHistoryRepository(),
+                                   sessionWriter: MockSessionWriter())
+        m.startWorkout(ActiveWorkoutSample.workout); m.beginSets()
+        return m
+    }
+
+    // AC5 (logic half): sync() broadcasts the current snapshot.
+    func testSyncBroadcastsSnapshot() {
+        let m = started()
+        let ch = MockWorkoutSyncChannel()
+        let bridge = WatchSyncBridge(model: m, channel: ch, soundOnRestEnd: { true })
+        bridge.sync()
+        XCTAssertEqual(ch.sentStates.last?.phase, .active)
+        XCTAssertEqual(ch.sentStates.last?.targetReps, m.seedReps)
+    }
+
+    // AC1 + re-broadcast: an inbound command is applied then a fresh snapshot is pushed.
+    func testInboundCommandAppliesThenRebroadcasts() {
+        let m = started()
+        let ch = MockWorkoutSyncChannel()
+        let bridge = WatchSyncBridge(model: m, channel: ch, soundOnRestEnd: { true })
+        bridge.sync()
+        let statesBefore = ch.sentStates.count
+
+        ch.deliver(command: .logSet)                            // simulate watch tap
+
+        XCTAssertEqual(m.doneSteps, [0])                        // applied
+        XCTAssertGreaterThan(ch.sentStates.count, statesBefore) // re-broadcast
+        XCTAssertEqual(ch.sentStates.last?.phase, .rest)        // newest reflects rest
+    }
+
+    // soundOnRestEnd gate flows into the broadcast snapshot.
+    func testSoundGateFlowsIntoSnapshot() {
+        let m = started()
+        let ch = MockWorkoutSyncChannel()
+        let bridge = WatchSyncBridge(model: m, channel: ch, soundOnRestEnd: { false })
+        bridge.sync()
+        XCTAssertEqual(ch.sentStates.last?.soundOnRestEnd, false)
+    }
+}
