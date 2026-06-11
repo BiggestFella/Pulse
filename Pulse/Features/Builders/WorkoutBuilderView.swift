@@ -7,6 +7,7 @@ struct WorkoutBuilderView: View {
     @State private var model: WorkoutBuilderModel
     @Environment(Theme.self) private var theme
     @Environment(\.dismiss) private var dismiss
+    private let reorderRowHeight: CGFloat = 48
 
     init(model: WorkoutBuilderModel) { _model = State(initialValue: model) }
 
@@ -29,11 +30,20 @@ struct WorkoutBuilderView: View {
                     StatLabel("EXERCISES · \(model.items.count)")
                         .accessibilityIdentifier("eyebrow-EXERCISES · \(model.items.count)")
                     Spacer()
+                    if model.items.count > 1 {
+                        Button { model.isReordering.toggle() } label: {
+                            Text(model.isReordering ? "DONE" : "REORDER")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .tracking(1)
+                                .foregroundStyle(theme.accent)
+                        }
+                        .accessibilityIdentifier("reorder-toggle")
+                    }
                     StatLabel("\(model.totalSets) SETS")
                         .accessibilityIdentifier("eyebrow-\(model.totalSets) SETS")
                 }
 
-                exerciseList
+                if model.isReordering { reorderList } else { exerciseList }
 
                 Button { model.pickerPresented = true } label: {
                     Text("+ ADD EXERCISE")
@@ -67,7 +77,7 @@ struct WorkoutBuilderView: View {
                 alreadyAdded: model.addedExerciseIDs,
                 onRetry: { Task { await model.loadCatalog() } },
                 onCancel: { model.pickerPresented = false },
-                onConfirm: { ids in model.addExercises(ids); model.pickerPresented = false })
+                onConfirm: { ids in model.addExercises(ids); model.isReordering = false; model.pickerPresented = false })
             .environment(theme)
             .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
@@ -92,6 +102,31 @@ struct WorkoutBuilderView: View {
     }
 
     // MARK: Exercise list — runs of linked rows render as one superset card.
+
+    /// Flat, drag-to-reorder list shown only in edit mode. Uses a plain List so
+    /// `.onMove` works; superset grouping is suspended here and recomputed from
+    /// `items` when the user leaves edit mode.
+    private var reorderList: some View {
+        List {
+            ForEach(model.items) { item in
+                HStack(spacing: theme.spacing[2]) {
+                    Image(systemName: "line.3.horizontal").foregroundStyle(theme.inkFaint)
+                    Text(item.exercise.name)
+                        .foregroundStyle(theme.ink)
+                        .font(.system(size: 16, weight: .semibold))
+                    Spacer()
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .accessibilityIdentifier("reorder-row-\(item.exercise.name)")
+            }
+            .onMove { model.move(from: $0, to: $1) }
+        }
+        .listStyle(.plain)
+        .scrollDisabled(true)
+        .frame(height: CGFloat(model.items.count) * reorderRowHeight)
+        .environment(\.editMode, .constant(.active))
+    }
 
     private var exerciseList: some View {
         VStack(spacing: theme.spacing[2]) {

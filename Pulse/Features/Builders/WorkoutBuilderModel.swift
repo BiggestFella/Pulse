@@ -8,6 +8,7 @@ final class WorkoutBuilderModel {
     var tag: WorkoutTag = .push
     var items: [BuilderExercise] = BuilderSampleData.defaultWorkoutItems
     var pickerPresented = false
+    var isReordering = false
     var editingItemID: BuilderExercise.ID? = nil
     var saveState: SaveState = .idle
 
