@@ -30,13 +30,13 @@ enum TodaysWorkout {
         let lat = exercise("ad971ed1-7ebe-40e9-99bb-47d404020037", "Lat Pulldown", "Back",
                            varID: "cbbb3cff-0ade-4c81-b31c-c74f8530aac9", varName: "D-bar", equip: "Cable")
         let shoulder = exercise("ba11b697-5f0a-4c8c-ab39-37669ec0d154", "Shoulder Press", "Shoulders",
-                                varID: "c2229eca-465f-426e-91b6-af426eef76ba", varName: "Dumbbell", equip: "Dumbbell")
+                                varID: "c2229eca-465f-426e-91b6-af426eef76ba", varName: "Seated Machine", equip: "Machine")
         let tricep = exercise("30ff4dba-6e0f-4b5d-b9cf-1acd2ed0b755", "Tricep Extension", "Triceps",
-                              varID: "89553dae-bcaf-4031-9821-a7e4fd5d1e0e", varName: "Plate-loaded", equip: "Machine")
+                              varID: "89553dae-bcaf-4031-9821-a7e4fd5d1e0e", varName: "Plate Loaded", equip: "Plate Loaded")
         let preacher = exercise("908a7e05-0635-4aaf-8de7-5a9eed2e91f9", "Preacher Curl", "Biceps",
-                                varID: "6342839f-3025-405c-977a-da849d1b1083", varName: "Single-arm", equip: "Dumbbell")
+                                varID: "6342839f-3025-405c-977a-da849d1b1083", varName: "Machine", equip: "Machine")
         let pushup = exercise("d23e3b5d-9c0f-460a-8cad-f28271f26280", "Push-Up", "Chest",
-                              varID: "d9dae16f-24d2-4c9d-8a92-a710d0a9ae6f", varName: "Deficit", equip: nil)
+                              varID: "d9dae16f-24d2-4c9d-8a92-a710d0a9ae6f", varName: "Deficit", equip: "Bodyweight")
 
         func we(_ ex: Exercise, _ sets: [SetSpec]) -> WorkoutExercise {
             WorkoutExercise(exercise: ex, variationID: ex.defaultVariationID, supersetGroup: nil, sets: sets)
