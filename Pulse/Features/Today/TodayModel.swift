@@ -15,6 +15,13 @@ final class TodayModel {
     private(set) var week: [WeekDayCell] = []
     private(set) var yesterday: SessionRecap?
 
+    /// Advisory "consider a deload" banner derived from recent RIR trends (BAK-36).
+    /// `nil` = no signal, not enough data, or dismissed for this session. Named
+    /// `deloadBanner` (not `deloadSuggestion`) to avoid shadowing the free
+    /// `deloadSuggestion(recentSessions:)` heuristic it calls.
+    private(set) var deloadBanner: DeloadSuggestion?
+    private var deloadDismissed = false
+
     var doneCount: Int { week.filter { $0.state == .done }.count }
     var plannedCount: Int { week.filter { $0.state != .rest }.count }
 
@@ -24,6 +31,9 @@ final class TodayModel {
     var weekProgressLabel: String { "\(doneCount) OF \(plannedCount) DONE" }
 
     private let repository: any TodayRepository
+    /// Optional source of recent logged sessions for the deload signal. `nil` in
+    /// previews/UI-mock paths that don't wire it; the banner simply never fires.
+    private let sessionRepo: (any SessionRepository)?
     private let onStartWorkout: (UUID) -> Void
     private let onOpenSession: (UUID) -> Void
     /// Called with the freshly-loaded snapshot so the app can mirror it to the
@@ -35,10 +45,12 @@ final class TodayModel {
     private var inFlightLoad: Task<Void, Never>?
 
     init(repository: any TodayRepository,
+         sessionRepo: (any SessionRepository)? = nil,
          onStartWorkout: @escaping (UUID) -> Void = { _ in },
          onOpenSession: @escaping (UUID) -> Void = { _ in },
          onSnapshot: @escaping (TodaySnapshot) -> Void = { _ in }) {
         self.repository = repository
+        self.sessionRepo = sessionRepo
         self.onStartWorkout = onStartWorkout
         self.onOpenSession = onOpenSession
         self.onSnapshot = onSnapshot
@@ -63,6 +75,7 @@ final class TodayModel {
                 yesterday = s.yesterday
                 phase = (s.today == nil) ? .empty : .loaded
                 onSnapshot(s)                  // mirror to the widget App Group (BAK-19)
+                await refreshDeloadSignal()    // advisory fatigue banner (BAK-36)
             } catch is CancellationError {
                 // A newer load took over; don't clobber its state.
             } catch {
@@ -81,5 +94,19 @@ final class TodayModel {
     func openYesterday() {
         guard let id = yesterday?.sessionID else { return }
         onOpenSession(id)
+    }
+
+    /// Recompute the advisory deload signal from recent logged sessions. No-op
+    /// once dismissed this session, or when no `sessionRepo` is wired. Failures to
+    /// read sessions are swallowed — the banner is purely advisory.
+    func refreshDeloadSignal() async {
+        guard !deloadDismissed, let sessionRepo else { deloadBanner = nil; return }
+        let recent = (try? await sessionRepo.fetchSessions(limit: 6)) ?? []
+        deloadBanner = deloadSuggestion(recentSessions: recent)
+    }
+
+    func dismissDeload() {
+        deloadDismissed = true
+        deloadBanner = nil
     }
 }

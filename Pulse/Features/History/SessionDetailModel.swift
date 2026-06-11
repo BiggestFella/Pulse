@@ -214,12 +214,14 @@ final class SessionDetailModel {
     }
 
     /// "15·12·10·8 @ 140kg", or "To failure · N" when the set is to-failure,
-    /// or "N reps" when there's no weight.
+    /// or "N reps" when there's no weight. Appends "· @RIR n" (floored average
+    /// across tagged counting sets) when any counting set carries a recorded RIR.
     private static func detailString(for sets: [SessionSet]) -> String {
         if let failure = sets.first(where: { $0.type == .failure }) {
             return "To failure · \(failure.reps)"
         }
         let counting = sets.filter { WorkoutAnalytics.counts($0.type) }
+        let rirSuffix = averageRIRSuffix(counting)
         guard !counting.isEmpty else {
             // Only warmups/etc — show the first set's reps.
             if let first = sets.first { return "\(first.reps) reps" }
@@ -227,8 +229,16 @@ final class SessionDetailModel {
         }
         let reps = counting.map { String($0.reps) }.joined(separator: "·")
         let weight = counting.map(\.weight).max() ?? 0
-        if weight == 0 { return "\(reps) reps" }
-        return "\(reps) @ \(trimmed(weight))kg"
+        if weight == 0 { return "\(reps) reps" + rirSuffix }
+        return "\(reps) @ \(trimmed(weight))kg" + rirSuffix
+    }
+
+    /// " · @RIR n" (floored average over tagged counting sets) or "" when none tagged.
+    private static func averageRIRSuffix(_ counting: [SessionSet]) -> String {
+        let tagged = counting.compactMap(\.rir)
+        guard !tagged.isEmpty else { return "" }
+        let avg = tagged.reduce(0, +) / tagged.count   // integer floor
+        return " · @RIR \(avg)"
     }
 
     /// Per-exercise volume figure: "5.7k", "800", or "BW" when all weight is zero.

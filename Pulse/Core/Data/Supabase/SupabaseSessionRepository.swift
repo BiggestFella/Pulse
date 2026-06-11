@@ -23,6 +23,7 @@ struct SupabaseSessionRepository: SessionRepository {
         let weight: Double
         let type: String
         let order: Int
+        let rir: Int?    // Reps In Reserve; nil → SQL NULL (migration 0006)
     }
     private struct EndedUpdate: Encodable { let endedAt: Date }
 
@@ -40,7 +41,7 @@ struct SupabaseSessionRepository: SessionRepository {
         try await client.from("session_sets").insert(SetInsertRow(
             id: set.id, sessionId: sessionID, exerciseId: set.exerciseID,
             variationId: set.variationID, reps: set.reps, weight: set.weight,
-            type: set.type.rawValue, order: set.order)).execute()
+            type: set.type.rawValue, order: set.order, rir: set.rir)).execute()
     }
 
     func finishSession(id: WorkoutSession.ID, endedAt: Date) async throws -> WorkoutSession {

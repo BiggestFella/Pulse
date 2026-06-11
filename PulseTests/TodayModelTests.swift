@@ -119,4 +119,32 @@ final class TodayModelTests: XCTestCase {
         empty.openYesterday()
         XCTAssertEqual(opened.count, 1)   // unchanged
     }
+
+    // BAK-36 — the deload banner appears under the heuristic and is dismissible.
+    private func sessionRepoWithHardRecentSessions() -> InMemorySessionRepository {
+        let store = MockStore()
+        let exID = UUID()
+        store.sessions = (0..<6).map { i in
+            let start = Calendar.current.date(byAdding: .day, value: -i * 2, to: .now)!
+            let set = SessionSet(exerciseID: exID, order: 0, reps: 5,
+                                 weight: 100, type: .working, rir: 1)
+            return WorkoutSession(workoutID: UUID(), startedAt: start, endedAt: start, sets: [set])
+        }
+        return InMemorySessionRepository(store: store)
+    }
+
+    func testDeloadBannerShowsThenDismisses() async {
+        let model = TodayModel(repository: MockTodayRepository.sample,
+                               sessionRepo: sessionRepoWithHardRecentSessions())
+        await model.load()
+        XCTAssertNotNil(model.deloadBanner)
+        model.dismissDeload()
+        XCTAssertNil(model.deloadBanner)
+    }
+
+    func testNoDeloadBannerWhenSessionRepoMissing() async {
+        let model = TodayModel(repository: MockTodayRepository.sample)
+        await model.load()
+        XCTAssertNil(model.deloadBanner)
+    }
 }

@@ -37,9 +37,11 @@ struct SessionSetReadRow: Codable {
     let weight: Double
     let type: String
     let order: Int
+    let rir: Int?    // nullable; legacy rows (pre-0006) decode to nil
     func toModel() -> SessionSet {
         SessionSet(id: id, exerciseID: exerciseId, variationID: variationId,
-                   order: order, reps: reps, weight: weight, type: SetType(rawValue: type) ?? .working)
+                   order: order, reps: reps, weight: weight,
+                   type: SetType(rawValue: type) ?? .working, rir: rir)
     }
 }
 

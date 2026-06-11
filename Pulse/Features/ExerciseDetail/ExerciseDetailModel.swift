@@ -137,7 +137,12 @@ final class ExerciseDetailModel {
     private func summarize(_ session: WorkoutSession) -> ExerciseSessionSummary {
         let sets = session.sets.filter { $0.exerciseID == exerciseID }
         let counting = sets.filter { WorkoutAnalytics.counts($0.type) }
-        let repLine = counting.map { String($0.reps) }.joined(separator: " · ")
+        var repLine = counting.map { String($0.reps) }.joined(separator: " · ")
+        // Fold a floored-average RIR onto the rep line when any counting set is tagged.
+        let tagged = counting.compactMap(\.rir)
+        if !tagged.isEmpty {
+            repLine += "  @RIR \(tagged.reduce(0, +) / tagged.count)"
+        }
         let topWeight = WorkoutAnalytics.topWorkingWeight(in: sets) ?? 0
         let volume = WorkoutAnalytics.volume(of: sets)
         return ExerciseSessionSummary(date: session.startedAt, repLine: repLine,

@@ -85,4 +85,20 @@ final class RowMappingTests: XCTestCase {
         XCTAssertEqual(session.sets.map(\.order), [0, 1])
         XCTAssertEqual(session.sets.map(\.weight), [60, 100])
     }
+
+    func testSessionSetRowMapsRIRWhenPresentAndNilWhenAbsent() throws {
+        // First set carries `rir`; second omits the key entirely (a legacy row
+        // written before migration 0006) → must decode to nil.
+        let json = #"""
+        {"id":"00000000-0000-0000-0000-00000000f001","workout_id":"00000000-0000-0000-0000-00000000f0aa",
+         "started_at":"2026-06-04T08:00:00+00:00","ended_at":"2026-06-04T09:00:00+00:00",
+         "session_sets":[
+           {"id":"00000000-0000-0000-0000-00000000f101","exercise_id":"00000000-0000-0000-0000-00000000f0e1",
+            "variation_id":null,"reps":8,"weight":100,"type":"working","order":0,"rir":2},
+           {"id":"00000000-0000-0000-0000-00000000f102","exercise_id":"00000000-0000-0000-0000-00000000f0e1",
+            "variation_id":null,"reps":5,"weight":60,"type":"warmup","order":1}]}
+        """#.data(using: .utf8)!
+        let session = try SupabaseDecoding.decoder.decode(SessionReadRow.self, from: json).toModel()
+        XCTAssertEqual(session.sets.map(\.rir), [2, nil])
+    }
 }

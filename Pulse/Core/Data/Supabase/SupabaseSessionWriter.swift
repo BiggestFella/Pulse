@@ -24,6 +24,7 @@ struct SupabaseSessionWriter: SessionWriter {
         let weight: Double
         let type: String
         let order: Int
+        let rir: Int?    // Reps In Reserve; nil → SQL NULL (migration 0006)
     }
 
     func save(_ session: WorkoutSession) async throws {
@@ -36,7 +37,7 @@ struct SupabaseSessionWriter: SessionWriter {
         let rows = session.sets.map { s in
             SetRow(id: s.id, sessionId: session.id, exerciseId: s.exerciseID,
                    variationId: s.variationID, reps: s.reps, weight: s.weight,
-                   type: s.type.rawValue, order: s.order)
+                   type: s.type.rawValue, order: s.order, rir: s.rir)
         }
         if !rows.isEmpty {
             try await client.from("session_sets").insert(rows).execute()

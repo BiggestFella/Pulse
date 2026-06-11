@@ -15,6 +15,8 @@ struct InMemorySessionRepository: SessionRepository {
         guard let i = store.sessions.firstIndex(where: { $0.id == sessionID }) else {
             throw RepositoryError.notFound
         }
+        // The whole SessionSet is stored by value, so `rir` (and any future
+        // field) is preserved on read-back — a refactor must keep this verbatim.
         store.sessions[i].sets.append(set)
     }
     func finishSession(id: WorkoutSession.ID, endedAt: Date) async throws -> WorkoutSession {

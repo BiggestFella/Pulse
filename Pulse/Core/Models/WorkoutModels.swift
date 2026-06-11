@@ -62,6 +62,10 @@ struct SessionSet: Codable, Equatable, Identifiable {
     var reps: Int
     var weight: Double            // kilograms (v1 is kg-only)
     var type: SetType
+    /// Reps In Reserve at this set's completion. `nil` = not recorded (legacy
+    /// rows and the fast log path that never opens the selector). Matches the
+    /// planned `SetSpec.rir` vocabulary (RIR, not RPE).
+    var rir: Int? = nil
 }
 
 struct WorkoutSession: Codable, Equatable, Identifiable {

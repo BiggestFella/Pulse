@@ -142,14 +142,14 @@ final class ActiveWorkoutModel {
 
     // MARK: - logging / transitions
 
-    func logSet(reps: Int, weight: Double, now: Date = .now) {
+    func logSet(reps: Int, weight: Double, rir: Int? = nil, now: Date = .now) {
         guard !steps.isEmpty else { return }
         let step = steps[stepIdx]
         let type = currentSet?.type ?? .working
         let exID = workout.exercises[step.exIdx].exercise.id
         let varID = workout.exercises[step.exIdx].variationID
         loggedSets[stepIdx] = SessionSet(exerciseID: exID, variationID: varID, order: stepIdx,
-                                         reps: reps, weight: weight, type: type)
+                                         reps: reps, weight: weight, type: type, rir: rir)
         doneSteps.insert(stepIdx)
 
         if stepIdx == steps.count - 1 {
