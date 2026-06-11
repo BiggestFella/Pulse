@@ -62,6 +62,9 @@ struct TodayView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: theme.spacing[5]) {
                 topBar
+                if !skeleton, let suggestion = model.deloadBanner {
+                    DeloadBanner(suggestion: suggestion) { model.dismissDeload() }
+                }
                 greetingRow
                 if let store = pendingStore, store.pendingCount > 0 {
                     PendingSyncBanner(count: store.pendingCount) {

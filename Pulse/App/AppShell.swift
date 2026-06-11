@@ -52,6 +52,8 @@ struct AppShell: View {
         let widgetsEnabled = !RepositoryContainer.useMock()
         _todayModel = State(initialValue: TodayModel(
             repository: repo,
+            // Recent logged sessions feed the advisory deload banner (BAK-36).
+            sessionRepo: container.sessions,
             // Start → launches the active flow with the path-appropriate workout.
             onStartWorkout: { _ in session.startWorkout(startWorkout) },
             onOpenSession: { _ in /* handled by TodayView path push */ },
