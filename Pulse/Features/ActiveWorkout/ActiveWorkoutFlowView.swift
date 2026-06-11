@@ -4,6 +4,10 @@ struct ActiveWorkoutFlowView: View {
     @Bindable var model: ActiveWorkoutModel
     @Environment(Theme.self) private var theme
     @State private var liveActivity: WorkoutLiveActivityController?
+    /// Mirrors the active session to the paired Apple Watch (BAK-37). A
+    /// projection like `liveActivity` — synced at the same engine-transition
+    /// points and torn down implicitly when the session ends (idle snapshot).
+    @State private var watchBridge: WatchSyncBridge?
 
     var body: some View {
         ZStack {
@@ -42,17 +46,25 @@ struct ActiveWorkoutFlowView: View {
         // afterRest, skipSet, jump, swap, rest-adjust — plus theme switching.
         .onAppear {
             if liveActivity == nil { liveActivity = WorkoutLiveActivityController(model: model) }
+            if watchBridge == nil {
+                watchBridge = WatchSyncBridge(
+                    model: model,
+                    channel: WCSessionWorkoutSyncChannel(),
+                    soundOnRestEnd: { model.soundOnRestEnd })
+            }
             liveActivity?.sync()
+            watchBridge?.sync()
         }
-        .onChange(of: model.phase) { liveActivity?.sync() }
-        .onChange(of: model.stepIdx) { liveActivity?.sync() }
-        .onChange(of: model.restEndsAt) { liveActivity?.sync() }
-        .onChange(of: model.swaps) { liveActivity?.sync() }
-        .onChange(of: model.doneSteps) { liveActivity?.sync() }
+        .onChange(of: model.phase) { liveActivity?.sync(); watchBridge?.sync() }
+        .onChange(of: model.stepIdx) { liveActivity?.sync(); watchBridge?.sync() }
+        .onChange(of: model.restEndsAt) { liveActivity?.sync(); watchBridge?.sync() }
+        .onChange(of: model.swaps) { liveActivity?.sync(); watchBridge?.sync() }
+        .onChange(of: model.doneSteps) { liveActivity?.sync(); watchBridge?.sync() }
         .onChange(of: theme.palette) { liveActivity?.sync() }
         // Session ended/abandoned: AppShell removes this takeover view while the
-        // controller is still alive; isActive is false by now, so it ends the Activity.
-        .onDisappear { liveActivity?.sync() }
+        // controller is still alive; isActive is false by now, so it ends the
+        // Activity and pushes the idle snapshot to the watch.
+        .onDisappear { liveActivity?.sync(); watchBridge?.sync() }
     }
 
     private var phaseID: String {
