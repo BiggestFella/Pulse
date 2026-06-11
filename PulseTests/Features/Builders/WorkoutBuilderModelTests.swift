@@ -131,4 +131,12 @@ final class WorkoutBuilderModelTests: XCTestCase {
         await model.save()
         if case .error = model.saveState { } else { XCTFail("expected .error") }
     }
+
+    func testMoveReordersItems() {
+        let model = makeModel()                 // seeded: [Flat bench, Incline press]
+        let firstID = model.items[0].id
+        model.move(from: IndexSet(integer: 0), to: 2)   // move row 0 to the end
+        XCTAssertEqual(model.items.last?.id, firstID)
+        XCTAssertEqual(model.items.count, 2)
+    }
 }

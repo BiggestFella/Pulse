@@ -72,6 +72,13 @@ final class WorkoutBuilderModel {
         items.removeAll { $0.id == id }
     }
 
+    /// Reorder exercises (drag-to-move from the builder's edit mode). Operates on
+    /// the flat `items` array; moving a row out of a contiguous superset run
+    /// naturally breaks that run, which matches the user's intent.
+    func move(from source: IndexSet, to destination: Int) {
+        items.move(fromOffsets: source, toOffset: destination)
+    }
+
     /// Toggle the link between row `idx` and `idx+1`. No-op on the last row.
     func toggleLink(at idx: Int) {
         guard idx >= 0, idx + 1 < items.count else { return }
