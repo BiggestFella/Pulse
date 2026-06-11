@@ -38,6 +38,19 @@ final class ActiveWorkoutModelTests: XCTestCase {
         XCTAssertEqual(m.stepIdx, 0)
     }
 
+    // BAK-36 — logSet captures an optional RIR; default path stays nil.
+    func testLogSetCapturesRIRWhenProvided() {
+        let m = started(); m.beginSets()
+        m.logSet(reps: 8, weight: 100, rir: 1)
+        XCTAssertEqual(m.loggedSets[0]?.rir, 1)
+    }
+
+    func testLogSetDefaultsRIRToNil() {
+        let m = started(); m.beginSets()
+        m.logSet(reps: 8, weight: 100)   // fast path — no rir argument
+        XCTAssertNil(m.loggedSets[0]?.rir)
+    }
+
     // AC4 — non-superset set logs → rest, idempotent
     func testLogNonSupersetGoesToRestIdempotently() {
         let m = started(); m.beginSets()           // step 0 = bench warmup, rest == true

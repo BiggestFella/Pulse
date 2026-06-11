@@ -6,12 +6,16 @@ struct ActiveSetView: View {
 
     @State private var reps: Int = 0
     @State private var weight: Double = 0
+    @State private var rir: Int? = nil   // unset until the lifter taps a chip
 
     private var step: WorkoutStep { model.currentStep }
     private var exIdx: Int { step.exIdx }
     private var exercise: WorkoutExercise { model.workout.exercises[exIdx] }
     private var setSpec: SetSpec { exercise.sets[step.setIdx] }
     private var isFailure: Bool { setSpec.type == .failure }
+    /// RIR capture is offered only for effort-bearing sets; never for warmups,
+    /// to-failure (RIR is implicitly 0), or dropsets.
+    private var capturesRIR: Bool { setSpec.type == .working || setSpec.type == .amrap }
     private var failureBottom: String { weight > 0 ? "Max reps @ \(WeightFormat.kg(weight))." : "Max reps." }
 
     var body: some View {
@@ -25,6 +29,7 @@ struct ActiveSetView: View {
             // BAK-30: failure/AMRAP sets also show the entry controls so you can
             // record the weight you used and the reps you actually hit.
             steppers
+            if capturesRIR { rirSelector }
             if exercise.supersetGroup != nil { partnerPeek }
             Spacer()
             footer
@@ -34,7 +39,35 @@ struct ActiveSetView: View {
             await model.loadSuggestion(forStepIndex: model.stepIdx)
             reps = model.seedReps
             weight = model.seedWeight
+            rir = nil   // reset on every step change; logging without tapping stores nil
         }
+    }
+
+    /// Optional Reps-In-Reserve chips (0,1,2,3,4+). Tapping toggles; logging
+    /// without tapping leaves `rir == nil` (the fast path stays unblocked).
+    private var rirSelector: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("RIR (REPS IN RESERVE)")
+                .font(.system(.caption2, design: .monospaced))
+                .foregroundStyle(theme.inkSoft)
+            HStack(spacing: 6) {
+                ForEach(RIRSelectorOption.all, id: \.self) { option in
+                    let selected = rir == option.value
+                    Button { rir = (selected ? nil : option.value) } label: {
+                        Text(option.label)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(selected ? theme.onAccent : theme.ink)
+                            .padding(.vertical, 6).padding(.horizontal, 12)
+                            .background(selected ? theme.accent : .clear, in: Capsule())
+                            .overlay(Capsule().strokeBorder(
+                                selected ? .clear : theme.inkFaint, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("active.rir.\(option.value)")
+                }
+            }
+        }
+        .accessibilityIdentifier("active.rirSelector")
     }
 
     /// Informational progression pill — the steppers are already pre-seeded with
@@ -214,12 +247,23 @@ struct ActiveSetView: View {
             Button("Skip") { model.skipSet() }
                 .buttonStyle(PressableButtonStyle(variant: .secondary, size: .md))
                 .accessibilityIdentifier("active.skip")
-            Button(model.logButtonLabel) { model.logSet(reps: reps, weight: weight) }
+            Button(model.logButtonLabel) { model.logSet(reps: reps, weight: weight, rir: rir) }
                 .buttonStyle(PressableButtonStyle(variant: .primary, size: .md))
                 .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("active.log")
         }
     }
+}
+
+/// RIR chips: 0,1,2,3 plus a "4+" bucket that stores 4.
+private struct RIRSelectorOption: Hashable {
+    let value: Int
+    let label: String
+    static let all: [RIRSelectorOption] = [
+        .init(value: 0, label: "0"), .init(value: 1, label: "1"),
+        .init(value: 2, label: "2"), .init(value: 3, label: "3"),
+        .init(value: 4, label: "4+"),
+    ]
 }
 
 /// Local stepper field (the design system has no shared stepper yet). Label +
