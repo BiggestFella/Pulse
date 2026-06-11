@@ -45,6 +45,7 @@ struct FolderDetailView: View {
     let onOpenWorkout: (Workout) -> Void
     let onOpenProgram: (Program) -> Void
     let onMove: (LibraryItemRef) -> Void
+    let onCreateHere: () -> Void
     @Environment(Theme.self) private var theme
 
     init(model: FolderDetailModel,
@@ -52,22 +53,32 @@ struct FolderDetailView: View {
          onOpenFolder: @escaping (UUID, String) -> Void,
          onOpenWorkout: @escaping (Workout) -> Void,
          onOpenProgram: @escaping (Program) -> Void,
-         onMove: @escaping (LibraryItemRef) -> Void) {
+         onMove: @escaping (LibraryItemRef) -> Void,
+         onCreateHere: @escaping () -> Void) {
         _model = State(initialValue: model)
         self.refreshID = refreshID
         self.onOpenFolder = onOpenFolder
         self.onOpenWorkout = onOpenWorkout
         self.onOpenProgram = onOpenProgram
         self.onMove = onMove
+        self.onCreateHere = onCreateHere
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Text(model.title)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(theme.ink)
-                    .accessibilityIdentifier("folderDetail.title")
+                HStack {
+                    Text(model.title)
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(theme.ink)
+                        .accessibilityIdentifier("folderDetail.title")
+                    Spacer()
+                    Button { onCreateHere() } label: {
+                        Image(systemName: "plus").font(.system(size: 16, weight: .bold)).foregroundStyle(theme.ink)
+                            .frame(width: 34, height: 34).overlay(Circle().strokeBorder(theme.inkFaint, lineWidth: 1.5))
+                    }
+                    .buttonStyle(.plain).accessibilityIdentifier("folderDetail.create")
+                }
                 Group {
                     switch model.loadState {
                     case .loading:

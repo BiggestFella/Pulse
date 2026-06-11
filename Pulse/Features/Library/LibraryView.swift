@@ -8,6 +8,7 @@ struct LibraryView: View {
     @State private var moving: LibraryItemRef?
     @State private var pendingDelete: LibraryFolder?
     @State private var refreshID = 0
+    @State private var createParentID: UUID?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -74,7 +75,7 @@ struct LibraryView: View {
         HStack {
             StatLabel("LIBRARY")
             Spacer()
-            Button { model.presentCreate() } label: {
+            Button { createParentID = nil; model.presentCreate() } label: {
                 Image(systemName: "plus").font(.system(size: 16, weight: .bold))
                     .foregroundStyle(theme.ink).frame(width: 34, height: 34)
                     .overlay(Circle().strokeBorder(theme.inkFaint, lineWidth: 1.5))
@@ -186,7 +187,7 @@ struct LibraryView: View {
             RoutineBuilderView(model: RoutineBuilderModel(
                 routines: repos.programs, workouts: repos.workouts))
         case .folderCreate:
-            FolderBuilderView(model: FolderBuilderModel(folders: repos.folders))
+            FolderBuilderView(model: FolderBuilderModel(folders: repos.folders, parentID: createParentID))
         case .folderDetail(let id, let name):
             FolderDetailView(
                 model: FolderDetailModel(folderID: id, title: name, folders: repos.folders),
@@ -194,7 +195,8 @@ struct LibraryView: View {
                 onOpenFolder: { childID, childName in path.append(.folderDetail(folderID: childID, name: childName)) },
                 onOpenWorkout: { _ in },
                 onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
-                onMove: { moving = $0 })
+                onMove: { moving = $0 },
+                onCreateHere: { createParentID = id; model?.isCreateSheetPresented = true })
         case .exerciseDetail(let id):
             if let uuid = UUID(uuidString: id) {
                 ExerciseDetailView(exerciseID: uuid, exerciseRepo: repos.exercises,
