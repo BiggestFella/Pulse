@@ -46,7 +46,12 @@ struct ActiveWorkoutFlowView: View {
         // afterRest, skipSet, jump, swap, rest-adjust — plus theme switching.
         .onAppear {
             if liveActivity == nil { liveActivity = WorkoutLiveActivityController(model: model) }
-            if watchBridge == nil {
+            // Skip the watch bridge under the UI-test mock world: activating
+            // WCSession and pushing applicationContext on every engine transition
+            // adds nondeterministic cross-process load to the UI suite (the same
+            // reason the widget snapshot is gated in AppShell). Production is
+            // unaffected — real launches still mirror to the watch.
+            if watchBridge == nil, !RepositoryContainer.useMock() {
                 watchBridge = WatchSyncBridge(
                     model: model,
                     channel: WCSessionWorkoutSyncChannel(),
