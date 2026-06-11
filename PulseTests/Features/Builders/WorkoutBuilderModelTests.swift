@@ -139,4 +139,17 @@ final class WorkoutBuilderModelTests: XCTestCase {
         XCTAssertEqual(model.items.last?.id, firstID)
         XCTAssertEqual(model.items.count, 2)
     }
+
+    func testAddExercisesPreservesPassedOrder() async {
+        let model = makeModel()
+        await model.loadCatalog()
+        // Three distinct catalog ids in a deliberate order.
+        let a = model.catalog[0].exercises[0].id
+        let b = model.catalog[1].exercises[0].id
+        let c = model.catalog[1].exercises[1].id
+        let before = model.items.count
+        model.addExercises([c, a, b])
+        let addedIDs = Array(model.items.suffix(model.items.count - before)).map { $0.exercise.id }
+        XCTAssertEqual(addedIDs, [c, a, b])  // exact insertion order preserved
+    }
 }

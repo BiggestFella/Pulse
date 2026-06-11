@@ -13,7 +13,7 @@ struct ExercisePickerSheet: View {
     let onCancel: () -> Void
     let onConfirm: ([Exercise.ID]) -> Void
 
-    @State private var selected: Set<Exercise.ID> = []
+    @State private var selected: [Exercise.ID] = []   // ordered by tap, preserved on confirm
     @State private var filter: String = "All"
     @Environment(Theme.self) private var theme
 
@@ -100,7 +100,7 @@ struct ExercisePickerSheet: View {
             Button("Cancel", action: onCancel)
                 .buttonStyle(PressableButtonStyle(variant: .secondary, size: .md))
                 .accessibilityIdentifier("picker-cancel")
-            Button { onConfirm(Array(selected)) } label: {
+            Button { onConfirm(selected) } label: {
                 Text(selected.isEmpty ? "Select exercises" : "Add \(selected.count) selected")
             }
             .buttonStyle(PressableButtonStyle(variant: .primary, size: .md))
@@ -116,7 +116,8 @@ struct ExercisePickerSheet: View {
         let equipment = ex.variations.first?.equipment ?? ""
         Button {
             guard !added else { return }
-            if isSel { selected.remove(ex.id) } else { selected.insert(ex.id) }
+            if let i = selected.firstIndex(of: ex.id) { selected.remove(at: i) }
+            else { selected.append(ex.id) }
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
