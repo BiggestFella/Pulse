@@ -117,9 +117,13 @@ enum SampleData {
             default: base = 30
             }
             for spec in we.sets where spec.type != .warmup {
+                let resolvedType: SetType = spec.type == .amrap ? .amrap : .working
+                // Demo signal: heavier bump → lower RIR (harder). nil for the very
+                // first batch so "legacy / untagged" rows coexist with tagged ones.
+                let rir: Int? = weightBump == 0 ? nil : max(0, 3 - Int(weightBump / 2.5))
                 out.append(SessionSet(exerciseID: we.exercise.id, order: order,
                                       reps: spec.reps, weight: base + weightBump,
-                                      type: spec.type == .amrap ? .amrap : .working))
+                                      type: resolvedType, rir: rir))
                 order += 1
             }
         }
