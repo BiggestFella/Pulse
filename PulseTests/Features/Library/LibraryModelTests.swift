@@ -38,4 +38,43 @@ final class LibraryModelTests: XCTestCase {
         XCTAssertTrue(model.folders.isEmpty)
         XCTAssertTrue(model.recentWorkouts.isEmpty)
     }
+
+    func testSelectUpdatesFilter() {
+        let model = makeModel(store: MockStore(seeded: false))
+        model.select(.exercises)
+        XCTAssertEqual(model.selectedFilter, .exercises)
+    }
+
+    func testPresentAndDismissCreate() {
+        let model = makeModel(store: MockStore(seeded: false))
+        model.presentCreate()
+        XCTAssertTrue(model.isCreateSheetPresented)
+        model.dismissCreate()
+        XCTAssertFalse(model.isCreateSheetPresented)
+    }
+
+    func testIsAllEmptyTrueOnEmptyStore() async {
+        let model = makeModel(store: MockStore(seeded: false))
+        await model.load()
+        XCTAssertTrue(model.isAllEmpty)
+    }
+
+    func testLoadFailureSetsErrorState() async {
+        let store = MockStore(seeded: true)
+        store.forceError = true
+        let model = makeModel(store: store)
+        await model.load()
+        XCTAssertEqual(model.loadState, .error)
+    }
+
+    func testRetryRecoversAfterError() async {
+        let store = MockStore(seeded: true)
+        store.forceError = true
+        let model = makeModel(store: store)
+        await model.load()
+        XCTAssertEqual(model.loadState, .error)
+        store.forceError = false
+        await model.retry()
+        XCTAssertEqual(model.loadState, .loaded)
+    }
 }

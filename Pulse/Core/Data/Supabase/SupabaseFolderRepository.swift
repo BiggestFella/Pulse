@@ -10,7 +10,8 @@ struct SupabaseFolderRepository: FolderRepository {
     func contents(of parentID: Folder.ID?) async throws -> FolderContents {
         let folderRows: [FolderRecord] = try await childQuery("folders", column: "parent_folder_id", parentID)
             .order("order").execute().value
-        let workoutRows: [WorkoutRow] = try await childQuery("workouts", column: "folder_id", parentID)
+        let workoutRows: [WorkoutRow] = try await childQuery(
+            "workouts", column: "folder_id", parentID, select: SupabaseWorkoutRepository.graphSelect)
             .order("order").execute().value
         let programRows: [ProgramRow] = try await childQuery("programs", column: "folder_id", parentID)
             .order("created_at").execute().value
@@ -20,10 +21,10 @@ struct SupabaseFolderRepository: FolderRepository {
             programs: programRows.map { $0.toModel() })
     }
 
-    /// `select("*")` filtered to children of `parentID` — `is null` at the root.
-    private func childQuery(_ table: String, column: String, _ parentID: Folder.ID?)
+    /// Filtered query on `table` for children of `parentID` — `is null` at the root.
+    private func childQuery(_ table: String, column: String, _ parentID: Folder.ID?, select: String = "*")
         -> PostgrestFilterBuilder {
-        let base = client.from(table).select("*")
+        let base = client.from(table).select(select)
         if let parentID { return base.eq(column, value: parentID.uuidString) }
         return base.is(column, value: nil)
     }

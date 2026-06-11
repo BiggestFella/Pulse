@@ -40,6 +40,7 @@ final class FolderDetailModel {
 
 struct FolderDetailView: View {
     @State private var model: FolderDetailModel
+    @State private var pendingDelete: LibraryFolder?
     let refreshID: Int
     let onOpenFolder: (UUID, String) -> Void
     let onOpenWorkout: (Workout) -> Void
@@ -95,7 +96,7 @@ struct FolderDetailView: View {
                             },
                             onOpenWorkout: onOpenWorkout, onOpenProgram: onOpenProgram,
                             onMove: onMove,
-                            onDelete: { folder in Task { await model.delete(folder) } })
+                            onDelete: { folder in pendingDelete = folder })
                             .padding(.top, 14)
                     }
                 }
@@ -105,6 +106,16 @@ struct FolderDetailView: View {
         .background(theme.bg.ignoresSafeArea())
         .task { await model.load() }
         .onChange(of: refreshID) { _, _ in Task { await model.load() } }
+        .alert("Delete folder?", isPresented: Binding(
+            get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })) {
+            Button("Cancel", role: .cancel) { pendingDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let folder = pendingDelete { Task { await model.delete(folder) } }
+                pendingDelete = nil
+            }
+        } message: {
+            Text("Deleting \"\(pendingDelete?.name ?? "")\" also deletes everything inside it. This can't be undone.")
+        }
         .accessibilityIdentifier("folderDetail.\(model.folderID)")
     }
 }
