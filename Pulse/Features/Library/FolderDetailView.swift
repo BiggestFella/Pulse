@@ -40,6 +40,7 @@ final class FolderDetailModel {
 
 struct FolderDetailView: View {
     @State private var model: FolderDetailModel
+    let refreshID: Int
     let onOpenFolder: (UUID, String) -> Void
     let onOpenWorkout: (Workout) -> Void
     let onOpenProgram: (Program) -> Void
@@ -47,11 +48,13 @@ struct FolderDetailView: View {
     @Environment(Theme.self) private var theme
 
     init(model: FolderDetailModel,
+         refreshID: Int,
          onOpenFolder: @escaping (UUID, String) -> Void,
          onOpenWorkout: @escaping (Workout) -> Void,
          onOpenProgram: @escaping (Program) -> Void,
          onMove: @escaping (LibraryItemRef) -> Void) {
         _model = State(initialValue: model)
+        self.refreshID = refreshID
         self.onOpenFolder = onOpenFolder
         self.onOpenWorkout = onOpenWorkout
         self.onOpenProgram = onOpenProgram
@@ -90,6 +93,7 @@ struct FolderDetailView: View {
         }
         .background(theme.bg.ignoresSafeArea())
         .task { await model.load() }
+        .onChange(of: refreshID) { _, _ in Task { await model.load() } }
         .accessibilityIdentifier("folderDetail.\(model.folderID)")
     }
 }

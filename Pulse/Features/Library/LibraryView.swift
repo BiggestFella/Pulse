@@ -7,6 +7,7 @@ struct LibraryView: View {
     @State private var path: [LibraryRoute] = []
     @State private var moving: LibraryItemRef?
     @State private var pendingDelete: LibraryFolder?
+    @State private var refreshID = 0
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -51,7 +52,7 @@ struct LibraryView: View {
         }
         .sheet(item: $moving) { ref in
             MoveToFolderSheet(model: MoveToFolderModel(moving: ref, folders: repos.folders),
-                              onDone: { moving = nil; Task { await model.load() } })
+                              onDone: { moving = nil; refreshID += 1; Task { await model.load() } })
                 .presentationDetents([.medium, .large]).environment(theme)
         }
         .alert("Delete folder?", isPresented: Binding(
@@ -59,6 +60,7 @@ struct LibraryView: View {
             Button("Cancel", role: .cancel) { pendingDelete = nil }
             Button("Delete", role: .destructive) {
                 if let folder = pendingDelete {
+                    refreshID += 1
                     Task { try? await repos.folders.deleteFolder(id: folder.id); await model.load() }
                 }
                 pendingDelete = nil
@@ -188,6 +190,7 @@ struct LibraryView: View {
         case .folderDetail(let id, let name):
             FolderDetailView(
                 model: FolderDetailModel(folderID: id, title: name, folders: repos.folders),
+                refreshID: refreshID,
                 onOpenFolder: { childID, childName in path.append(.folderDetail(folderID: childID, name: childName)) },
                 onOpenWorkout: { _ in },
                 onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
