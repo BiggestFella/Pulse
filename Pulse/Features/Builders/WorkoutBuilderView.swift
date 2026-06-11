@@ -7,7 +7,7 @@ struct WorkoutBuilderView: View {
     @State private var model: WorkoutBuilderModel
     @Environment(Theme.self) private var theme
     @Environment(\.dismiss) private var dismiss
-    private let reorderRowHeight: CGFloat = 48
+    @ScaledMetric private var reorderRowHeight: CGFloat = 48
 
     init(model: WorkoutBuilderModel) { _model = State(initialValue: model) }
 
