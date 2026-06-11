@@ -8,6 +8,7 @@ final class WorkoutBuilderModel {
     var tag: WorkoutTag = .push
     var items: [BuilderExercise] = BuilderSampleData.defaultWorkoutItems
     var pickerPresented = false
+    var isReordering = false
     var editingItemID: BuilderExercise.ID? = nil
     var saveState: SaveState = .idle
 
@@ -70,6 +71,13 @@ final class WorkoutBuilderModel {
 
     func removeItem(id: BuilderExercise.ID) {
         items.removeAll { $0.id == id }
+    }
+
+    /// Reorder exercises (drag-to-move from the builder's edit mode). Operates on
+    /// the flat `items` array; moving a row out of a contiguous superset run
+    /// naturally breaks that run, which matches the user's intent.
+    func move(from source: IndexSet, to destination: Int) {
+        items.move(fromOffsets: source, toOffset: destination)
     }
 
     /// Toggle the link between row `idx` and `idx+1`. No-op on the last row.

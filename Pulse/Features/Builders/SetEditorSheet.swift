@@ -9,6 +9,15 @@ struct SetEditorSheet: View {
     @Environment(Theme.self) private var theme
     @Environment(\.dismiss) private var dismiss
 
+    // Per-row focus identity (the set index currently being typed into), so only
+    // the focused row shows its draft — a shared Bool would leak the draft to every row.
+    @FocusState private var focusedReps: Int?
+    @State private var repsDraft = ""
+    // Shared column widths so the header labels line up with the data row.
+    private let setColWidth: CGFloat = 28
+    private let repsColWidth: CGFloat = 132   // stepper(−) + value + stepper(+)
+    private let rirColWidth: CGFloat = 96
+
     private var item: BuilderExercise? { model.items.first { $0.id == itemID } }
 
     private let types: [SetType] = [.working, .warmup, .dropset, .failure, .amrap]
@@ -38,12 +47,11 @@ struct SetEditorSheet: View {
 
     private func content(_ item: BuilderExercise) -> some View {
         VStack(alignment: .leading, spacing: theme.spacing[3]) {
-            HStack {
-                StatLabel("SET")
+            HStack(spacing: theme.spacing[3]) {
+                StatLabel("SET").frame(width: setColWidth, alignment: .leading)
+                StatLabel("REPS").frame(width: repsColWidth, alignment: .center)
+                StatLabel("RIR").frame(width: rirColWidth, alignment: .center)
                 Spacer()
-                StatLabel("REPS")
-                Spacer()
-                StatLabel("RIR")
             }
 
             ForEach(Array(item.sets.enumerated()), id: \.element.id) { idx, set in
@@ -76,16 +84,46 @@ struct SetEditorSheet: View {
         VStack(alignment: .leading, spacing: theme.spacing[2]) {
             HStack(spacing: theme.spacing[3]) {
                 BuilderBadge(text: "\(idx + 1)", tinted: set.type != .working)
+                    .frame(width: setColWidth, alignment: .leading)
 
-                TextField("reps", value: Binding(
-                    get: { set.reps },
-                    set: { model.updateSet(itemID: item.id, index: idx, reps: $0, rir: set.rir, type: set.type) }),
-                    format: .number)
-                    .keyboardType(.numberPad)
-                    .font(.system(size: 20, weight: .bold, design: .monospaced))
-                    .foregroundStyle(theme.ink)
-                    .frame(width: 56)
-                    .accessibilityIdentifier("set-reps-\(idx)")
+                HStack(spacing: theme.spacing[1]) {
+                    Button("−") {
+                        let next = max(0, set.reps - 1)
+                        model.updateSet(itemID: item.id, index: idx, reps: next, rir: set.rir, type: set.type)
+                        if focusedReps == idx { repsDraft = String(next) }
+                    }
+                    .accessibilityIdentifier("set-reps-dec-\(idx)")
+
+                    TextField("0", text: Binding(
+                        get: { focusedReps == idx ? repsDraft : String(set.reps) },
+                        set: { newValue in
+                            let digits = String(newValue.filter(\.isNumber).prefix(3))
+                            repsDraft = digits
+                            model.updateSet(itemID: item.id, index: idx,
+                                            reps: digits.isEmpty ? 0 : (Int(digits) ?? set.reps),
+                                            rir: set.rir, type: set.type)
+                        }))
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.center)
+                        .focused($focusedReps, equals: idx)
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .foregroundStyle(theme.ink)
+                        .frame(width: 56)
+                        .accessibilityIdentifier("set-reps-\(idx)")
+                        .onChange(of: focusedReps) { _, new in
+                            if new == idx { repsDraft = String(set.reps) }   // seed on focus-in; commit happens live in `set`
+                        }
+
+                    Button("+") {
+                        let next = set.reps + 1
+                        model.updateSet(itemID: item.id, index: idx, reps: next, rir: set.rir, type: set.type)
+                        if focusedReps == idx { repsDraft = String(next) }
+                    }
+                    .accessibilityIdentifier("set-reps-inc-\(idx)")
+                }
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(theme.ink)
+                .frame(width: repsColWidth)
 
                 HStack(spacing: theme.spacing[1]) {
                     Button("−") {
@@ -101,6 +139,7 @@ struct SetEditorSheet: View {
                 }
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(theme.ink)
+                .frame(width: rirColWidth)
 
                 Spacer()
 
