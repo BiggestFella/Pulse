@@ -51,16 +51,28 @@ final class ActiveWorkoutModel {
     // baseline est-1RM per exercise for PR detection (loaded from history)
     private var prBaseline: [Exercise.ID: Double] = [:]
 
+    // progression
+    /// Mirrors `UserSettings.autoProgressWeight`. Default true so existing call
+    /// sites compile; `AppShell` passes the persisted value (Task 4).
+    private let autoProgress: Bool
+    /// Default kg increment for v1 (single value; per-movement is an Open Question).
+    private let progressionIncrement: Double = 2.5
+    /// Suggestion for the current step, loaded async from history. `nil` until
+    /// loaded or when no suggestion applies (no history / non-working set).
+    private(set) var currentSuggestion: ProgressionSuggestion?
+
     init(exerciseRepo: SwapAlternativesProviding,
          historyRepo: HistoryRepository,
          sessionWriter: SessionWriter,
          restCue: RestCuePlaying = NoopRestCueService(),
-         soundOnRestEnd: Bool = true) {
+         soundOnRestEnd: Bool = true,
+         autoProgress: Bool = true) {
         self.exerciseRepo = exerciseRepo
         self.historyRepo = historyRepo
         self.sessionWriter = sessionWriter
         self.restCue = restCue
         self.soundOnRestEnd = soundOnRestEnd
+        self.autoProgress = autoProgress
     }
 
     // MARK: - lifecycle
@@ -79,6 +91,7 @@ final class ActiveWorkoutModel {
         activeSheet = nil
         saveState = .idle
         pendingSession = nil
+        currentSuggestion = nil
     }
 
     func beginSets() { phase = .active }
@@ -245,6 +258,50 @@ final class ActiveWorkoutModel {
         prBaseline = base
     }
 
+    // MARK: - progression
+
+    /// Pick the prior `SessionSet` that best represents "last time" for a given
+    /// planned set index: prefer the working set logged at the same `order`,
+    /// else fall back to the heaviest working set in the slice. Returns the
+    /// chosen set in a single-element array shaped for `ProgressionInput`.
+    /// Pure + internal so it can be unit-tested without async/history.
+    func matchingLastSets(_ history: [SessionSet], setIndex: Int) -> [SessionSet] {
+        let working = history.filter { $0.type == .working }
+        guard !working.isEmpty else { return [] }
+        if let atIndex = working.first(where: { $0.order == setIndex }) {
+            return [atIndex]
+        }
+        if let top = working.max(by: { $0.weight < $1.weight }) {
+            return [top]
+        }
+        return []
+    }
+
+    /// Compute the suggestion for a step without touching state — pure given the
+    /// fetched history. Returns `nil` for non-working sets or when the engine
+    /// declines (no history).
+    func suggestion(forStep step: WorkoutStep, history: [SessionSet]) -> ProgressionSuggestion? {
+        let ex = workout.exercises[step.exIdx]
+        guard step.setIdx < ex.sets.count else { return nil }
+        let spec = ex.sets[step.setIdx]
+        guard spec.type == .working else { return nil }  // suggestions are working-set only
+        let last = matchingLastSets(history, setIndex: step.setIdx)
+        return suggestProgression(ProgressionInput(target: spec,
+                                                   lastSets: last,
+                                                   increment: progressionIncrement,
+                                                   autoProgress: autoProgress))
+    }
+
+    /// Fetch history for the step's exercise and cache the resulting suggestion.
+    /// Call this when the active set appears / the step changes.
+    func loadSuggestion(forStepIndex i: Int) async {
+        guard steps.indices.contains(i) else { currentSuggestion = nil; return }
+        let step = steps[i]
+        let exID = workout.exercises[step.exIdx].exercise.id
+        let history = (try? await historyRepo.recentSets(exerciseID: exID)) ?? []
+        currentSuggestion = suggestion(forStep: step, history: history)
+    }
+
     // MARK: - derived UI state
 
     var currentStep: WorkoutStep { steps[stepIdx] }
@@ -276,9 +333,13 @@ final class ActiveWorkoutModel {
         return "Log set"
     }
 
-    /// Planned stepper seeds for the current step (kg).
-    var seedReps: Int { currentSet?.reps ?? 0 }
-    var seedWeight: Double { ActiveWorkoutSample.plannedWeight(exIdx: currentStep.exIdx, setIdx: currentStep.setIdx) }
+    /// Stepper seeds (kg) — prefer the loaded progression suggestion, else the
+    /// planned `SetSpec` / sample weight as before.
+    var seedReps: Int { currentSuggestion?.reps ?? (currentSet?.reps ?? 0) }
+    var seedWeight: Double {
+        currentSuggestion?.weight
+            ?? ActiveWorkoutSample.plannedWeight(exIdx: currentStep.exIdx, setIdx: currentStep.setIdx)
+    }
 
     /// Planned weight (kg) for an arbitrary step index — generalises `seedWeight`
     /// (current step only) so the Live Activity projection can read the next step too.
