@@ -8,8 +8,7 @@ struct WatchRootView: View {
         case .active:
             WatchSetView(model: model)
         case .rest:
-            // Replaced by WatchRestView in Task 6.
-            Text("Resting…")
+            WatchRestView(model: model)
         case .idle, .summary:
             WatchIdleView()
         }
