@@ -104,6 +104,14 @@ enum SampleData {
         name: "Push / Pull / Legs", weeks: 6, isActive: true,
         workouts: [pushWorkout, pullWorkout, legsWorkout])
 
+    // MARK: Library folders (mock path)
+    /// A sample Library folder for the mock path; the sample program lives inside it.
+    static let folder = Folder(
+        id: UUID(uuidString: "A1B2C3D4-0000-4000-8000-000000000001")!,
+        name: "Push Pull Legs", color: .blue, parentID: nil)
+    static let folders: [Folder] = [folder]
+    static let programFolderID: [Program.ID: Folder.ID] = [program.id: folder.id]
+
     // MARK: Sessions (10 sessions across the last ~30 days, progressive overload)
     private static func loggedSets(for workout: Workout, weightBump: Double) -> [SessionSet] {
         var out: [SessionSet] = []

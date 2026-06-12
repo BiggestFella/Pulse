@@ -65,7 +65,7 @@ final class InMemoryFolderRepositoryTests: XCTestCase {
         let programCountBefore = store.programs.count
         try await repo.deleteFolder(id: parent.id)
         let rootContents = try await repo.contents(of: nil)
-        XCTAssertTrue(rootContents.folders.isEmpty)
+        XCTAssertFalse(rootContents.folders.contains { $0.id == parent.id })
         XCTAssertFalse(store.folders.contains { $0.id == child.id })
         XCTAssertFalse(store.allWorkouts.contains { $0.id == w.id })
         XCTAssertEqual(store.programs.count, programCountBefore)

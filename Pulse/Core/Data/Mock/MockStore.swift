@@ -27,6 +27,8 @@ final class MockStore {
             exercises = SampleData.exercises
             sessions = SampleData.sessions
             schedule = SampleData.schedule
+            folders = SampleData.folders
+            programFolderID = SampleData.programFolderID
         } else {
             programs = []; exercises = []; sessions = []; schedule = [:]
         }

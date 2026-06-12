@@ -9,7 +9,7 @@ struct FolderRow: View {
             onTap: onTap,
             leading: { FolderIcon(color: folder.color) },
             content: { RowNameBlock(name: folder.name, sub: folder.sub) })
-        .accessibilityIdentifier("folder.\(folder.id)")
+        .accessibilityIdentifier("folder.\(folder.name)")
     }
 }
 
@@ -23,7 +23,7 @@ struct LibraryWorkoutRow: View {
             content: { RowNameBlock(
                 name: workout.name,
                 sub: "\(workout.exercises.count) exercise\(workout.exercises.count == 1 ? "" : "s")") })
-        .accessibilityIdentifier("workout.\(workout.id)")
+        .accessibilityIdentifier("workout.\(workout.name)")
     }
 }
 
@@ -35,7 +35,7 @@ struct LibraryProgramRow: View {
         LibraryRow(
             onTap: onTap,
             content: { RowNameBlock(name: program.name, sub: "\(program.weeks)-week program") })
-        .accessibilityIdentifier("program.\(program.id)")
+        .accessibilityIdentifier("program.\(program.name)")
     }
 }
 

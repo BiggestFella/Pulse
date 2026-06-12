@@ -10,16 +10,14 @@ final class LibraryTabTests: XCTestCase {
         return app
     }
 
-    // AC1/AC2 — header, chips, and the programs section render. The mock world
-    // seeds one program ("Push / Pull / Legs") shown under PROGRAMS with a
-    // UUID-based row id, so match the `program.` identifier prefix.
+    // AC1/AC2 — header, chips, and the folders section render. The mock world
+    // seeds one folder ("Push Pull Legs") shown under FOLDERS with a stable,
+    // name-based row identifier.
     func testHeaderChipsAndFolders() {
         let app = openLibrary()
         XCTAssertTrue(app.buttons["chip.all"].exists)
         XCTAssertTrue(app.buttons["chip.exercises"].exists)
-        let program = app.buttons.matching(
-            NSPredicate(format: "identifier BEGINSWITH %@", "program.")).firstMatch
-        XCTAssertTrue(program.waitForExistence(timeout: 5), "Expected a seeded program row")
+        XCTAssertTrue(app.buttons["folder.Push Pull Legs"].waitForExistence(timeout: 5))
     }
 
     // AC6/AC3 — Browse exercises (and the Exercises chip) shows the grouped catalog.
@@ -29,17 +27,13 @@ final class LibraryTabTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Bench Press"].waitForExistence(timeout: 5))
     }
 
-    // AC5 — tapping the seeded program routes to Program Detail (stub marker
-    // `route.program:<id>`, where id is the program's UUID).
-    func testProgramFolderRoutes() {
+    // AC5 — tapping a folder opens its detail screen.
+    func testFolderOpensDetail() {
         let app = openLibrary()
-        let program = app.buttons.matching(
-            NSPredicate(format: "identifier BEGINSWITH %@", "program.")).firstMatch
-        XCTAssertTrue(program.waitForExistence(timeout: 5))
-        program.tap()
-        let marker = app.staticTexts.matching(
-            NSPredicate(format: "identifier BEGINSWITH %@", "route.program:")).firstMatch
-        XCTAssertTrue(marker.waitForExistence(timeout: 5), "Expected program detail route marker")
+        let folder = app.buttons["folder.Push Pull Legs"]
+        XCTAssertTrue(folder.waitForExistence(timeout: 5))
+        folder.tap()
+        XCTAssertTrue(app.staticTexts["folderDetail.title"].waitForExistence(timeout: 5))
     }
 
     // AC7/AC8 — the Create chooser opens and routes to the Workout Builder
