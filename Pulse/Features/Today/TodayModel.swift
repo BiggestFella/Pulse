@@ -125,10 +125,13 @@ final class TodayModel {
     /// A model wired to the in-memory mock world, for SwiftUI previews and the
     /// `TodayView` default initializer. Production injects repositories from the
     /// `RepositoryContainer` (see `AppShell`).
-    static func mock(store: MockStore = MockStore(), now: Date = .now,
+    static func mock(store: MockStore? = nil, now: Date = .now,
                      onStartWorkout: @escaping (UUID) -> Void = { _ in },
                      onOpenSession: @escaping (UUID) -> Void = { _ in }) -> TodayModel {
-        TodayModel(programs: InMemoryProgramRepository(store: store),
+        // Construct the store here (not as a default arg): `MockStore` is
+        // @MainActor and default-argument expressions evaluate nonisolated.
+        let store = store ?? MockStore()
+        return TodayModel(programs: InMemoryProgramRepository(store: store),
                    workouts: InMemoryWorkoutRepository(store: store),
                    stats: InMemoryStatsRepository(store: store),
                    schedule: InMemoryScheduleRepository(store: store),

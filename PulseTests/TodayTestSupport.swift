@@ -25,11 +25,14 @@ enum TodayTestSupport {
         snap(from: date, weekdays: [1, 3, 5, 7], step: 1) // Sun/Tue/Thu/Sat
     }
 
-    static func model(store: MockStore = MockStore(),
+    static func model(store: MockStore? = nil,
                       now: Date,
                       onStartWorkout: @escaping (UUID) -> Void = { _ in },
                       onOpenSession: @escaping (UUID) -> Void = { _ in }) -> TodayModel {
-        TodayModel(programs: InMemoryProgramRepository(store: store),
+        // Construct here, not as a default arg: `MockStore` is @MainActor and
+        // default-argument expressions evaluate in a nonisolated context.
+        let store = store ?? MockStore()
+        return TodayModel(programs: InMemoryProgramRepository(store: store),
                    workouts: InMemoryWorkoutRepository(store: store),
                    stats: InMemoryStatsRepository(store: store),
                    schedule: InMemoryScheduleRepository(store: store),
