@@ -135,6 +135,7 @@ struct LibraryView: View {
                     onOpenWorkout: { _ in /* workout detail route lands with that feature */ },
                     onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                     onMove: { moving = $0 },
+                    onEdit: { folder in path.append(.folderEdit(folderID: folder.id, name: folder.name, colorToken: folder.color.rawValue)) },
                     onDelete: { folder in Task { await model.requestDelete(folder) } })
 
                 HStack {
@@ -181,6 +182,11 @@ struct LibraryView: View {
                 routines: repos.programs, workouts: repos.workouts))
         case .folderCreate:
             FolderBuilderView(model: FolderBuilderModel(folders: repos.folders, parentID: createParentID))
+        case .folderEdit(let id, let name, let colorToken):
+            FolderBuilderView(model: FolderBuilderModel(
+                folders: repos.folders,
+                editing: Folder(id: id, name: name,
+                                color: FolderColor(rawValue: colorToken) ?? .default, parentID: nil)))
         case .folderDetail(let id, let name):
             FolderDetailView(
                 model: FolderDetailModel(folderID: id, title: name, folders: repos.folders),
@@ -189,6 +195,7 @@ struct LibraryView: View {
                 onOpenWorkout: { _ in },
                 onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                 onMove: { moving = $0 },
+                onEdit: { folder in path.append(.folderEdit(folderID: folder.id, name: folder.name, colorToken: folder.color.rawValue)) },
                 onCreateHere: { createParentID = id; model?.isCreateSheetPresented = true })
         case .exerciseDetail(let id):
             if let uuid = UUID(uuidString: id) {

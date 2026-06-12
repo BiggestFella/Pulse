@@ -9,7 +9,8 @@ struct FolderBuilderView: View {
 
     var body: some View {
         BuilderScaffold(
-            eyebrow: "NEW FOLDER", primaryLabel: "Create folder →",
+            eyebrow: model.isEditing ? "EDIT FOLDER" : "NEW FOLDER",
+            primaryLabel: model.isEditing ? "Save changes →" : "Create folder →",
             saving: model.saveState == .saving,
             onCancel: { dismiss() },
             onPrimary: { Task { await model.save() } }
