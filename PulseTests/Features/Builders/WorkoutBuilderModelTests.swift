@@ -3,17 +3,46 @@ import XCTest
 
 @MainActor
 final class WorkoutBuilderModelTests: XCTestCase {
+    // The manipulation tests below need a non-empty builder, so the fixture seeds
+    // the sample items explicitly (a real new workout now starts empty — see
+    // testNewBuilderStartsEmpty).
     private func makeModel(store: MockStore? = nil) -> WorkoutBuilderModel {
         let store = store ?? MockStore()
         return WorkoutBuilderModel(
             catalog: InMemoryExerciseRepository(store: store),
-            workouts: InMemoryWorkoutRepository(store: store))
+            workouts: InMemoryWorkoutRepository(store: store),
+            items: BuilderSampleData.defaultWorkoutItems)
     }
 
-    func testStartsWithSeededItems() {
+    func testNewBuilderStartsEmpty() {
+        let store = MockStore()
+        let model = WorkoutBuilderModel(
+            catalog: InMemoryExerciseRepository(store: store),
+            workouts: InMemoryWorkoutRepository(store: store))
+        XCTAssertTrue(model.items.isEmpty)
+    }
+
+    func testSeededFixtureHasTwoItems() {
         let model = makeModel()
         XCTAssertEqual(model.items.count, 2)
         XCTAssertEqual(model.items.first?.exercise.name, "Flat bench")
+    }
+
+    func testUpdateVariationChangesSelection() {
+        let v1 = Variation(name: "Barbell", equipment: "barbell")
+        let v2 = Variation(name: "Dumbbell", equipment: "dumbbell")
+        let ex = Exercise(name: "Press", muscleGroup: "Chest",
+                          variations: [v1, v2], defaultVariationID: v1.id)
+        let item = BuilderExercise(exercise: ex, variationID: v1.id,
+                                   supersetGroup: nil,
+                                   sets: [SetSpec(reps: 8, rir: 2, type: .working)])
+        let store = MockStore()
+        let model = WorkoutBuilderModel(
+            catalog: InMemoryExerciseRepository(store: store),
+            workouts: InMemoryWorkoutRepository(store: store),
+            items: [item])
+        model.updateVariation(itemID: item.id, variationID: v2.id)
+        XCTAssertEqual(model.items.first?.variationID, v2.id)
     }
 
     func testTotalSetsSumsSetCounts() {
