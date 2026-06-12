@@ -85,6 +85,8 @@ final class LibraryModelTests: XCTestCase {
         XCTAssertEqual(LibraryModel.relativeDay(day(0), now: now), "Today")
         XCTAssertEqual(LibraryModel.relativeDay(day(1), now: now), "Yesterday")
         XCTAssertEqual(LibraryModel.relativeDay(day(3), now: now), "3 days ago")
+        XCTAssertEqual(LibraryModel.relativeDay(day(6), now: now), "6 days ago")
+        XCTAssertFalse(LibraryModel.relativeDay(day(7), now: now).hasSuffix("ago"))
         let old = LibraryModel.relativeDay(day(40), now: now)
         XCTAssertFalse(old.isEmpty)
         XCTAssertFalse(old.hasSuffix("ago"))
