@@ -20,6 +20,13 @@ struct LibraryView: View {
             }
             .background(theme.bg.ignoresSafeArea())
             .navigationDestination(for: LibraryRoute.self) { route in destination(route) }
+            .onChange(of: path) { old, new in
+                // A pop (returning from a builder or a folder) — refresh the now-visible list.
+                if new.count < old.count {
+                    refreshID += 1
+                    Task { await model?.load() }
+                }
+            }
         }
         .task {
             guard model == nil else { return }
