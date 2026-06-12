@@ -56,3 +56,9 @@ struct MuscleGroupCatalog: Identifiable, Equatable {
     let muscle: String
     let items: [CatalogExercise]
 }
+
+/// A folder pending deletion confirmation, with the count of items directly inside it.
+struct PendingFolderDelete: Equatable {
+    let folder: LibraryFolder
+    let itemCount: Int
+}

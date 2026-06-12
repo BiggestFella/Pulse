@@ -103,4 +103,30 @@ final class LibraryModelTests: XCTestCase {
         XCTAssertEqual(rows.first?.name, "Leg day")
         XCTAssertEqual(rows.first?.sub, "1 set · Yesterday")
     }
+
+    func testRequestDeleteEmptyFolderDeletesImmediately() async {
+        let store = MockStore(seeded: false)
+        let repo = InMemoryFolderRepository(store: store)
+        let folder = try! await repo.createFolder(name: "Empty", color: .blue, parentID: nil)
+        let model = makeModel(store: store)
+        await model.load()
+        await model.requestDelete(LibraryModel.project(folder))
+        XCTAssertNil(model.pendingDelete)
+        XCTAssertFalse(store.folders.contains { $0.id == folder.id })
+    }
+
+    func testRequestDeleteNonEmptyFolderPromptsWithCount() async {
+        let store = MockStore(seeded: false)
+        let repo = InMemoryFolderRepository(store: store)
+        let parent = try! await repo.createFolder(name: "Parent", color: .blue, parentID: nil)
+        _ = try! await repo.createFolder(name: "Child", color: .teal, parentID: parent.id)
+        let model = makeModel(store: store)
+        await model.load()
+        await model.requestDelete(LibraryModel.project(parent))
+        XCTAssertEqual(model.pendingDelete?.itemCount, 1)
+        XCTAssertTrue(store.folders.contains { $0.id == parent.id })
+        await model.confirmDelete()
+        XCTAssertNil(model.pendingDelete)
+        XCTAssertFalse(store.folders.contains { $0.id == parent.id })
+    }
 }

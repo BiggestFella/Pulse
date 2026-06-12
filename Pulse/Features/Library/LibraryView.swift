@@ -6,7 +6,6 @@ struct LibraryView: View {
     @State private var model: LibraryModel?
     @State private var path: [LibraryRoute] = []
     @State private var moving: LibraryItemRef?
-    @State private var pendingDelete: LibraryFolder?
     @State private var refreshID = 0
     @State private var createParentID: UUID?
 
@@ -57,17 +56,11 @@ struct LibraryView: View {
                 .presentationDetents([.medium, .large]).environment(theme)
         }
         .alert("Delete folder?", isPresented: Binding(
-            get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })) {
-            Button("Cancel", role: .cancel) { pendingDelete = nil }
-            Button("Delete", role: .destructive) {
-                if let folder = pendingDelete {
-                    refreshID += 1
-                    Task { try? await repos.folders.deleteFolder(id: folder.id); await model.load() }
-                }
-                pendingDelete = nil
-            }
+            get: { model.pendingDelete != nil }, set: { if !$0 { model.cancelDelete() } })) {
+            Button("Cancel", role: .cancel) { model.cancelDelete() }
+            Button("Delete", role: .destructive) { Task { await model.confirmDelete() } }
         } message: {
-            Text("Deleting \"\(pendingDelete?.name ?? "")\" also deletes everything inside it. This can't be undone.")
+            Text(deleteMessage(model.pendingDelete))
         }
     }
 
@@ -142,7 +135,7 @@ struct LibraryView: View {
                     onOpenWorkout: { _ in /* workout detail route lands with that feature */ },
                     onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                     onMove: { moving = $0 },
-                    onDelete: { pendingDelete = $0 })
+                    onDelete: { folder in Task { await model.requestDelete(folder) } })
 
                 HStack {
                     StatLabel("RECENT")
