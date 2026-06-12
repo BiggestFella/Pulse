@@ -10,6 +10,8 @@ enum SampleData {
     static let calendar: Calendar = {
         var c = Calendar(identifier: .gregorian)
         c.firstWeekday = 2 // Monday
+        c.timeZone = TimeZone(identifier: "UTC")!
+        c.locale = Locale(identifier: "en_AU")
         return c
     }()
     private static func daysAgo(_ n: Int) -> Date {
