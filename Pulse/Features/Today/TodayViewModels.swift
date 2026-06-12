@@ -80,4 +80,14 @@ extension TodaySnapshot {
 
     static let sampleRecap = SessionRecap(
         sessionID: UUID(), name: "Legs", subline: "71M · 18.7K KG · +1 PR")
+
+    /// Whole-snapshot fixtures (a training day and a rest day). Used by previews
+    /// and by the widget-writer tests that map a snapshot into a `WidgetSnapshot`.
+    static let sample = TodaySnapshot(
+        dateEyebrow: "WED · MAY 28", greetingName: "Alex", streak: 27,
+        today: sampleCard, week: sampleWeek, yesterday: sampleRecap)
+
+    static let restDay = TodaySnapshot(
+        dateEyebrow: "SAT · MAY 31", greetingName: "Alex", streak: 27,
+        today: nil, week: sampleWeek, yesterday: sampleRecap)
 }
