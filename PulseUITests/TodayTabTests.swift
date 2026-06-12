@@ -8,40 +8,52 @@ final class TodayTabTests: XCTestCase {
         return app
     }
 
-    // AC2/AC3
+    // AC2/AC3 — greeting is stable ("Alex Mason" → first name); the streak and
+    // eyebrow are now composed from the repositories (BAK-24), so assert the streak
+    // container's presence and that the eyebrow renders in the "EEE · MMM d" format
+    // rather than a fixed date string.
     func testHeaderShowsDateGreetingStreak() {
         let app = launch()
-        XCTAssertTrue(app.staticTexts["WED · MAY 28"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Hey, Alex."].exists)
-        XCTAssertTrue(app.staticTexts["27"].exists)
+        XCTAssertTrue(app.staticTexts["Hey, Alex."].waitForExistence(timeout: 5))
+        // Streak numeral renders as its own digit-only text.
+        XCTAssertTrue(app.staticTexts.matching(
+            NSPredicate(format: "label MATCHES %@", "^[0-9]+$")).firstMatch.exists,
+                      "Expected the streak numeral")
+        let eyebrow = app.staticTexts.matching(
+            NSPredicate(format: "label MATCHES %@", "^[A-Z]{3} · [A-Z]{3} [0-9]{1,2}$")).firstMatch
+        XCTAssertTrue(eyebrow.exists, "Expected a 'WED · MAY 28'-style date eyebrow")
     }
 
     // AC4/AC5 — hero card exposes its children (it uses .accessibilityElement(children: .contain)),
-    // so the workout name and Start button resolve by their own identifiers.
+    // so the workout name and Start button resolve by their own identifiers. The
+    // mock path pins `now` to a training day, so a hero always renders; the workout
+    // name varies, so assert it is present and non-empty rather than a fixed string.
     func testHeroShowsWorkoutAndStartFires() {
         let app = launch()
-        XCTAssertTrue(app.staticTexts["WED · MAY 28"].waitForExistence(timeout: 5))
-
-        // The workout name carries id 'today.hero.name'.
         let name = app.staticTexts["today.hero.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5), "Expected hero workout name to exist")
-        XCTAssertEqual(name.label, "Chest & Tris")
+        XCTAssertFalse(name.label.isEmpty, "Expected a non-empty workout name")
 
-        // The eyebrow texts have no own id; assert their rendered (uppercased) labels.
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", "DAY 23")).firstMatch.exists,
-                      "Expected hero day label 'DAY 23'")
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", "7 EXERCISES · ~60 MIN")).firstMatch.exists,
-                      "Expected hero footer '7 EXERCISES · ~60 MIN'")
+        // The eyebrow texts have no own id; assert their rendered (uppercased) formats.
+        XCTAssertTrue(app.staticTexts.matching(
+            NSPredicate(format: "label MATCHES %@", "^DAY [0-9]+$")).firstMatch.exists,
+                      "Expected a 'DAY N' hero label")
+        XCTAssertTrue(app.staticTexts.matching(
+            NSPredicate(format: "label MATCHES %@", "^[0-9]+ EXERCISES · ~[0-9]+ MIN$")).firstMatch.exists,
+                      "Expected an 'N EXERCISES · ~M MIN' hero footer")
 
         let start = app.buttons["today.hero.start"]
         XCTAssertTrue(start.exists, "Expected Start button to exist in hero card")
         start.tap()   // no crash; BAK-14 hook is a no-op here
     }
 
-    // AC6/AC7
+    // AC6/AC7 — the progress header is composed now, so assert its "N OF M DONE"
+    // format and the strip container rather than a fixed count.
     func testWeekStripRendersAndHeader() {
         let app = launch()
-        XCTAssertTrue(app.staticTexts["3 OF 5 DONE"].waitForExistence(timeout: 5))
+        let header = app.staticTexts.matching(
+            NSPredicate(format: "label MATCHES %@", "^[0-9]+ OF [0-9]+ DONE$")).firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: 5), "Expected an 'N OF M DONE' header")
         XCTAssertTrue(app.otherElements["today.weekStrip"].exists)
     }
 

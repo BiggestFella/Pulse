@@ -50,6 +50,10 @@ final class RepositoryContainer {
         let baseWriter: any SessionWriter
         if useMock {
             let mockStore = MockStore()
+            // `-uiTestError` forces every mock repository call to throw, so the
+            // Today screen's error + retry state (composed from the container, BAK-24)
+            // is exercisable from a UI test.
+            mockStore.forceError = CommandLine.arguments.contains("-uiTestError")
             programs = InMemoryProgramRepository(store: mockStore)
             workouts = InMemoryWorkoutRepository(store: mockStore)
             exercises = InMemoryExerciseRepository(store: mockStore)

@@ -31,9 +31,11 @@ final class TodayViewModelsTests: XCTestCase {
     }
 
     func testWeekCellsHaveDistinctIdentityEvenWhenContentRepeats() {
-        // The all-rest week is seven cells with identical content; identity is
-        // the position, so all seven ids must be distinct (else ForEach collides).
-        let week = TodaySnapshot.allRest.week
+        // An all-rest week is seven cells with identical content; identity is the
+        // position, so all seven ids must be distinct (else ForEach collides).
+        let week = (0..<7).map {
+            WeekDayCell(index: $0, dayLetter: "R", label: "Rest", state: .rest)
+        }
         XCTAssertEqual(week.count, 7)
         XCTAssertEqual(Set(week.map(\.id)).count, 7)
     }

@@ -41,19 +41,34 @@ struct AppShell: View {
         let writer = WidgetSnapshotWriter()
         self.widgetWriter = writer
 
-        let repo: MockTodayRepository
+        // Today now composes from the shared `RepositoryContainer` (BAK-24). The
+        // live path uses the real `now`; the mock/UI-test path pins `now` to a
+        // deterministic weekday so the suite isn't at the mercy of the calendar day
+        // it runs on: a training day (Mon/Wed/Fri) shows the hero, and
+        // `-uiTestRestDay` snaps to a rest weekday so today's card is nil. The
+        // `-uiTestError` variant is expressed through the container's forced-error
+        // mock store (see `RepositoryContainer`).
         let args = ProcessInfo.processInfo.arguments
-        if args.contains("-uiTestRestDay") { repo = .restDay }
-        else if args.contains("-uiTestError") { repo = .failing }
-        else { repo = .sample }
+        let todayNow: Date
+        if RepositoryContainer.useMock() {
+            todayNow = args.contains("-uiTestRestDay")
+                ? Self.nearestRestWeekday(from: Date())
+                : Self.nearestTrainingWeekday(from: Date())
+        } else {
+            todayNow = Date()
+        }
         // Widget mirroring is inert under the UI-test mock path: it would spawn the
         // widget extension (WidgetCenter reload) on every launch, adding
         // nondeterministic cross-process load to the UI suite (BAK-19).
         let widgetsEnabled = !RepositoryContainer.useMock()
         _todayModel = State(initialValue: TodayModel(
-            repository: repo,
-            // Recent logged sessions feed the advisory deload banner (BAK-36).
-            sessionRepo: container.sessions,
+            programs: container.programs,
+            workouts: container.workouts,
+            stats: container.stats,
+            schedule: container.schedule,
+            sessions: container.sessions,
+            user: container.user,
+            now: todayNow,
             // Start → launches the active flow with the path-appropriate workout.
             onStartWorkout: { _ in session.startWorkout(startWorkout) },
             onOpenSession: { _ in /* handled by TodayView path push */ },
@@ -136,6 +151,37 @@ struct AppShell: View {
                 .tabItem { Label("You", systemImage: "person.fill") }
                 .tag(Tab.you)
         }
+    }
+
+    // MARK: - Deterministic `now` for the mock/UI-test path (BAK-24)
+
+    /// Monday-first Gregorian, matching the mock world's day boundaries.
+    private static let mockCalendar: Calendar = {
+        var c = Calendar(identifier: .gregorian)
+        c.firstWeekday = 2
+        return c
+    }()
+
+    /// Most recent training weekday (Gregorian Mon/Wed/Fri) on or before `date`,
+    /// so the mocked Today always has a workout to show. Stays within the current
+    /// week, so the sample schedule (anchored at the real today) still covers it.
+    static func nearestTrainingWeekday(from date: Date) -> Date {
+        snap(from: date, weekdays: [2, 4, 6], step: -1)
+    }
+
+    /// Soonest rest weekday (Gregorian Tue/Thu/Sat/Sun) on or after `date`, so
+    /// today's card composes to nil and the rest-day hero renders.
+    static func nearestRestWeekday(from date: Date) -> Date {
+        snap(from: date, weekdays: [1, 3, 5, 7], step: 1)
+    }
+
+    private static func snap(from date: Date, weekdays: Set<Int>, step: Int) -> Date {
+        var day = mockCalendar.startOfDay(for: date)
+        for _ in 0..<7 {
+            if weekdays.contains(mockCalendar.component(.weekday, from: day)) { return day }
+            day = mockCalendar.date(byAdding: .day, value: step, to: day)!
+        }
+        return mockCalendar.startOfDay(for: date)
     }
 }
 
