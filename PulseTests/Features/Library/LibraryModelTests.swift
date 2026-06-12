@@ -77,4 +77,30 @@ final class LibraryModelTests: XCTestCase {
         await model.retry()
         XCTAssertEqual(model.loadState, .loaded)
     }
+
+    func testRelativeDayBoundaries() {
+        let cal = SampleData.calendar
+        let now = cal.date(from: DateComponents(year: 2026, month: 6, day: 11, hour: 12))!
+        func day(_ d: Int) -> Date { cal.date(byAdding: .day, value: -d, to: now)! }
+        XCTAssertEqual(LibraryModel.relativeDay(day(0), now: now), "Today")
+        XCTAssertEqual(LibraryModel.relativeDay(day(1), now: now), "Yesterday")
+        XCTAssertEqual(LibraryModel.relativeDay(day(3), now: now), "3 days ago")
+        let old = LibraryModel.relativeDay(day(40), now: now)
+        XCTAssertFalse(old.isEmpty)
+        XCTAssertFalse(old.hasSuffix("ago"))
+    }
+
+    func testRecentSublineHasSetCountAndRelativeDay() {
+        let cal = SampleData.calendar
+        let now = cal.date(from: DateComponents(year: 2026, month: 6, day: 11, hour: 12))!
+        let wid = UUID()
+        let workout = Workout(id: wid, name: "Leg day", weekday: nil, order: 0, exercises: [])
+        let session = WorkoutSession(
+            id: UUID(), workoutID: wid,
+            startedAt: cal.date(byAdding: .day, value: -1, to: now)!, endedAt: nil,
+            sets: [SessionSet(exerciseID: UUID(), order: 0, reps: 5, weight: 100, type: .working)])
+        let rows = LibraryModel.recent([session], workouts: [workout], now: now)
+        XCTAssertEqual(rows.first?.name, "Leg day")
+        XCTAssertEqual(rows.first?.sub, "1 set · Yesterday")
+    }
 }

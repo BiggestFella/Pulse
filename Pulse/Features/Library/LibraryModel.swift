@@ -72,12 +72,31 @@ final class LibraryModel {
     }
 
     /// Join logged sessions to their workout names, newest first.
-    static func recent(_ sessions: [WorkoutSession], workouts: [Workout]) -> [WorkoutSummary] {
+    static func recent(_ sessions: [WorkoutSession], workouts: [Workout], now: Date = Date()) -> [WorkoutSummary] {
         let nameByID = Dictionary(workouts.map { ($0.id, $0.name) }, uniquingKeysWith: { a, _ in a })
         return sessions.map { s in
-            WorkoutSummary(id: s.id.uuidString,
-                           name: nameByID[s.workoutID] ?? "Workout",
-                           sub: "\(s.sets.count) set\(s.sets.count == 1 ? "" : "s")")
+            let setCount = s.sets.count
+            return WorkoutSummary(
+                id: s.id.uuidString,
+                name: nameByID[s.workoutID] ?? "Workout",
+                sub: "\(setCount) set\(setCount == 1 ? "" : "s") · \(relativeDay(s.startedAt, now: now))")
+        }
+    }
+
+    /// Relative day label: Today / Yesterday / "N days ago" (2–6) / "d MMM" (7+).
+    static func relativeDay(_ date: Date, now: Date) -> String {
+        let cal = SampleData.calendar
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: date),
+                                      to: cal.startOfDay(for: now)).day ?? 0
+        switch days {
+        case ..<1:   return "Today"
+        case 1:      return "Yesterday"
+        case 2...6:  return "\(days) days ago"
+        default:
+            let f = DateFormatter()
+            f.calendar = cal
+            f.dateFormat = "d MMM"
+            return f.string(from: date)
         }
     }
 
