@@ -10,6 +10,7 @@ struct FolderContentsSection: View {
     let onOpenWorkout: (Workout) -> Void
     let onOpenProgram: (Program) -> Void
     let onMove: (LibraryItemRef) -> Void
+    let onEdit: (LibraryFolder) -> Void
     let onDelete: (LibraryFolder) -> Void
     @Environment(Theme.self) private var theme
 
@@ -20,6 +21,7 @@ struct FolderContentsSection: View {
                 ForEach(folders) { folder in
                     FolderRow(folder: folder) { onOpenFolder(folder.id) }
                         .contextMenu {
+                            Button("Edit") { onEdit(folder) }
                             Button("Move to folder…") { onMove(.folder(folder.id)) }
                             Button("Delete", role: .destructive) { onDelete(folder) }
                         }

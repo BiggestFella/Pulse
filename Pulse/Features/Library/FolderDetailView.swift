@@ -9,6 +9,7 @@ final class FolderDetailModel {
     private(set) var folders: [LibraryFolder] = []
     private(set) var workouts: [Workout] = []
     private(set) var programs: [Program] = []
+    private(set) var pendingDelete: PendingFolderDelete?
 
     private let folderRepo: any FolderRepository
 
@@ -32,20 +33,36 @@ final class FolderDetailModel {
         }
     }
 
-    func delete(_ folder: LibraryFolder) async {
-        try? await folderRepo.deleteFolder(id: folder.id)
+    func requestDelete(_ folder: LibraryFolder) async {
+        let count = (try? await folderRepo.contents(of: folder.id)).map {
+            $0.folders.count + $0.workouts.count + $0.programs.count
+        } ?? 0
+        if count == 0 {
+            try? await folderRepo.deleteFolder(id: folder.id)
+            await load()
+        } else {
+            pendingDelete = PendingFolderDelete(folder: folder, itemCount: count)
+        }
+    }
+
+    func confirmDelete() async {
+        guard let pending = pendingDelete else { return }
+        pendingDelete = nil
+        try? await folderRepo.deleteFolder(id: pending.folder.id)
         await load()
     }
+
+    func cancelDelete() { pendingDelete = nil }
 }
 
 struct FolderDetailView: View {
     @State private var model: FolderDetailModel
-    @State private var pendingDelete: LibraryFolder?
     let refreshID: Int
     let onOpenFolder: (UUID, String) -> Void
     let onOpenWorkout: (Workout) -> Void
     let onOpenProgram: (Program) -> Void
     let onMove: (LibraryItemRef) -> Void
+    let onEdit: (LibraryFolder) -> Void
     let onCreateHere: () -> Void
     @Environment(Theme.self) private var theme
 
@@ -55,6 +72,7 @@ struct FolderDetailView: View {
          onOpenWorkout: @escaping (Workout) -> Void,
          onOpenProgram: @escaping (Program) -> Void,
          onMove: @escaping (LibraryItemRef) -> Void,
+         onEdit: @escaping (LibraryFolder) -> Void,
          onCreateHere: @escaping () -> Void) {
         _model = State(initialValue: model)
         self.refreshID = refreshID
@@ -62,6 +80,7 @@ struct FolderDetailView: View {
         self.onOpenWorkout = onOpenWorkout
         self.onOpenProgram = onOpenProgram
         self.onMove = onMove
+        self.onEdit = onEdit
         self.onCreateHere = onCreateHere
     }
 
@@ -96,7 +115,8 @@ struct FolderDetailView: View {
                             },
                             onOpenWorkout: onOpenWorkout, onOpenProgram: onOpenProgram,
                             onMove: onMove,
-                            onDelete: { folder in pendingDelete = folder })
+                            onEdit: onEdit,
+                            onDelete: { folder in Task { await model.requestDelete(folder) } })
                             .padding(.top, 14)
                     }
                 }
@@ -107,14 +127,11 @@ struct FolderDetailView: View {
         .task { await model.load() }
         .onChange(of: refreshID) { _, _ in Task { await model.load() } }
         .alert("Delete folder?", isPresented: Binding(
-            get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })) {
-            Button("Cancel", role: .cancel) { pendingDelete = nil }
-            Button("Delete", role: .destructive) {
-                if let folder = pendingDelete { Task { await model.delete(folder) } }
-                pendingDelete = nil
-            }
+            get: { model.pendingDelete != nil }, set: { if !$0 { model.cancelDelete() } })) {
+            Button("Cancel", role: .cancel) { model.cancelDelete() }
+            Button("Delete", role: .destructive) { Task { await model.confirmDelete() } }
         } message: {
-            Text("Deleting \"\(pendingDelete?.name ?? "")\" also deletes everything inside it. This can't be undone.")
+            Text(deleteMessage(model.pendingDelete))
         }
         .accessibilityIdentifier("folderDetail.\(model.folderID)")
     }

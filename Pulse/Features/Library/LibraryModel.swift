@@ -13,6 +13,7 @@ final class LibraryModel {
     private(set) var topPrograms: [Program] = []
     private(set) var recentWorkouts: [WorkoutSummary] = []
     private(set) var catalog: [MuscleGroupCatalog] = []
+    private(set) var pendingDelete: PendingFolderDelete?
     var isCreateSheetPresented = false
 
     private let folderRepo: any FolderRepository
@@ -65,6 +66,27 @@ final class LibraryModel {
     func presentCreate() { isCreateSheetPresented = true }
     func dismissCreate() { isCreateSheetPresented = false }
 
+    func requestDelete(_ folder: LibraryFolder) async {
+        let count = (try? await folderRepo.contents(of: folder.id)).map {
+            $0.folders.count + $0.workouts.count + $0.programs.count
+        } ?? 0
+        if count == 0 {
+            try? await folderRepo.deleteFolder(id: folder.id)
+            await load()
+        } else {
+            pendingDelete = PendingFolderDelete(folder: folder, itemCount: count)
+        }
+    }
+
+    func confirmDelete() async {
+        guard let pending = pendingDelete else { return }
+        pendingDelete = nil
+        try? await folderRepo.deleteFolder(id: pending.folder.id)
+        await load()
+    }
+
+    func cancelDelete() { pendingDelete = nil }
+
     // MARK: - Projections
 
     static func project(_ folder: Folder) -> LibraryFolder {
@@ -72,12 +94,31 @@ final class LibraryModel {
     }
 
     /// Join logged sessions to their workout names, newest first.
-    static func recent(_ sessions: [WorkoutSession], workouts: [Workout]) -> [WorkoutSummary] {
+    static func recent(_ sessions: [WorkoutSession], workouts: [Workout], now: Date = Date()) -> [WorkoutSummary] {
         let nameByID = Dictionary(workouts.map { ($0.id, $0.name) }, uniquingKeysWith: { a, _ in a })
         return sessions.map { s in
-            WorkoutSummary(id: s.id.uuidString,
-                           name: nameByID[s.workoutID] ?? "Workout",
-                           sub: "\(s.sets.count) set\(s.sets.count == 1 ? "" : "s")")
+            let setCount = s.sets.count
+            return WorkoutSummary(
+                id: s.id.uuidString,
+                name: nameByID[s.workoutID] ?? "Workout",
+                sub: "\(setCount) set\(setCount == 1 ? "" : "s") · \(relativeDay(s.startedAt, now: now))")
+        }
+    }
+
+    /// Relative day label: Today / Yesterday / "N days ago" (2–6) / "d MMM" (7+).
+    static func relativeDay(_ date: Date, now: Date) -> String {
+        let cal = SampleData.calendar
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: date),
+                                      to: cal.startOfDay(for: now)).day ?? 0
+        switch days {
+        case ..<1:   return "Today"
+        case 1:      return "Yesterday"
+        case 2...6:  return "\(days) days ago"
+        default:
+            let f = DateFormatter()
+            f.calendar = cal
+            f.dateFormat = "d MMM"
+            return f.string(from: date)
         }
     }
 

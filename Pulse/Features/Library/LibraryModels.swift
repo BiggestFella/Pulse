@@ -56,3 +56,16 @@ struct MuscleGroupCatalog: Identifiable, Equatable {
     let muscle: String
     let items: [CatalogExercise]
 }
+
+/// A folder pending deletion confirmation, with the count of items directly inside it.
+struct PendingFolderDelete: Equatable {
+    let folder: LibraryFolder
+    let itemCount: Int
+}
+
+/// Confirmation copy for deleting a non-empty folder.
+func deleteMessage(_ pending: PendingFolderDelete?) -> String {
+    guard let pending else { return "" }
+    let n = pending.itemCount
+    return "Delete \"\(pending.folder.name)\" and the \(n) item\(n == 1 ? "" : "s") inside it? This can't be undone."
+}

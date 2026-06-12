@@ -6,7 +6,6 @@ struct LibraryView: View {
     @State private var model: LibraryModel?
     @State private var path: [LibraryRoute] = []
     @State private var moving: LibraryItemRef?
-    @State private var pendingDelete: LibraryFolder?
     @State private var refreshID = 0
     @State private var createParentID: UUID?
 
@@ -21,6 +20,13 @@ struct LibraryView: View {
             }
             .background(theme.bg.ignoresSafeArea())
             .navigationDestination(for: LibraryRoute.self) { route in destination(route) }
+            .onChange(of: path) { old, new in
+                // A pop (returning from a builder or a folder) — refresh the now-visible list.
+                if new.count < old.count {
+                    refreshID += 1
+                    Task { await model?.load() }
+                }
+            }
         }
         .task {
             guard model == nil else { return }
@@ -57,17 +63,11 @@ struct LibraryView: View {
                 .presentationDetents([.medium, .large]).environment(theme)
         }
         .alert("Delete folder?", isPresented: Binding(
-            get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })) {
-            Button("Cancel", role: .cancel) { pendingDelete = nil }
-            Button("Delete", role: .destructive) {
-                if let folder = pendingDelete {
-                    refreshID += 1
-                    Task { try? await repos.folders.deleteFolder(id: folder.id); await model.load() }
-                }
-                pendingDelete = nil
-            }
+            get: { model.pendingDelete != nil }, set: { if !$0 { model.cancelDelete() } })) {
+            Button("Cancel", role: .cancel) { model.cancelDelete() }
+            Button("Delete", role: .destructive) { Task { await model.confirmDelete() } }
         } message: {
-            Text("Deleting \"\(pendingDelete?.name ?? "")\" also deletes everything inside it. This can't be undone.")
+            Text(deleteMessage(model.pendingDelete))
         }
     }
 
@@ -142,7 +142,8 @@ struct LibraryView: View {
                     onOpenWorkout: { _ in /* workout detail route lands with that feature */ },
                     onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                     onMove: { moving = $0 },
-                    onDelete: { pendingDelete = $0 })
+                    onEdit: { folder in path.append(.folderEdit(folderID: folder.id, name: folder.name, colorToken: folder.color.rawValue)) },
+                    onDelete: { folder in Task { await model.requestDelete(folder) } })
 
                 HStack {
                     StatLabel("RECENT")
@@ -188,6 +189,11 @@ struct LibraryView: View {
                 routines: repos.programs, workouts: repos.workouts))
         case .folderCreate:
             FolderBuilderView(model: FolderBuilderModel(folders: repos.folders, parentID: createParentID))
+        case .folderEdit(let id, let name, let colorToken):
+            FolderBuilderView(model: FolderBuilderModel(
+                folders: repos.folders,
+                editing: Folder(id: id, name: name,
+                                color: FolderColor(rawValue: colorToken) ?? .default, parentID: nil)))
         case .folderDetail(let id, let name):
             FolderDetailView(
                 model: FolderDetailModel(folderID: id, title: name, folders: repos.folders),
@@ -196,6 +202,7 @@ struct LibraryView: View {
                 onOpenWorkout: { _ in },
                 onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                 onMove: { moving = $0 },
+                onEdit: { folder in path.append(.folderEdit(folderID: folder.id, name: folder.name, colorToken: folder.color.rawValue)) },
                 onCreateHere: { createParentID = id; model?.isCreateSheetPresented = true })
         case .exerciseDetail(let id):
             if let uuid = UUID(uuidString: id) {
