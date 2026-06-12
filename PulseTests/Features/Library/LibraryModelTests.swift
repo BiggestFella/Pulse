@@ -11,6 +11,12 @@ final class LibraryModelTests: XCTestCase {
                      prRepo: InMemoryPRRepository(store: store))
     }
 
+    func testSeededMockStoreSurfacesSampleFolder() async {
+        let model = makeModel(store: MockStore(seeded: true))
+        await model.load()
+        XCTAssertTrue(model.folders.contains { $0.name == "Push Pull Legs" })
+    }
+
     func testLoadSurfacesTopLevelFolders() async {
         let store = MockStore(seeded: false)
         let repo = InMemoryFolderRepository(store: store)

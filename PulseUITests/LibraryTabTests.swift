@@ -15,7 +15,7 @@ final class LibraryTabTests: XCTestCase {
         let app = openLibrary()
         XCTAssertTrue(app.buttons["chip.all"].exists)
         XCTAssertTrue(app.buttons["chip.exercises"].exists)
-        XCTAssertTrue(app.buttons["folder.ppl"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["folder.Push Pull Legs"].waitForExistence(timeout: 5))
     }
 
     // AC6/AC3 — Browse exercises (and the Exercises chip) shows the grouped catalog.
@@ -25,13 +25,13 @@ final class LibraryTabTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Bench Press"].waitForExistence(timeout: 5))
     }
 
-    // AC5 — tapping the program folder routes to Program Detail (stub marker).
-    func testProgramFolderRoutes() {
+    // AC5 — tapping a folder opens its detail screen.
+    func testFolderOpensDetail() {
         let app = openLibrary()
-        let folder = app.buttons["folder.ppl"]
+        let folder = app.buttons["folder.Push Pull Legs"]
         XCTAssertTrue(folder.waitForExistence(timeout: 5))
         folder.tap()
-        XCTAssertTrue(app.staticTexts["route.program:ppl"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["folderDetail.title"].waitForExistence(timeout: 5))
     }
 
     // AC7/AC8 — the Create chooser opens and routes to the Workout Builder
