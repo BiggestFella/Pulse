@@ -47,6 +47,18 @@ final class TodayModelTests: XCTestCase {
         XCTAssertNil(model.today)
     }
 
+    func testCompletedTodaySuppressesHeroCard() async {
+        // Once today's session is logged the schedule reads `.done`; the hero must
+        // not offer a startable card that contradicts the week strip (BAK-24 review).
+        let store = MockStore()
+        let now = TodayTestSupport.trainingDay()
+        store.schedule[SampleData.calendar.startOfDay(for: now)] = .done(UUID())
+        let model = TodayTestSupport.model(store: store, now: now)
+        await model.load()
+        XCTAssertNil(model.today, "Hero should be suppressed when today is already done")
+        XCTAssertEqual(model.phase, TodayModel.Phase.empty)
+    }
+
     func testNoHistoryHasNilYesterday() async {
         let store = MockStore()
         store.sessions = []                                  // no prior sessions

@@ -159,11 +159,12 @@ struct AppShell: View {
     /// pinned `now` snaps on the same weekday keys the repositories use.
     private static let mockCalendar = SampleData.calendar
 
-    /// Most recent training weekday (Gregorian Mon/Wed/Fri) on or before `date`,
-    /// so the mocked Today always has a workout to show. Stays within the current
-    /// week, so the sample schedule (anchored at the real today) still covers it.
+    /// Soonest training weekday (Gregorian Mon/Wed/Fri) on or after `date`, so the
+    /// mocked Today shows a startable hero. Searching forward keeps `now` on a day
+    /// with no logged session (today/future), so the schedule reads `.workout` —
+    /// never `.done`, which the hero now suppresses — and the card actually renders.
     static func nearestTrainingWeekday(from date: Date) -> Date {
-        snap(from: date, weekdays: [2, 4, 6], step: -1)
+        snap(from: date, weekdays: [2, 4, 6], step: 1)
     }
 
     /// Soonest rest weekday (Gregorian Tue/Thu/Sat/Sun) on or after `date`, so

@@ -56,6 +56,13 @@ struct TodaySnapshotComposer {
     private func composeCard(now: Date, profile: UserProfile,
                              completedCount: Int) async throws -> TodayWorkoutCard? {
         guard let workout = try await workouts.todaysWorkout(on: now) else { return nil }
+        // Respect the schedule (the same source the week strip reads): once today's
+        // session is logged the day reads as `.done`, so don't offer a startable
+        // hero that would contradict the strip. A nil card falls through to the
+        // rest/empty state.
+        if case .done? = try await schedule.plan(for: calendar.startOfDay(for: now)) {
+            return nil
+        }
         // Week/day are derived from how many sessions are already logged: the next
         // workout is "day N+1", and weeks advance every `workouts-per-week`.
         let perWeek = max(1, (try await programs.activeProgram())?.workouts.count ?? 1)
