@@ -30,7 +30,7 @@ struct TodayView: View {
     init(model: TodayModel? = nil,
          pendingStore: PendingSessionStore? = nil,
          onFlushPending: (() async -> Void)? = nil) {
-        _model = State(initialValue: model ?? TodayModel(repository: MockTodayRepository.sample))
+        _model = State(initialValue: model ?? TodayModel.mock())
         self.pendingStore = pendingStore
         self.onFlushPending = onFlushPending
     }
@@ -132,14 +132,16 @@ struct TodayView: View {
 }
 
 #Preview("Loaded") {
-    TodayView(model: TodayModel(repository: MockTodayRepository.sample))
+    TodayView(model: TodayModel.mock())
         .environment(Theme())
 }
 #Preview("Rest day") {
-    TodayView(model: TodayModel(repository: MockTodayRepository.restDay))
+    // A store with no workouts → today's card is nil → the rest-day hero renders.
+    TodayView(model: TodayModel.mock(store: MockStore(seeded: false)))
         .environment(Theme())
 }
 #Preview("Error") {
-    TodayView(model: TodayModel(repository: MockTodayRepository.failing))
+    let store = MockStore(); store.forceError = true
+    return TodayView(model: TodayModel.mock(store: store))
         .environment(Theme())
 }

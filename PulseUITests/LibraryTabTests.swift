@@ -10,12 +10,16 @@ final class LibraryTabTests: XCTestCase {
         return app
     }
 
-    // AC1/AC2 — header, chips, and the folders section render.
+    // AC1/AC2 — header, chips, and the programs section render. The mock world
+    // seeds one program ("Push / Pull / Legs") shown under PROGRAMS with a
+    // UUID-based row id, so match the `program.` identifier prefix.
     func testHeaderChipsAndFolders() {
         let app = openLibrary()
         XCTAssertTrue(app.buttons["chip.all"].exists)
         XCTAssertTrue(app.buttons["chip.exercises"].exists)
-        XCTAssertTrue(app.buttons["folder.ppl"].waitForExistence(timeout: 5))
+        let program = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "program.")).firstMatch
+        XCTAssertTrue(program.waitForExistence(timeout: 5), "Expected a seeded program row")
     }
 
     // AC6/AC3 — Browse exercises (and the Exercises chip) shows the grouped catalog.
@@ -25,13 +29,17 @@ final class LibraryTabTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Bench Press"].waitForExistence(timeout: 5))
     }
 
-    // AC5 — tapping the program folder routes to Program Detail (stub marker).
+    // AC5 — tapping the seeded program routes to Program Detail (stub marker
+    // `route.program:<id>`, where id is the program's UUID).
     func testProgramFolderRoutes() {
         let app = openLibrary()
-        let folder = app.buttons["folder.ppl"]
-        XCTAssertTrue(folder.waitForExistence(timeout: 5))
-        folder.tap()
-        XCTAssertTrue(app.staticTexts["route.program:ppl"].waitForExistence(timeout: 5))
+        let program = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "program.")).firstMatch
+        XCTAssertTrue(program.waitForExistence(timeout: 5))
+        program.tap()
+        let marker = app.staticTexts.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "route.program:")).firstMatch
+        XCTAssertTrue(marker.waitForExistence(timeout: 5), "Expected program detail route marker")
     }
 
     // AC7/AC8 — the Create chooser opens and routes to the Workout Builder

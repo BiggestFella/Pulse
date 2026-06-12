@@ -28,7 +28,7 @@ final class TodayThemeTests: XCTestCase {
     func testModelIsThemeAgnostic() async {
         let theme = Theme()
         theme.palette = .coastal
-        let model = TodayModel(repository: MockTodayRepository.sample)
+        let model = TodayTestSupport.model(now: TodayTestSupport.trainingDay())
         await model.load()
         let coastalCount = model.doneCount
         theme.palette = .mint

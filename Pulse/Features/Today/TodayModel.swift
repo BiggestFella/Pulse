@@ -30,10 +30,14 @@ final class TodayModel {
     /// Header trailing eyebrow, e.g. "3 OF 5 DONE".
     var weekProgressLabel: String { "\(doneCount) OF \(plannedCount) DONE" }
 
-    private let repository: any TodayRepository
-    /// Optional source of recent logged sessions for the deload signal. `nil` in
-    /// previews/UI-mock paths that don't wire it; the banner simply never fires.
-    private let sessionRepo: (any SessionRepository)?
+    /// Builds the snapshot from the shared repositories (BAK-24).
+    private let composer: TodaySnapshotComposer
+    /// The reference "now" for this load. Captured at construction so the eyebrow,
+    /// week strip, and streak are stable for the screen's lifetime (and injectable
+    /// in tests). `AppShell` pins it on the mock/UI-test path; live uses `.now`.
+    private let now: Date
+    /// Recent logged sessions also feed the advisory deload banner (BAK-36).
+    private let sessions: any SessionRepository
     private let onStartWorkout: (UUID) -> Void
     private let onOpenSession: (UUID) -> Void
     /// Called with the freshly-loaded snapshot so the app can mirror it to the
@@ -44,13 +48,21 @@ final class TodayModel {
     /// Most recent in-flight load, so a newer load supersedes an older one.
     private var inFlightLoad: Task<Void, Never>?
 
-    init(repository: any TodayRepository,
-         sessionRepo: (any SessionRepository)? = nil,
+    init(programs: any ProgramRepository,
+         workouts: any WorkoutRepository,
+         stats: any StatsRepository,
+         schedule: any ScheduleRepository,
+         sessions: any SessionRepository,
+         user: any UserRepository,
+         now: Date = .now,
          onStartWorkout: @escaping (UUID) -> Void = { _ in },
          onOpenSession: @escaping (UUID) -> Void = { _ in },
          onSnapshot: @escaping (TodaySnapshot) -> Void = { _ in }) {
-        self.repository = repository
-        self.sessionRepo = sessionRepo
+        self.composer = TodaySnapshotComposer(
+            programs: programs, workouts: workouts, stats: stats,
+            schedule: schedule, sessions: sessions, user: user)
+        self.now = now
+        self.sessions = sessions
         self.onStartWorkout = onStartWorkout
         self.onOpenSession = onOpenSession
         self.onSnapshot = onSnapshot
@@ -65,7 +77,7 @@ final class TodayModel {
         let task = Task { @MainActor in
             phase = .loading
             do {
-                let s = try await repository.loadToday()
+                let s = try await composer.compose(now: now)
                 try Task.checkCancellation()   // superseded? leave state to the newer load
                 dateEyebrow = s.dateEyebrow
                 greetingName = s.greetingName
@@ -97,16 +109,36 @@ final class TodayModel {
     }
 
     /// Recompute the advisory deload signal from recent logged sessions. No-op
-    /// once dismissed this session, or when no `sessionRepo` is wired. Failures to
-    /// read sessions are swallowed — the banner is purely advisory.
+    /// once dismissed this session. Failures to read sessions are swallowed — the
+    /// banner is purely advisory.
     func refreshDeloadSignal() async {
-        guard !deloadDismissed, let sessionRepo else { deloadBanner = nil; return }
-        let recent = (try? await sessionRepo.fetchSessions(limit: 6)) ?? []
+        guard !deloadDismissed else { deloadBanner = nil; return }
+        let recent = (try? await sessions.fetchSessions(limit: 6)) ?? []
         deloadBanner = deloadSuggestion(recentSessions: recent)
     }
 
     func dismissDeload() {
         deloadDismissed = true
         deloadBanner = nil
+    }
+
+    /// A model wired to the in-memory mock world, for SwiftUI previews and the
+    /// `TodayView` default initializer. Production injects repositories from the
+    /// `RepositoryContainer` (see `AppShell`).
+    static func mock(store: MockStore? = nil, now: Date = .now,
+                     onStartWorkout: @escaping (UUID) -> Void = { _ in },
+                     onOpenSession: @escaping (UUID) -> Void = { _ in }) -> TodayModel {
+        // Construct the store here (not as a default arg): `MockStore` is
+        // @MainActor and default-argument expressions evaluate nonisolated.
+        let store = store ?? MockStore()
+        return TodayModel(programs: InMemoryProgramRepository(store: store),
+                   workouts: InMemoryWorkoutRepository(store: store),
+                   stats: InMemoryStatsRepository(store: store),
+                   schedule: InMemoryScheduleRepository(store: store),
+                   sessions: InMemorySessionRepository(store: store),
+                   user: InMemoryUserRepository(),
+                   now: now,
+                   onStartWorkout: onStartWorkout,
+                   onOpenSession: onOpenSession)
     }
 }

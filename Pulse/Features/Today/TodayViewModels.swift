@@ -45,3 +45,49 @@ struct SessionRecap: Equatable, Identifiable {
     let name: String        // "Legs"
     let subline: String     // "71M · 18.7K KG · +1 PR"
 }
+
+/// Everything the Today screen needs in one projection. Composed from the shared
+/// `RepositoryContainer` repositories by `TodaySnapshotComposer` (BAK-24) — the
+/// screen depends only on this value type, never on a repository directly. Also
+/// mirrored into the widget App Group by `WidgetSnapshotWriter` (BAK-19).
+struct TodaySnapshot: Equatable {
+    let dateEyebrow: String        // "WED · MAY 28"
+    let greetingName: String       // "Alex"
+    let streak: Int                // honored scheduled days
+    let today: TodayWorkoutCard?   // nil on a rest / no-workout day
+    let week: [WeekDayCell]        // always exactly 7
+    let yesterday: SessionRecap?   // nil when there is no prior session
+}
+
+/// Deterministic fixtures for SwiftUI previews. Production composes the real
+/// snapshot from repositories (`TodaySnapshotComposer`); these keep the component
+/// previews self-contained.
+extension TodaySnapshot {
+    static let sampleCard = TodayWorkoutCard(
+        workoutID: UUID(),
+        programLabel: "PPL", week: 4, day: 23,
+        name: "Chest & Tris", exerciseCount: 7, estimatedMinutes: 60)
+
+    static let sampleWeek: [WeekDayCell] = [
+        WeekDayCell(index: 0, dayLetter: "M", label: "Chest&Tris", state: .done),
+        WeekDayCell(index: 1, dayLetter: "T", label: "Back&Bis", state: .done),
+        WeekDayCell(index: 2, dayLetter: "W", label: "Legs", state: .done),
+        WeekDayCell(index: 3, dayLetter: "T", label: "Shoulders", state: .today),
+        WeekDayCell(index: 4, dayLetter: "F", label: "Arms·finisher", state: .plan),
+        WeekDayCell(index: 5, dayLetter: "S", label: "Rest", state: .rest),
+        WeekDayCell(index: 6, dayLetter: "S", label: "Rest", state: .rest),
+    ]
+
+    static let sampleRecap = SessionRecap(
+        sessionID: UUID(), name: "Legs", subline: "71M · 18.7K KG · +1 PR")
+
+    /// Whole-snapshot fixtures (a training day and a rest day). Used by previews
+    /// and by the widget-writer tests that map a snapshot into a `WidgetSnapshot`.
+    static let sample = TodaySnapshot(
+        dateEyebrow: "WED · MAY 28", greetingName: "Alex", streak: 27,
+        today: sampleCard, week: sampleWeek, yesterday: sampleRecap)
+
+    static let restDay = TodaySnapshot(
+        dateEyebrow: "SAT · MAY 31", greetingName: "Alex", streak: 27,
+        today: nil, week: sampleWeek, yesterday: sampleRecap)
+}
