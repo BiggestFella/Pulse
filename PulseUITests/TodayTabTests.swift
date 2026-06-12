@@ -57,13 +57,14 @@ final class TodayTabTests: XCTestCase {
         XCTAssertTrue(app.otherElements["today.weekStrip"].exists)
     }
 
-    // AC8
+    // AC8 — the Yesterday row pushes the real Session Detail screen (its back
+    // button is the stable marker that the detail view rendered).
     func testYesterdayRowPushesSessionDetail() {
         let app = launch()
         let row = app.buttons["today.yesterday"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         row.tap()
-        XCTAssertTrue(app.staticTexts["Session Detail"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["session.back"].waitForExistence(timeout: 5))
     }
 
     // AC10
