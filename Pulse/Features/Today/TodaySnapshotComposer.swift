@@ -13,22 +13,22 @@ struct TodaySnapshotComposer {
     let sessions: any SessionRepository
     let user: any UserRepository
 
-    /// Monday-first Gregorian, matching the mock world's day boundaries so
-    /// `schedule.plan(for:)` lookups land on the same `startOfDay` keys.
-    var calendar: Calendar = {
-        var c = Calendar(identifier: .gregorian)
-        c.firstWeekday = 2
-        return c
-    }()
+    /// The single shared Monday-first calendar, so `schedule.plan(for:)` lookups
+    /// land on the same `startOfDay` keys the repositories key their data by
+    /// (avoids day-boundary drift between independent calendar copies).
+    var calendar: Calendar = SampleData.calendar
 
     func compose(now: Date) async throws -> TodaySnapshot {
         let profile = try await user.currentProfile()
-        let streak = try await stats.currentStreak()
+        // Pass `now` so the streak is computed against the same reference day as
+        // the rest of the snapshot (consistent under the pinned mock/test clock).
+        let streak = try await stats.currentStreak(asOf: now)
 
-        // Recent sessions back the Yesterday recap and its PR count. Bounded — one
-        // recap row never needs the full history hydrated.
-        let recent = try await sessions.fetchSessions(limit: 30)
-        let completed = recent.filter { $0.endedAt != nil }
+        // Full history (limit: nil): the Yesterday recap's PR count needs every
+        // prior best — a true PR can pre-date the last 30 sessions — and the hero's
+        // "day N" counter must not silently cap at a fetch limit.
+        let history = try await sessions.fetchSessions(limit: nil)
+        let completed = history.filter { $0.endedAt != nil }
             .sorted { $0.startedAt > $1.startedAt }
 
         let allWorkouts = (try? await workouts.fetchWorkouts()) ?? []
@@ -38,8 +38,8 @@ struct TodaySnapshotComposer {
         let card = try await composeCard(now: now, profile: profile,
                                          completedCount: completed.count)
         let week = try await composeWeek(now: now, workoutName: workoutName,
-                                         sessions: recent)
-        let yesterday = composeRecap(completed.first, all: recent,
+                                         sessions: history)
+        let yesterday = composeRecap(completed.first, all: history,
                                      workoutName: workoutName)
 
         return TodaySnapshot(

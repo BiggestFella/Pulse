@@ -77,13 +77,13 @@ struct SupabaseStatsRepository: StatsRepository {
                      .sorted { $0.volume > $1.volume }
     }
 
-    func currentStreak() async throws -> Int {
+    func currentStreak(asOf now: Date) async throws -> Int {
         let completedDays = Set(try await allSessions()
             .filter { $0.endedAt != nil }
             .map { cal.startOfDay(for: $0.startedAt) })
         let plan = try await SupabaseScheduleRepository(client: client).fullSchedule()
         return WorkoutAnalytics.streak(plan: plan, completedDays: completedDays,
-                                       asOf: Date(), calendar: cal)
+                                       asOf: now, calendar: cal)
     }
 
     func exerciseVolumeHistory(_ exerciseID: Exercise.ID, lastN: Int) async throws -> [VolumePoint] {

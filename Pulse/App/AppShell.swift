@@ -155,12 +155,9 @@ struct AppShell: View {
 
     // MARK: - Deterministic `now` for the mock/UI-test path (BAK-24)
 
-    /// Monday-first Gregorian, matching the mock world's day boundaries.
-    private static let mockCalendar: Calendar = {
-        var c = Calendar(identifier: .gregorian)
-        c.firstWeekday = 2
-        return c
-    }()
+    /// The shared Monday-first calendar (the mock world's day boundaries), so the
+    /// pinned `now` snaps on the same weekday keys the repositories use.
+    private static let mockCalendar = SampleData.calendar
 
     /// Most recent training weekday (Gregorian Mon/Wed/Fri) on or before `date`,
     /// so the mocked Today always has a workout to show. Stays within the current

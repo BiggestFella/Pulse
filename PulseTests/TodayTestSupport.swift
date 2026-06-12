@@ -6,12 +6,8 @@ import Foundation
 /// build a `MockStore` + a pinned `now` rather than canned `TodaySnapshot`s.
 @MainActor
 enum TodayTestSupport {
-    /// Monday-first Gregorian, matching `SampleData` day boundaries.
-    static let calendar: Calendar = {
-        var c = Calendar(identifier: .gregorian)
-        c.firstWeekday = 2
-        return c
-    }()
+    /// The shared Monday-first calendar (matches `SampleData` day boundaries).
+    static let calendar = SampleData.calendar
 
     /// Most recent Monday on or before today (Gregorian weekday 2). Monday is
     /// `SampleData`'s `Push` day, so today's card is deterministically `Push`, and

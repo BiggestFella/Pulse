@@ -83,14 +83,14 @@ struct InMemoryStatsRepository: StatsRepository {
                      .sorted { $0.volume > $1.volume }
     }
 
-    func currentStreak() async throws -> Int {
+    func currentStreak(asOf now: Date) async throws -> Int {
         try await store.gate()
         let completedDays = Set(store.sessions
             .filter { $0.endedAt != nil }
             .map { cal.startOfDay(for: $0.startedAt) })
         return WorkoutAnalytics.streak(plan: store.schedule,
                                        completedDays: completedDays,
-                                       asOf: Date(), calendar: cal)
+                                       asOf: now, calendar: cal)
     }
 
     func exerciseVolumeHistory(_ exerciseID: Exercise.ID, lastN: Int) async throws -> [VolumePoint] {
