@@ -8,6 +8,8 @@ struct LibraryView: View {
     @State private var moving: LibraryItemRef?
     @State private var refreshID = 0
     @State private var createParentID: UUID?
+    /// Hands a chosen workout up to the app shell to launch the active session.
+    var onStartWorkout: (Workout) -> Void = { _ in }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -139,7 +141,7 @@ struct LibraryView: View {
                         let name = model.folders.first { $0.id == id }?.name ?? "Folder"
                         path.append(.folderDetail(folderID: id, name: name))
                     },
-                    onOpenWorkout: { _ in /* workout detail route lands with that feature */ },
+                    onOpenWorkout: { workout in path.append(.workoutDetail(id: workout.id, name: workout.name)) },
                     onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                     onMove: { moving = $0 },
                     onEdit: { folder in path.append(.folderEdit(folderID: folder.id, name: folder.name, colorToken: folder.color.rawValue)) },
@@ -199,7 +201,7 @@ struct LibraryView: View {
                 model: FolderDetailModel(folderID: id, title: name, folders: repos.folders),
                 refreshID: refreshID,
                 onOpenFolder: { childID, childName in path.append(.folderDetail(folderID: childID, name: childName)) },
-                onOpenWorkout: { _ in },
+                onOpenWorkout: { workout in path.append(.workoutDetail(id: workout.id, name: workout.name)) },
                 onOpenProgram: { program in path.append(.programDetail(folderID: program.id.uuidString)) },
                 onMove: { moving = $0 },
                 onEdit: { folder in path.append(.folderEdit(folderID: folder.id, name: folder.name, colorToken: folder.color.rawValue)) },
@@ -209,6 +211,10 @@ struct LibraryView: View {
                 ExerciseDetailView(exerciseID: uuid, exerciseRepo: repos.exercises,
                                    sessionRepo: repos.sessions, prRepo: repos.prs)
             } else { routeStub(route) }
+        case .workoutDetail(let id, let name):
+            WorkoutDetailView(model: WorkoutDetailModel(
+                workoutID: id, title: name,
+                workoutRepo: repos.workouts, onStart: onStartWorkout))
         default:
             routeStub(route)
         }
