@@ -141,7 +141,7 @@ struct AppShell: View {
                       onFlushPending: { await container.flushPending() })
                 .tabItem { Label("Today", systemImage: "bolt.fill") }
                 .tag(Tab.today)
-            LibraryView()
+            LibraryView(onStartWorkout: { session.startWorkout($0) })
                 .tabItem { Label("Library", systemImage: "square.stack.fill") }
                 .tag(Tab.library)
             PlanView(onStartWorkout: { session.startWorkout(startWorkout) })
