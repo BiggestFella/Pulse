@@ -9,11 +9,12 @@ enum TodayTestSupport {
     /// The shared Monday-first calendar (matches `SampleData` day boundaries).
     static let calendar = SampleData.calendar
 
-    /// Most recent Monday on or before today (Gregorian weekday 2). Monday is
-    /// `SampleData`'s `Push` day, so today's card is deterministically `Push`, and
-    /// it stays within the current/last week the sample schedule covers.
+    /// Soonest Monday on or after today (Gregorian weekday 2). Monday is
+    /// `SampleData`'s `Push` day, so today's card is deterministically `Push`.
+    /// Searching forward keeps `now` on a day with no logged session, so the
+    /// schedule never reads `.done` (which would suppress the hero).
     static func trainingDay(from date: Date = .now) -> Date {
-        snap(from: date, weekdays: [2], step: -1)
+        snap(from: date, weekdays: [2], step: 1)
     }
 
     /// Soonest rest weekday on or after today — today's card composes to nil.
