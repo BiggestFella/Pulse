@@ -13,6 +13,7 @@ final class LibraryModel {
     private(set) var topPrograms: [Program] = []
     private(set) var recentWorkouts: [WorkoutSummary] = []
     private(set) var catalog: [MuscleGroupCatalog] = []
+    private(set) var pendingDelete: PendingFolderDelete?
     var isCreateSheetPresented = false
 
     private let folderRepo: any FolderRepository
@@ -64,6 +65,27 @@ final class LibraryModel {
     func select(_ filter: LibraryFilter) { selectedFilter = filter }
     func presentCreate() { isCreateSheetPresented = true }
     func dismissCreate() { isCreateSheetPresented = false }
+
+    func requestDelete(_ folder: LibraryFolder) async {
+        let count = (try? await folderRepo.contents(of: folder.id)).map {
+            $0.folders.count + $0.workouts.count + $0.programs.count
+        } ?? 0
+        if count == 0 {
+            try? await folderRepo.deleteFolder(id: folder.id)
+            await load()
+        } else {
+            pendingDelete = PendingFolderDelete(folder: folder, itemCount: count)
+        }
+    }
+
+    func confirmDelete() async {
+        guard let pending = pendingDelete else { return }
+        pendingDelete = nil
+        try? await folderRepo.deleteFolder(id: pending.folder.id)
+        await load()
+    }
+
+    func cancelDelete() { pendingDelete = nil }
 
     // MARK: - Projections
 
