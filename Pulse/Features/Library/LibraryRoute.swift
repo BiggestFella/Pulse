@@ -10,6 +10,7 @@ enum LibraryRoute: Hashable {
     case workoutBuilder
     case routineBuilder
     case folderCreate
+    case folderEdit(folderID: UUID, name: String, colorToken: String)
 
     /// Stable marker for the stub destination + UI assertions.
     var marker: String {
@@ -20,6 +21,7 @@ enum LibraryRoute: Hashable {
         case .workoutBuilder:         return "builder:workout"
         case .routineBuilder:         return "builder:routine"
         case .folderCreate:           return "builder:folder"
+        case .folderEdit(let id, _, _): return "folderEdit:\(id)"
         }
     }
 }

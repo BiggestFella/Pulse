@@ -62,6 +62,7 @@ struct FolderDetailView: View {
     let onOpenWorkout: (Workout) -> Void
     let onOpenProgram: (Program) -> Void
     let onMove: (LibraryItemRef) -> Void
+    let onEdit: (LibraryFolder) -> Void
     let onCreateHere: () -> Void
     @Environment(Theme.self) private var theme
 
@@ -71,6 +72,7 @@ struct FolderDetailView: View {
          onOpenWorkout: @escaping (Workout) -> Void,
          onOpenProgram: @escaping (Program) -> Void,
          onMove: @escaping (LibraryItemRef) -> Void,
+         onEdit: @escaping (LibraryFolder) -> Void,
          onCreateHere: @escaping () -> Void) {
         _model = State(initialValue: model)
         self.refreshID = refreshID
@@ -78,6 +80,7 @@ struct FolderDetailView: View {
         self.onOpenWorkout = onOpenWorkout
         self.onOpenProgram = onOpenProgram
         self.onMove = onMove
+        self.onEdit = onEdit
         self.onCreateHere = onCreateHere
     }
 
@@ -112,6 +115,7 @@ struct FolderDetailView: View {
                             },
                             onOpenWorkout: onOpenWorkout, onOpenProgram: onOpenProgram,
                             onMove: onMove,
+                            onEdit: onEdit,
                             onDelete: { folder in Task { await model.requestDelete(folder) } })
                             .padding(.top, 14)
                     }
