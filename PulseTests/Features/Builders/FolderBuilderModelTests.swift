@@ -31,4 +31,20 @@ final class FolderBuilderModelTests: XCTestCase {
         await model.save()
         if case .error = model.saveState { } else { XCTFail("expected .error") }
     }
+
+    func testEditModeSavesViaRenameNotCreate() async {
+        let store = MockStore(seeded: false)
+        let repo = InMemoryFolderRepository(store: store)
+        let folder = try! await repo.createFolder(name: "Old", color: .blue, parentID: nil)
+        let model = FolderBuilderModel(folders: repo, editing: folder)
+        XCTAssertEqual(model.name, "Old")
+        XCTAssertEqual(model.colorToken, .blue)
+        model.name = "New"
+        model.select(color: .pink)
+        await model.save()
+        XCTAssertEqual(model.saveState, .saved)
+        XCTAssertEqual(store.folders.count, 1)
+        XCTAssertEqual(store.folders.first?.name, "New")
+        XCTAssertEqual(store.folders.first?.color, .pink)
+    }
 }
