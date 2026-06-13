@@ -128,6 +128,13 @@ struct WorkoutBuilderView: View {
                         .font(.system(size: 16, weight: .semibold))
                     Spacer()
                 }
+                // Pin each row to reorderRowHeight (zero insets) so the List's row
+                // height matches the `count * reorderRowHeight` frame below. Without
+                // this, taller edit-mode rows overflow the fixed, scroll-disabled
+                // frame and the last row gets clipped (BAK-55).
+                .frame(maxWidth: .infinity, minHeight: reorderRowHeight,
+                       maxHeight: reorderRowHeight, alignment: .leading)
+                .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 .accessibilityIdentifier("reorder-row-\(item.exercise.name)")
