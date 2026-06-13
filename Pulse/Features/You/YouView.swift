@@ -24,6 +24,7 @@ struct YouView: View {
                         yourDataSection
                         PaletteView()
                         preferencesSection
+                        buildStamp
                     }
                     .padding(theme.spacing[6])
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -174,6 +175,16 @@ struct YouView: View {
             .overlay(RoundedRectangle(cornerRadius: theme.radiusCard)
                 .stroke(theme.inkFaint, lineWidth: 1.5))
         }
+    }
+
+    /// Build identity (version · commit · date) so a running build is identifiable.
+    private var buildStamp: some View {
+        Text(BuildInfo.fromBundle().footerLabel)
+            .font(.system(size: 11, weight: .medium, design: .monospaced))
+            .foregroundStyle(theme.inkFaint)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.top, theme.spacing[2])
+            .accessibilityIdentifier("you.buildStamp")
     }
 }
 

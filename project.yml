@@ -29,6 +29,13 @@ targets:
     info:
       path: Pulse/Info.plist
       properties:
+        # Reflect project.yml versions (xcodegen's default would hardcode 1.0/1).
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Placeholders stamped with the real values at build time by the
+        # "Stamp build" postBuildScript below (read back in the You footer).
+        GitCommit: unknown
+        BuildDate: unknown
         UILaunchScreen: {}
         NSSupportsLiveActivities: true
         UIAppFonts:
@@ -52,6 +59,28 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: au.com.codeheroes.pulse
             CFBundleURLSchemes: [pulse]
+    postBuildScripts:
+      # Stamp the short git commit + build date into the built Info.plist so the
+      # You-tab footer can identify exactly which build is running. Runs before
+      # the implicit CodeSign phase, so it doesn't invalidate the signature.
+      # `basedOnDependencyAnalysis: false` forces it to run on every build.
+      - name: Stamp build (git commit + date)
+        basedOnDependencyAnalysis: false
+        # Declare the built Info.plist as input so this is ordered AFTER the
+        # "Process Info.plist" step (otherwise the parallel build system may run
+        # it first and the processed plist clobbers the stamp).
+        inputFiles:
+          - $(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)
+        script: |
+          PLIST="${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+          COMMIT=$(git -C "$SRCROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)
+          if ! git -C "$SRCROOT" diff --quiet HEAD 2>/dev/null; then COMMIT="${COMMIT}-dirty"; fi
+          DATE=$(date "+%d %b %Y")
+          /usr/libexec/PlistBuddy -c "Set :GitCommit ${COMMIT}" "$PLIST" 2>/dev/null \
+            || /usr/libexec/PlistBuddy -c "Add :GitCommit string ${COMMIT}" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :BuildDate ${DATE}" "$PLIST" 2>/dev/null \
+            || /usr/libexec/PlistBuddy -c "Add :BuildDate string ${DATE}" "$PLIST"
+          echo "Stamped ${COMMIT} (${DATE}) into ${PLIST}"
     sources:
       - path: Pulse
         excludes:
