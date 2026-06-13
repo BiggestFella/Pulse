@@ -58,18 +58,18 @@ final class WorkoutBuilderModel {
         return order.map { BuilderCatalogGroup(muscle: $0, exercises: byMuscle[$0] ?? []) }
     }
 
-    /// Append picked exercises (deduped against existing + within the batch),
-    /// each seeded with one working set and its default variation.
-    func addExercises(_ ids: [Exercise.ID]) {
+    /// Append picked exercises (deduped against existing + within the batch), each
+    /// seeded with its chosen variation (fallback: the exercise default) and one
+    /// working set.
+    func addExercises(_ picked: [PickedExercise]) {
         var present = addedExerciseIDs
-        let lookup = Dictionary(
-            uniqueKeysWithValues: catalog.flatMap { $0.exercises }.map { ($0.id, $0) })
-        for id in ids where !present.contains(id) {
-            guard let exercise = lookup[id] else { continue }
-            present.insert(id)
+        let lookup = catalogByID
+        for p in picked where !present.contains(p.id) {
+            guard let exercise = lookup[p.id] else { continue }
+            present.insert(p.id)
             items.append(BuilderExercise(
                 exercise: exercise,
-                variationID: exercise.defaultVariationID,
+                variationID: p.variationID ?? exercise.defaultVariationID,
                 supersetGroup: nil,
                 sets: [SetSpec(reps: 10, rir: 2, type: .working)]))
         }

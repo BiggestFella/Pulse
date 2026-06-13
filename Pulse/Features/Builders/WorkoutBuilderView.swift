@@ -75,9 +75,10 @@ struct WorkoutBuilderView: View {
             ExercisePickerSheet(
                 catalog: model.catalog, loading: model.catalogLoading, errorText: model.catalogError,
                 alreadyAdded: model.addedExerciseIDs,
+                initialMuscles: model.targets.map(\.rawValue),
                 onRetry: { Task { await model.loadCatalog() } },
                 onCancel: { model.pickerPresented = false },
-                onConfirm: { ids in model.addExercises(ids); model.isReordering = false; model.pickerPresented = false })
+                onConfirm: { picked in model.addExercises(picked); model.isReordering = false; model.pickerPresented = false })
             .environment(theme)
             .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
