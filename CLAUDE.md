@@ -40,8 +40,29 @@ calendar → build workouts/routines/folders in a library → review stats/PRs/h
 
 ## Git / PR conventions
 - Branch: `feature/<linear-id>-short-slug` (e.g. `feature/PUL-12-rest-timer`).
+  **Always branch from the latest `main`** (fetch/pull first) — never from stale
+  code. Re-check `main` right before opening the PR and rebase if it moved.
 - Conventional commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`).
 - Open a PR; CI must be green; use the PR template; link the Linear issue.
+
+## Before you start — check for in-flight work
+Concurrent work on the same surface has caused overwrites and regressions. Before
+creating or starting an issue:
+- Review the open **In Progress** and **Backlog** issues (and the issue's
+  `blocked-by` / related links) for anything that touches the **same files or
+  feature**, or that is a **prerequisite** for this work.
+- If something overlapping is in flight, **wait for it to merge** (then branch
+  from the updated `main`) or coordinate first — don't build on a surface that's
+  about to change underneath you.
+- When in doubt about whether another ticket blocks this one, ask before starting.
+
+## Linear — keep the board in sync with reality
+The ticket state must always reflect the actual state of the work:
+- **Starting work:** move the issue to **In Progress** and attach the PR link.
+- **PR merged:** move the issue to **Done** — never leave merged work sitting in
+  In Progress.
+- **Follow-up or new bug found mid-work:** file it as its own **Backlog** issue
+  (link the related issue); don't bury it only in a PR comment.
 
 ## Development workflow — roles & human gates
 Every feature follows the same path. Three human checkpoints.
