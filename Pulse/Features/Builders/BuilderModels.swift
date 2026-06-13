@@ -7,12 +7,6 @@ enum SaveState: Equatable {
     case error(String)
 }
 
-/// Single-select workout tag. PUSH/PULL/LEGS is the complete v1 set.
-enum WorkoutTag: String, CaseIterable, Equatable {
-    case push, pull, legs
-    var label: String { rawValue.uppercased() }
-}
-
 /// A mutable editing view over `WorkoutExercise`. Consecutive items sharing a
 /// non-nil `supersetGroup` render as one superset card.
 struct BuilderExercise: Identifiable, Equatable {
@@ -44,6 +38,12 @@ struct BuilderCatalogGroup: Identifiable, Equatable {
     var id: String { muscle }
     var muscle: String
     var exercises: [Exercise]
+}
+
+/// One exercise chosen in the picker, with the variation selected inline.
+struct PickedExercise: Identifiable, Equatable {
+    let id: Exercise.ID
+    let variationID: Variation.ID?
 }
 
 /// One ordered slot in a routine's weekly split. A rest day carries no source.

@@ -24,7 +24,7 @@ struct WorkoutBuilderView: View {
                     .foregroundStyle(theme.ink)
                     .accessibilityIdentifier("workout-name")
 
-                tagRow
+                targetRow
 
                 HStack {
                     StatLabel("EXERCISES · \(model.items.count)")
@@ -45,7 +45,7 @@ struct WorkoutBuilderView: View {
 
                 if model.isReordering { reorderList } else { exerciseList }
 
-                Button { model.pickerPresented = true } label: {
+                Button { model.replacingItemID = nil; model.pickerPresented = true } label: {
                     Text("+ ADD EXERCISE")
                         .font(.system(size: 14, weight: .semibold, design: .monospaced))
                         .foregroundStyle(theme.accent)
@@ -71,13 +71,23 @@ struct WorkoutBuilderView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
         }
-        .sheet(isPresented: $model.pickerPresented) {
+        .sheet(isPresented: $model.pickerPresented, onDismiss: { model.replacingItemID = nil }) {
             ExercisePickerSheet(
                 catalog: model.catalog, loading: model.catalogLoading, errorText: model.catalogError,
-                alreadyAdded: model.addedExerciseIDs,
+                alreadyAdded: model.replacingItemID == nil ? model.addedExerciseIDs : [],
+                initialMuscles: model.targets.map(\.rawValue),
+                mode: model.replacingItemID == nil ? .add : .replace,
                 onRetry: { Task { await model.loadCatalog() } },
-                onCancel: { model.pickerPresented = false },
-                onConfirm: { ids in model.addExercises(ids); model.isReordering = false; model.pickerPresented = false })
+                onCancel: { model.replacingItemID = nil; model.pickerPresented = false },
+                onConfirm: { picked in
+                    if let id = model.replacingItemID, let first = picked.first {
+                        model.replaceExercise(itemID: id, with: first)
+                        model.replacingItemID = nil
+                    } else {
+                        model.addExercises(picked); model.isReordering = false
+                    }
+                    model.pickerPresented = false
+                })
             .environment(theme)
             .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
@@ -86,18 +96,20 @@ struct WorkoutBuilderView: View {
         .onChange(of: model.saveState) { _, new in if new == .saved { dismiss() } }
     }
 
-    private var tagRow: some View {
-        HStack(spacing: theme.spacing[1]) {
-            ForEach(WorkoutTag.allCases, id: \.self) { tag in
-                PillChip(label: tag.label, selected: model.tag == tag,
-                         fill: theme.accent2, onFill: theme.onAccent) { model.tag = tag }
+    private var targetRow: some View {
+        VStack(alignment: .leading, spacing: theme.spacing[2]) {
+            StatLabel("TARGETS").accessibilityIdentifier("eyebrow-TARGETS")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: theme.spacing[1]) {
+                    ForEach(MuscleGroup.allCases) { m in
+                        PillChip(label: m.rawValue, selected: model.targets.contains(m),
+                                 fill: theme.accent, onFill: theme.onAccent) {
+                            model.toggleTarget(m)
+                        }
+                        .accessibilityIdentifier("target-\(m.rawValue)")
+                    }
+                }
             }
-            Text("+ TAG")
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                .foregroundStyle(theme.inkFaint)
-                .padding(.horizontal, theme.spacing[3]).padding(.vertical, theme.spacing[1])
-                .overlay(Capsule().strokeBorder(theme.inkFaint, style: StrokeStyle(lineWidth: 2, dash: [4])))
-                .accessibilityIdentifier("tag-add") // decorative per product decision
         }
     }
 
@@ -206,11 +218,31 @@ struct WorkoutBuilderView: View {
                     .foregroundStyle(inSuperset ? theme.accent2 : theme.inkSoft)
                     .accessibilityIdentifier("link-\(idx)")
             }
-            Button { model.removeItem(id: item.id) } label: { Image(systemName: "xmark") }
-                .foregroundStyle(theme.inkSoft)
-                .accessibilityIdentifier("remove-\(item.exercise.name)")
+            Menu {
+                Button { startReplace(item.id) } label: { Label("Replace exercise", systemImage: "arrow.left.arrow.right") }
+                if item.exercise.variations.count > 1 {
+                    Menu("Change variation") {
+                        ForEach(item.exercise.variations) { v in
+                            Button {
+                                model.updateVariation(itemID: item.id, variationID: v.id)
+                            } label: {
+                                if v.id == item.variationID { Label(v.name, systemImage: "checkmark") } else { Text(v.name) }
+                            }
+                        }
+                    }
+                }
+                Button(role: .destructive) { model.removeItem(id: item.id) } label: { Label("Remove", systemImage: "trash") }
+            } label: {
+                Image(systemName: "ellipsis").foregroundStyle(theme.inkSoft)
+            }
+            .accessibilityIdentifier("row-menu-\(item.exercise.name)")
         }
         .padding(.vertical, theme.spacing[1])
+    }
+
+    private func startReplace(_ id: BuilderExercise.ID) {
+        model.replacingItemID = id
+        model.pickerPresented = true
     }
 
     /// Index badge (1-based), or A/B/C/D position within its superset group.

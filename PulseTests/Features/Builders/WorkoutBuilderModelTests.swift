@@ -57,10 +57,10 @@ final class WorkoutBuilderModelTests: XCTestCase {
         // Incline press by name; the SampleData catalog uses different names).
         let newID = model.catalog[1].exercises[0].id
         let before = model.items.count
-        model.addExercises([newID, newID]) // duplicate id in the same call
+        model.addExercises([PickedExercise(id: newID, variationID: nil), PickedExercise(id: newID, variationID: nil)]) // duplicate id in the same call
         XCTAssertEqual(model.items.count, before + 1)
         // Adding the same id again is skipped.
-        model.addExercises([newID])
+        model.addExercises([PickedExercise(id: newID, variationID: nil)])
         XCTAssertEqual(model.items.count, before + 1)
     }
 
@@ -68,7 +68,7 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let model = makeModel()
         await model.loadCatalog()
         let newID = model.catalog[1].exercises[0].id
-        model.addExercises([newID])
+        model.addExercises([PickedExercise(id: newID, variationID: nil)])
         XCTAssertEqual(model.items.last?.sets.count, 1)
         XCTAssertEqual(model.items.last?.sets.first?.type, .working)
     }
@@ -77,7 +77,7 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let model = makeModel()
         await model.loadCatalog()
         let picked = model.catalog[0].exercises[0]
-        model.addExercises([picked.id])
+        model.addExercises([PickedExercise(id: picked.id, variationID: nil)])
         XCTAssertEqual(model.items.last?.variationID, picked.defaultVariationID)
     }
 
@@ -177,8 +177,59 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let b = model.catalog[1].exercises[0].id
         let c = model.catalog[1].exercises[1].id
         let before = model.items.count
-        model.addExercises([c, a, b])
+        model.addExercises([PickedExercise(id: c, variationID: nil), PickedExercise(id: a, variationID: nil), PickedExercise(id: b, variationID: nil)])
         let addedIDs = Array(model.items.suffix(model.items.count - before)).map { $0.exercise.id }
         XCTAssertEqual(addedIDs, [c, a, b])  // exact insertion order preserved
+    }
+
+    func testReplaceExerciseSwapsExerciseAndVariationButKeepsSets() {
+        let model = makeModel()                     // seeded: defaultWorkoutItems
+        model.catalog = WorkoutBuilderModel.group(SampleData.exercises)  // resolve replacement
+        let itemID = model.items[0].id
+        let originalSets = model.items[0].sets
+        let originalGroup = model.items[0].supersetGroup
+        let replacement = SampleData.exercises.first { $0.id != model.items[0].exercise.id }!
+
+        model.replaceExercise(itemID: itemID,
+                              with: PickedExercise(id: replacement.id,
+                                                   variationID: replacement.defaultVariationID))
+
+        XCTAssertEqual(model.items[0].exercise.id, replacement.id)
+        XCTAssertEqual(model.items[0].variationID, replacement.defaultVariationID)
+        XCTAssertEqual(model.items[0].sets, originalSets)             // sets preserved
+        XCTAssertEqual(model.items[0].supersetGroup, originalGroup)   // grouping preserved
+    }
+
+    func testToggleTargetAddsAndRemoves() {
+        let model = makeModel()
+        model.toggleTarget(.chest)
+        model.toggleTarget(.triceps)
+        XCTAssertEqual(model.targets, [.chest, .triceps])
+        model.toggleTarget(.chest)
+        XCTAssertEqual(model.targets, [.triceps])
+    }
+
+    func testMakeDraftIncludesTargetsInCanonicalOrder() {
+        let model = makeModel()
+        model.toggleTarget(.triceps)
+        model.toggleTarget(.chest)            // toggled out of order
+        XCTAssertEqual(model.makeDraft().targets, [.chest, .triceps]) // canonical allCases order
+    }
+
+    func testAddExercisesAppliesChosenVariation() {
+        let model = makeModel(); model.catalog = WorkoutBuilderModel.group(SampleData.exercises)
+        let ex = SampleData.exercises.first { $0.variations.count > 1 }!
+        let chosen = ex.variations[1].id
+        model.addExercises([PickedExercise(id: ex.id, variationID: chosen)])
+        let added = model.items.first { $0.exercise.id == ex.id }
+        XCTAssertEqual(added?.variationID, chosen)
+    }
+
+    func testAddExercisesFallsBackToDefaultVariation() {
+        let model = makeModel(); model.catalog = WorkoutBuilderModel.group(SampleData.exercises)
+        let ex = SampleData.exercises.first { $0.defaultVariationID != nil }!
+        model.addExercises([PickedExercise(id: ex.id, variationID: nil)])
+        let added = model.items.first { $0.exercise.id == ex.id }
+        XCTAssertEqual(added?.variationID, ex.defaultVariationID)
     }
 }
