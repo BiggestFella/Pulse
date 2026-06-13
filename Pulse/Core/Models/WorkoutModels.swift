@@ -39,6 +39,7 @@ struct Workout: Codable, Equatable, Identifiable {
     var weekday: Int?            // 1...7, nil = unscheduled
     var order: Int
     var exercises: [WorkoutExercise]
+    var targets: [MuscleGroup] = []
 }
 
 struct Program: Codable, Equatable, Identifiable {
