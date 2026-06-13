@@ -47,6 +47,9 @@ struct SetEditorSheet: View {
 
     private func content(_ item: BuilderExercise) -> some View {
         VStack(alignment: .leading, spacing: theme.spacing[3]) {
+            if item.exercise.variations.count > 1 {
+                variationPicker(item)
+            }
             HStack(spacing: theme.spacing[3]) {
                 StatLabel("SET").frame(width: setColWidth, alignment: .leading)
                 StatLabel("REPS").frame(width: repsColWidth, alignment: .center)
@@ -77,6 +80,38 @@ struct SetEditorSheet: View {
                 .accessibilityIdentifier("set-editor-done")
         }
         .padding(.bottom, theme.spacing[6])
+    }
+
+    /// Picks which variation of the exercise this item uses. Shown only when the
+    /// exercise has more than one variation to choose between.
+    @ViewBuilder
+    private func variationPicker(_ item: BuilderExercise) -> some View {
+        let current = item.exercise.variations.first { $0.id == item.variationID }
+        Menu {
+            ForEach(item.exercise.variations) { v in
+                Button {
+                    model.updateVariation(itemID: item.id, variationID: v.id)
+                } label: {
+                    if v.id == item.variationID {
+                        Label(v.name, systemImage: "checkmark")
+                    } else {
+                        Text(v.name)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: theme.spacing[2]) {
+                StatLabel("VARIATION")
+                Text(current?.name ?? "Default")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(theme.ink)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.inkSoft)
+                Spacer()
+            }
+        }
+        .accessibilityIdentifier("set-editor-variation")
     }
 
     @ViewBuilder
@@ -171,7 +206,8 @@ struct SetEditorSheet: View {
     let theme = Theme()
     let model = WorkoutBuilderModel(
         catalog: InMemoryExerciseRepository(store: MockStore()),
-        workouts: InMemoryWorkoutRepository(store: MockStore()))
+        workouts: InMemoryWorkoutRepository(store: MockStore()),
+        items: BuilderSampleData.defaultWorkoutItems)
     return SetEditorSheet(model: model, itemID: model.items[0].id)
         .environment(theme)
 }

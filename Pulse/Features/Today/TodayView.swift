@@ -1,23 +1,8 @@
 import SwiftUI
 
-/// Stub push target for the Yesterday row. Real Session Detail is a separate
-/// feature; this satisfies AC #8 (navigation occurs) without owning that screen.
-struct SessionDetailStub: View {
-    @Environment(Theme.self) private var theme
-    let sessionID: UUID
-    var body: some View {
-        Text("Session Detail")
-            .font(.system(size: 20, weight: .bold))
-            .foregroundStyle(theme.ink)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.bg)
-            .navigationTitle("Session")
-            .accessibilityIdentifier("sessionDetail.stub")
-    }
-}
-
 struct TodayView: View {
     @Environment(Theme.self) private var theme
+    @Environment(RepositoryContainer.self) private var repos
     @State private var model: TodayModel
     @State private var path: [UUID] = []
     /// Offline buffer of unsynced sessions + a flush trigger (BAK-32). `AppShell`
@@ -40,7 +25,14 @@ struct TodayView: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(theme.bg.ignoresSafeArea())
-                .navigationDestination(for: UUID.self) { SessionDetailStub(sessionID: $0) }
+                .navigationDestination(for: UUID.self) { id in
+                    SessionDetailView(model: SessionDetailModel(
+                        sessionID: id,
+                        sessionRepo: repos.sessions,
+                        workoutRepo: repos.workouts,
+                        programRepo: repos.programs,
+                        exerciseRepo: repos.exercises))
+                }
         }
         .task { await model.load() }
     }
@@ -134,14 +126,17 @@ struct TodayView: View {
 #Preview("Loaded") {
     TodayView(model: TodayModel.mock())
         .environment(Theme())
+        .environment(RepositoryContainer(useMock: true))
 }
 #Preview("Rest day") {
     // A store with no workouts → today's card is nil → the rest-day hero renders.
     TodayView(model: TodayModel.mock(store: MockStore(seeded: false)))
         .environment(Theme())
+        .environment(RepositoryContainer(useMock: true))
 }
 #Preview("Error") {
     let store = MockStore(); store.forceError = true
     return TodayView(model: TodayModel.mock(store: store))
         .environment(Theme())
+        .environment(RepositoryContainer(useMock: true))
 }

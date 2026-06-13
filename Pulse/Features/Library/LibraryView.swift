@@ -185,7 +185,11 @@ struct LibraryView: View {
         switch route {
         case .workoutBuilder:
             WorkoutBuilderView(model: WorkoutBuilderModel(
-                catalog: repos.exercises, workouts: repos.workouts))
+                catalog: repos.exercises, workouts: repos.workouts,
+                // A real new workout starts empty (sample exercises carry ids the
+                // backend doesn't know → save would FK-fail). The seed belongs to
+                // the mock/demo world, like all other SampleData.
+                items: RepositoryContainer.useMock() ? BuilderSampleData.defaultWorkoutItems : []))
         case .routineBuilder:
             RoutineBuilderView(model: RoutineBuilderModel(
                 routines: repos.programs, workouts: repos.workouts))

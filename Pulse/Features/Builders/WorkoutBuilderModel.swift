@@ -6,7 +6,11 @@ import Observation
 final class WorkoutBuilderModel {
     var name: String = "New workout"
     var tag: WorkoutTag = .push
-    var items: [BuilderExercise] = BuilderSampleData.defaultWorkoutItems
+    /// Empty by default: a new workout is built from the real catalog so every
+    /// exercise has a valid id (a hardcoded sample seed produced ids that don't
+    /// exist in the backend → the save hit a foreign-key error). Previews/tests
+    /// pass a seed explicitly.
+    var items: [BuilderExercise]
     var pickerPresented = false
     var isReordering = false
     var editingItemID: BuilderExercise.ID? = nil
@@ -20,9 +24,11 @@ final class WorkoutBuilderModel {
     private let catalogRepo: any ExerciseRepository
     private let workoutRepo: any WorkoutRepository
 
-    init(catalog: any ExerciseRepository, workouts: any WorkoutRepository) {
+    init(catalog: any ExerciseRepository, workouts: any WorkoutRepository,
+         items: [BuilderExercise] = []) {
         self.catalogRepo = catalog
         self.workoutRepo = workouts
+        self.items = items
     }
 
     var totalSets: Int { items.reduce(0) { $0 + $1.sets.count } }
@@ -115,6 +121,13 @@ final class WorkoutBuilderModel {
         items[i].sets[index].type = type
     }
 
+    /// Switch which variation of the exercise this item uses (e.g. barbell vs
+    /// dumbbell). The picked id must belong to the exercise's `variations`.
+    func updateVariation(itemID: BuilderExercise.ID, variationID: Variation.ID?) {
+        guard let i = items.firstIndex(where: { $0.id == itemID }) else { return }
+        items[i].variationID = variationID
+    }
+
     func save() async {
         saveState = .saving
         let workoutExercises = items.map {
@@ -126,7 +139,9 @@ final class WorkoutBuilderModel {
             _ = try await workoutRepo.saveWorkout(draft)
             saveState = .saved
         } catch {
-            saveState = .error("Couldn't save workout.")
+            // Surface the underlying reason (no program to attach to, auth/network,
+            // a foreign-key violation, …) instead of an opaque failure.
+            saveState = .error("Couldn't save workout — \(error.localizedDescription)")
         }
     }
 }
