@@ -41,8 +41,11 @@ final class InMemoryCatalogRepositoriesTests: XCTestCase {
 
     func testTodaysWorkoutMatchesWeekday() async throws {
         let repo = InMemoryWorkoutRepository(store: MockStore())
-        var cal = Calendar(identifier: .gregorian); cal.firstWeekday = 2
-        let monday = nextWeekday(2, from: Date(), calendar: cal) // 2 = Monday in Gregorian
+        // Must use SampleData.calendar (UTC) so startOfDay produces a UTC-midnight
+        // date. The repository derives weekday via SampleData.calendar; a system-
+        // timezone startOfDay can fall on a different UTC weekday (e.g. AEST +10
+        // midnight Saturday = UTC Sunday), causing a mismatch.
+        let monday = nextWeekday(2, from: Date(), calendar: SampleData.calendar) // 2 = Monday in Gregorian
         let w = try await repo.todaysWorkout(on: monday)
         XCTAssertEqual(w?.name, "Push")
     }
