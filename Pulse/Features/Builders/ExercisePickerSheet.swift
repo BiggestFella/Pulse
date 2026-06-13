@@ -50,7 +50,7 @@ struct ExercisePickerSheet: View {
             Capsule().fill(theme.inkFaint).frame(width: 42, height: 4)
                 .frame(maxWidth: .infinity).padding(.top, 12)
             StatLabel(mode == .replace ? "REPLACE EXERCISE" : "ADD EXERCISE")
-                .accessibilityIdentifier("eyebrow-ADD EXERCISE")
+                .accessibilityIdentifier(mode == .replace ? "eyebrow-REPLACE EXERCISE" : "eyebrow-ADD EXERCISE")
             Text(mode == .replace ? "Pick a replacement." : "Pick exercises.")
                 .pulseStyle(.h1).foregroundStyle(theme.ink)
 

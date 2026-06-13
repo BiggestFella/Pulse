@@ -74,11 +74,20 @@ struct WorkoutBuilderView: View {
         .sheet(isPresented: $model.pickerPresented) {
             ExercisePickerSheet(
                 catalog: model.catalog, loading: model.catalogLoading, errorText: model.catalogError,
-                alreadyAdded: model.addedExerciseIDs,
+                alreadyAdded: model.replacingItemID == nil ? model.addedExerciseIDs : [],
                 initialMuscles: model.targets.map(\.rawValue),
+                mode: model.replacingItemID == nil ? .add : .replace,
                 onRetry: { Task { await model.loadCatalog() } },
-                onCancel: { model.pickerPresented = false },
-                onConfirm: { picked in model.addExercises(picked); model.isReordering = false; model.pickerPresented = false })
+                onCancel: { model.replacingItemID = nil; model.pickerPresented = false },
+                onConfirm: { picked in
+                    if let id = model.replacingItemID, let first = picked.first {
+                        model.replaceExercise(itemID: id, with: first)
+                        model.replacingItemID = nil
+                    } else {
+                        model.addExercises(picked); model.isReordering = false
+                    }
+                    model.pickerPresented = false
+                })
             .environment(theme)
             .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
@@ -209,11 +218,31 @@ struct WorkoutBuilderView: View {
                     .foregroundStyle(inSuperset ? theme.accent2 : theme.inkSoft)
                     .accessibilityIdentifier("link-\(idx)")
             }
-            Button { model.removeItem(id: item.id) } label: { Image(systemName: "xmark") }
-                .foregroundStyle(theme.inkSoft)
-                .accessibilityIdentifier("remove-\(item.exercise.name)")
+            Menu {
+                Button { startReplace(item.id) } label: { Label("Replace exercise", systemImage: "arrow.left.arrow.right") }
+                if item.exercise.variations.count > 1 {
+                    Menu("Change variation") {
+                        ForEach(item.exercise.variations) { v in
+                            Button {
+                                model.updateVariation(itemID: item.id, variationID: v.id)
+                            } label: {
+                                if v.id == item.variationID { Label(v.name, systemImage: "checkmark") } else { Text(v.name) }
+                            }
+                        }
+                    }
+                }
+                Button(role: .destructive) { model.removeItem(id: item.id) } label: { Label("Remove", systemImage: "trash") }
+            } label: {
+                Image(systemName: "ellipsis").foregroundStyle(theme.inkSoft)
+            }
+            .accessibilityIdentifier("row-menu-\(item.exercise.name)")
         }
         .padding(.vertical, theme.spacing[1])
+    }
+
+    private func startReplace(_ id: BuilderExercise.ID) {
+        model.replacingItemID = id
+        model.pickerPresented = true
     }
 
     /// Index badge (1-based), or A/B/C/D position within its superset group.

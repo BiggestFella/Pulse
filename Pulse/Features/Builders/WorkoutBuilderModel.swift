@@ -15,6 +15,8 @@ final class WorkoutBuilderModel {
     var isReordering = false
     var editingItemID: BuilderExercise.ID? = nil
     var saveState: SaveState = .idle
+    /// The builder row currently being replaced (drives a single-select picker).
+    var replacingItemID: BuilderExercise.ID? = nil
 
     // Exercise Picker state.
     var catalog: [BuilderCatalogGroup] = []
