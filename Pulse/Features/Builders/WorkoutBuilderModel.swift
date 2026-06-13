@@ -75,6 +75,22 @@ final class WorkoutBuilderModel {
         }
     }
 
+    /// All catalog exercises by id (loaded catalog), for resolving picks.
+    private var catalogByID: [Exercise.ID: Exercise] {
+        Dictionary(uniqueKeysWithValues: catalog.flatMap { $0.exercises }.map { ($0.id, $0) })
+    }
+
+    /// Swap the exercise at `itemID` for `picked`, keeping its sets and superset
+    /// grouping. Variation resets to the picked variation (or the new exercise's
+    /// default).
+    func replaceExercise(itemID: BuilderExercise.ID, with picked: PickedExercise) {
+        guard let i = items.firstIndex(where: { $0.id == itemID }),
+              let exercise = catalogByID[picked.id] else { return }
+        items[i].exercise = exercise
+        items[i].variationID = picked.variationID ?? exercise.defaultVariationID
+        // sets and supersetGroup intentionally untouched
+    }
+
     func removeItem(id: BuilderExercise.ID) {
         items.removeAll { $0.id == id }
     }

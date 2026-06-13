@@ -40,6 +40,12 @@ struct BuilderCatalogGroup: Identifiable, Equatable {
     var exercises: [Exercise]
 }
 
+/// One exercise chosen in the picker, with the variation selected inline.
+struct PickedExercise: Identifiable, Equatable {
+    let id: Exercise.ID
+    let variationID: Variation.ID?
+}
+
 /// One ordered slot in a routine's weekly split. A rest day carries no source.
 struct BuilderDay: Identifiable, Equatable {
     var id = UUID()

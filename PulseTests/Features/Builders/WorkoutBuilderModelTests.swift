@@ -182,6 +182,24 @@ final class WorkoutBuilderModelTests: XCTestCase {
         XCTAssertEqual(addedIDs, [c, a, b])  // exact insertion order preserved
     }
 
+    func testReplaceExerciseSwapsExerciseAndVariationButKeepsSets() {
+        let model = makeModel()                     // seeded: defaultWorkoutItems
+        model.catalog = WorkoutBuilderModel.group(SampleData.exercises)  // resolve replacement
+        let itemID = model.items[0].id
+        let originalSets = model.items[0].sets
+        let originalGroup = model.items[0].supersetGroup
+        let replacement = SampleData.exercises.first { $0.id != model.items[0].exercise.id }!
+
+        model.replaceExercise(itemID: itemID,
+                              with: PickedExercise(id: replacement.id,
+                                                   variationID: replacement.defaultVariationID))
+
+        XCTAssertEqual(model.items[0].exercise.id, replacement.id)
+        XCTAssertEqual(model.items[0].variationID, replacement.defaultVariationID)
+        XCTAssertEqual(model.items[0].sets, originalSets)             // sets preserved
+        XCTAssertEqual(model.items[0].supersetGroup, originalGroup)   // grouping preserved
+    }
+
     func testToggleTargetAddsAndRemoves() {
         let model = makeModel()
         model.toggleTarget(.chest)
