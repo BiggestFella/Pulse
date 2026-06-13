@@ -49,11 +49,6 @@ final class BuilderModelsTests: XCTestCase {
         XCTAssertEqual(FolderColor.blue.hex, "#26B6F6")
     }
 
-    func testWorkoutTagHasThreeCasesPushDefault() {
-        XCTAssertEqual(WorkoutTag.allCases, [.push, .pull, .legs])
-        XCTAssertEqual(WorkoutTag.push.label, "PUSH")
-    }
-
     func testSaveStateEquatable() {
         XCTAssertEqual(SaveState.idle, .idle)
         XCTAssertNotEqual(SaveState.saved, SaveState.error("x"))

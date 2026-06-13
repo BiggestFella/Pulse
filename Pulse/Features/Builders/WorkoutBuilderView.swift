@@ -24,7 +24,7 @@ struct WorkoutBuilderView: View {
                     .foregroundStyle(theme.ink)
                     .accessibilityIdentifier("workout-name")
 
-                tagRow
+                targetRow
 
                 HStack {
                     StatLabel("EXERCISES · \(model.items.count)")
@@ -86,18 +86,20 @@ struct WorkoutBuilderView: View {
         .onChange(of: model.saveState) { _, new in if new == .saved { dismiss() } }
     }
 
-    private var tagRow: some View {
-        HStack(spacing: theme.spacing[1]) {
-            ForEach(WorkoutTag.allCases, id: \.self) { tag in
-                PillChip(label: tag.label, selected: model.tag == tag,
-                         fill: theme.accent2, onFill: theme.onAccent) { model.tag = tag }
+    private var targetRow: some View {
+        VStack(alignment: .leading, spacing: theme.spacing[2]) {
+            StatLabel("TARGETS").accessibilityIdentifier("eyebrow-TARGETS")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: theme.spacing[1]) {
+                    ForEach(MuscleGroup.allCases) { m in
+                        PillChip(label: m.rawValue, selected: model.targets.contains(m),
+                                 fill: theme.accent, onFill: theme.onAccent) {
+                            model.toggleTarget(m)
+                        }
+                        .accessibilityIdentifier("target-\(m.rawValue)")
+                    }
+                }
             }
-            Text("+ TAG")
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                .foregroundStyle(theme.inkFaint)
-                .padding(.horizontal, theme.spacing[3]).padding(.vertical, theme.spacing[1])
-                .overlay(Capsule().strokeBorder(theme.inkFaint, style: StrokeStyle(lineWidth: 2, dash: [4])))
-                .accessibilityIdentifier("tag-add") // decorative per product decision
         }
     }
 

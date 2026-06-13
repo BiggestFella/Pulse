@@ -7,12 +7,6 @@ enum SaveState: Equatable {
     case error(String)
 }
 
-/// Single-select workout tag. PUSH/PULL/LEGS is the complete v1 set.
-enum WorkoutTag: String, CaseIterable, Equatable {
-    case push, pull, legs
-    var label: String { rawValue.uppercased() }
-}
-
 /// A mutable editing view over `WorkoutExercise`. Consecutive items sharing a
 /// non-nil `supersetGroup` render as one superset card.
 struct BuilderExercise: Identifiable, Equatable {

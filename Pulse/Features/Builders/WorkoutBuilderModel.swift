@@ -5,7 +5,7 @@ import Observation
 @Observable
 final class WorkoutBuilderModel {
     var name: String = "New workout"
-    var tag: WorkoutTag = .push
+    var targets: Set<MuscleGroup> = []
     /// Empty by default: a new workout is built from the real catalog so every
     /// exercise has a valid id (a hardcoded sample seed produced ids that don't
     /// exist in the backend → the save hit a foreign-key error). Previews/tests
@@ -128,15 +128,27 @@ final class WorkoutBuilderModel {
         items[i].variationID = variationID
     }
 
-    func save() async {
-        saveState = .saving
+    /// Toggle a muscle Target on/off.
+    func toggleTarget(_ m: MuscleGroup) {
+        if targets.contains(m) { targets.remove(m) } else { targets.insert(m) }
+    }
+
+    /// The draft persisted by `save()`. Targets are emitted in canonical
+    /// `MuscleGroup.allCases` order for deterministic storage/tests.
+    func makeDraft() -> Workout {
         let workoutExercises = items.map {
             WorkoutExercise(exercise: $0.exercise, variationID: $0.variationID,
                             supersetGroup: $0.supersetGroup, sets: $0.sets)
         }
-        let draft = Workout(name: name, weekday: nil, order: 0, exercises: workoutExercises)
+        return Workout(name: name, weekday: nil, order: 0,
+                       exercises: workoutExercises,
+                       targets: MuscleGroup.allCases.filter { targets.contains($0) })
+    }
+
+    func save() async {
+        saveState = .saving
         do {
-            _ = try await workoutRepo.saveWorkout(draft)
+            _ = try await workoutRepo.saveWorkout(makeDraft())
             saveState = .saved
         } catch {
             // Surface the underlying reason (no program to attach to, auth/network,

@@ -181,4 +181,20 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let addedIDs = Array(model.items.suffix(model.items.count - before)).map { $0.exercise.id }
         XCTAssertEqual(addedIDs, [c, a, b])  // exact insertion order preserved
     }
+
+    func testToggleTargetAddsAndRemoves() {
+        let model = makeModel()
+        model.toggleTarget(.chest)
+        model.toggleTarget(.triceps)
+        XCTAssertEqual(model.targets, [.chest, .triceps])
+        model.toggleTarget(.chest)
+        XCTAssertEqual(model.targets, [.triceps])
+    }
+
+    func testMakeDraftIncludesTargetsInCanonicalOrder() {
+        let model = makeModel()
+        model.toggleTarget(.triceps)
+        model.toggleTarget(.chest)            // toggled out of order
+        XCTAssertEqual(model.makeDraft().targets, [.chest, .triceps]) // canonical allCases order
+    }
 }
