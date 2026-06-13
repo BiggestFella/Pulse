@@ -45,7 +45,7 @@ struct WorkoutBuilderView: View {
 
                 if model.isReordering { reorderList } else { exerciseList }
 
-                Button { model.pickerPresented = true } label: {
+                Button { model.replacingItemID = nil; model.pickerPresented = true } label: {
                     Text("+ ADD EXERCISE")
                         .font(.system(size: 14, weight: .semibold, design: .monospaced))
                         .foregroundStyle(theme.accent)
@@ -71,7 +71,7 @@ struct WorkoutBuilderView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
         }
-        .sheet(isPresented: $model.pickerPresented) {
+        .sheet(isPresented: $model.pickerPresented, onDismiss: { model.replacingItemID = nil }) {
             ExercisePickerSheet(
                 catalog: model.catalog, loading: model.catalogLoading, errorText: model.catalogError,
                 alreadyAdded: model.replacingItemID == nil ? model.addedExerciseIDs : [],
