@@ -49,6 +49,23 @@ final class SampleDataTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(SampleData.schedule.count, 28)
     }
 
+    /// BAK-38: every planned training day must name the same workout the
+    /// weekday-based hero (`todaysWorkout(on:)`) would — otherwise the Today
+    /// hero and the week-strip cell disagree on the same day.
+    @MainActor
+    func testScheduledWorkoutsAgreeWithWeekdayHero() async throws {
+        let repo = InMemoryWorkoutRepository(store: MockStore())
+        var checked = 0
+        for (day, plan) in SampleData.schedule {
+            guard case let .workout(id) = plan else { continue }
+            let hero = try await repo.todaysWorkout(on: day)
+            XCTAssertEqual(hero?.id, id,
+                "schedule and weekday hero disagree on \(day)")
+            checked += 1
+        }
+        XCTAssertGreaterThan(checked, 0, "expected some planned training days")
+    }
+
     func testAtLeastOneSessionProducesAFreshPR() {
         let byExercise = Dictionary(grouping: SampleData.sessions.flatMap(\.sets),
                                     by: \.exerciseID)

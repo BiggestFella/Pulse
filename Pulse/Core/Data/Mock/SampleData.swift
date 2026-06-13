@@ -168,7 +168,13 @@ enum SampleData {
             if let session = completedByDay[day]?.first {
                 out[day] = .done(session.id)
             } else if isTraining {
-                let w = [pushWorkout, pullWorkout, legsWorkout][abs(offset) % 3]
+                // Assign by weekday (not offset) so the planned workout matches the
+                // weekday-based hero `todaysWorkout(on:)` — Mon→Push, Wed→Pull,
+                // Fri→Legs. Map Gregorian (1=Sun…7=Sat) to app weekday (Mon→1…Sun→7)
+                // the same way the repository does, then pick the workout that owns it.
+                let appWeekday = ((weekday + 5) % 7) + 1
+                let w = [pushWorkout, pullWorkout, legsWorkout]
+                    .first { $0.weekday == appWeekday } ?? pushWorkout
                 out[day] = .workout(w.id)
             } else {
                 out[day] = .rest
