@@ -40,8 +40,8 @@ insert into programs (id, user_id, name, weeks, is_active) values
   ('7bc1287f-a0d2-417c-875a-e256c9be5692', '7816633c-c06f-476a-a8c5-08323c043d38', 'My Program', 8, true)
 on conflict (id) do nothing;
 
-insert into workouts (id, program_id, name, weekday, "order") values
-  ('512251d0-5c9d-4018-a24e-87e9b639d2be', '7bc1287f-a0d2-417c-875a-e256c9be5692', 'Upper', null, 0)
+insert into workouts (id, program_id, name, "order") values
+  ('512251d0-5c9d-4018-a24e-87e9b639d2be', '7bc1287f-a0d2-417c-875a-e256c9be5692', 'Upper', 0)
 on conflict (id) do nothing;
 
 -- ── workout exercises + set specs (one CTE per exercise) ───────────────────
