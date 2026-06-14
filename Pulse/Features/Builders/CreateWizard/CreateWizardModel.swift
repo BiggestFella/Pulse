@@ -13,6 +13,7 @@ final class CreateWizardModel {
 
     var folderOptions: [FolderOption] = []
     var creating = false
+    var createError: String?
 
     private let workoutRepo: any WorkoutRepository
     private let folderRepo: any FolderRepository
@@ -56,6 +57,7 @@ final class CreateWizardModel {
     /// places it in the chosen folder. Returns the new workout id, or nil on failure.
     func create() async -> Workout.ID? {
         creating = true
+        createError = nil
         defer { creating = false }
         let draft = Workout(
             name: name.trimmingCharacters(in: .whitespaces),
@@ -68,6 +70,7 @@ final class CreateWizardModel {
             if let folderID { try await folderRepo.moveWorkout(id: saved.id, toFolder: folderID) }
             return saved.id
         } catch {
+            createError = "Couldn't create workout — \(error.localizedDescription)"
             return nil
         }
     }

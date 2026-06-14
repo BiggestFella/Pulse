@@ -24,6 +24,14 @@ struct CreateWizardView: View {
                     .padding(.horizontal, theme.spacing[5])
                     .padding(.top, theme.spacing[4])
             }
+            if let createError = model.createError {
+                Text(createError)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(theme.accent2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, theme.spacing[5])
+                    .accessibilityIdentifier("wizard.createError")
+            }
             footer
         }
         .background(theme.bg.ignoresSafeArea())

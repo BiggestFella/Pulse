@@ -90,4 +90,15 @@ final class CreateWizardModelTests: XCTestCase {
         let root = try await folders.contents(of: nil)
         XCTAssertTrue(root.workouts.contains { $0.id == id })
     }
+
+    func testCreateSurfacesErrorOnFailure() async {
+        let store = MockStore(seeded: true)
+        store.forceError = true
+        let m = CreateWizardModel(workouts: InMemoryWorkoutRepository(store: store),
+                                  folders: InMemoryFolderRepository(store: store))
+        m.name = "Will Fail"
+        let id = await m.create()
+        XCTAssertNil(id)
+        XCTAssertNotNil(m.createError)
+    }
 }
