@@ -26,6 +26,8 @@ final class WorkoutBuilderModel {
     /// only changes name / targets / exercises.
     private var weekdays: [Int] = []
     private var order: Int = 0
+    private var restSeconds: Int? = nil   // preserved across save (edited in the Settings sheet)
+    private var notes: String = ""        // preserved across save (edited in the Settings sheet)
     private let catalogRepo: any ExerciseRepository
     private let workoutRepo: any WorkoutRepository
 
@@ -47,6 +49,8 @@ final class WorkoutBuilderModel {
         targets = Set(w.targets)
         weekdays = w.weekdays
         order = w.order
+        restSeconds = w.restSeconds
+        notes = w.notes
         items = w.exercises.map {
             BuilderExercise(exercise: $0.exercise, variationID: $0.variationID,
                             supersetGroup: $0.supersetGroup, sets: $0.sets)
@@ -182,7 +186,8 @@ final class WorkoutBuilderModel {
         }
         return Workout(id: workoutID, name: name, weekdays: weekdays, order: order,
                        exercises: workoutExercises,
-                       targets: MuscleGroup.allCases.filter { targets.contains($0) })
+                       targets: MuscleGroup.allCases.filter { targets.contains($0) },
+                       restSeconds: restSeconds, notes: notes)
     }
 
     func save() async {

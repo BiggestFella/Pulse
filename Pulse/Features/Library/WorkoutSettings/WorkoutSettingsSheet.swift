@@ -30,6 +30,7 @@ struct WorkoutSettingsSheet: View {
             }
             .padding(.bottom, theme.spacing[6])
             .task { await model.load() }
+            .onDisappear { Task { await model.setNotes(model.notes) } }   // commit typed notes on dismiss
         }
     }
 

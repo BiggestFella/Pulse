@@ -114,4 +114,18 @@ final class WorkoutSettingsModelTests: XCTestCase {
         let entry = try await schedule.plan(for: date)
         XCTAssertEqual(entry, .workout(w.id))
     }
+
+    func testLoadHydratesCurrentFolder() async throws {
+        let store = MockStore(seeded: true)
+        let w = try await seedWorkout(store)
+        let folders = InMemoryFolderRepository(store: store)
+        let folder = try await folders.createFolder(name: "Push days", color: .default, parentID: nil)
+        try await folders.moveWorkout(id: w.id, toFolder: folder.id)
+        let m = WorkoutSettingsModel(workoutID: w.id,
+                                     workoutRepo: InMemoryWorkoutRepository(store: store),
+                                     scheduleRepo: InMemoryScheduleRepository(store: store),
+                                     folderRepo: folders)
+        await m.load()
+        XCTAssertEqual(m.folderID, folder.id)
+    }
 }

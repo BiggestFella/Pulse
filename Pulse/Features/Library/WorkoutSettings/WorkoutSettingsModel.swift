@@ -41,6 +41,15 @@ final class WorkoutSettingsModel {
         restSeconds = w.restSeconds
         notes = w.notes
         folderOptions = await FolderOptions.load(from: folderRepo)
+        // Hydrate the workout's current folder by membership (no direct repo API);
+        // stays nil (= Library root) when it isn't inside any folder.
+        folderID = nil
+        for opt in folderOptions where opt.id != nil {
+            if let c = try? await folderRepo.contents(of: opt.id),
+               c.workouts.contains(where: { $0.id == workoutID }) {
+                folderID = opt.id; break
+            }
+        }
         loadState = .loaded
     }
 
