@@ -4,14 +4,8 @@ import SwiftUI
 @Observable
 final class MoveToFolderModel {
     let moving: LibraryItemRef
-    private(set) var options: [Indented] = []     // selectable destinations
+    private(set) var options: [FolderOption] = []     // selectable destinations
     private let folderRepo: any FolderRepository
-
-    struct Indented: Identifiable, Equatable {
-        let id: UUID?        // nil = Library root
-        let name: String
-        let depth: Int
-    }
 
     init(moving: LibraryItemRef, folders: any FolderRepository) {
         self.moving = moving
@@ -19,35 +13,24 @@ final class MoveToFolderModel {
     }
 
     func load() async {
-        // 1. Collect every folder by walking the tree from root.
+        // When moving a folder, exclude itself + its descendants (can't nest into
+        // its own subtree). Gathering the tree + indenting is shared with the wizard.
+        var excluded: Set<UUID> = []
+        if case let .folder(movingID) = moving {
+            let all = await allFolders()
+            excluded = descendants(of: movingID, in: all).union([movingID])
+        }
+        options = await FolderOptions.load(from: folderRepo, excluding: excluded)
+    }
+
+    private func allFolders() async -> [Folder] {
         var all: [Folder] = []
         func gather(parent: UUID?) async {
             let c = try? await folderRepo.contents(of: parent)
-            for f in (c?.folders ?? []) {
-                all.append(f)
-                await gather(parent: f.id)
-            }
+            for f in (c?.folders ?? []) { all.append(f); await gather(parent: f.id) }
         }
         await gather(parent: nil)
-
-        // 2. When moving a folder, exclude itself + its descendants (can't nest into own subtree).
-        var excluded: Set<UUID> = []
-        if case let .folder(movingID) = moving {
-            excluded = descendants(of: movingID, in: all).union([movingID])
-        }
-
-        // 3. Build the indented option list (root + every allowed folder).
-        let byID = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
-        func depth(of id: UUID) -> Int {
-            var d = 0; var cur = byID[id]?.parentID
-            while let c = cur { d += 1; cur = byID[c]?.parentID }
-            return d
-        }
-        var opts: [Indented] = [Indented(id: nil, name: "Library root", depth: 0)]
-        for f in all where !excluded.contains(f.id) {
-            opts.append(Indented(id: f.id, name: f.name, depth: depth(of: f.id) + 1))
-        }
-        options = opts
+        return all
     }
 
     func confirm(destination: UUID?) async {
