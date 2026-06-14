@@ -20,7 +20,7 @@ final class WorkoutDetailModel {
     private(set) var workout: Workout?
     private(set) var weekdays: Set<Int> = []
 
-    private let workoutID: UUID
+    let workoutID: Workout.ID
     private let workoutRepo: any WorkoutRepository
     private let scheduleRepo: any ScheduleRepository
     private let onStart: (Workout) -> Void

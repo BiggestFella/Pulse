@@ -4,33 +4,54 @@ import Observation
 @MainActor
 @Observable
 final class WorkoutBuilderModel {
-    var name: String = "New workout"
+    var name: String = ""
     var targets: Set<MuscleGroup> = []
-    /// Empty by default: a new workout is built from the real catalog so every
-    /// exercise has a valid id (a hardcoded sample seed produced ids that don't
-    /// exist in the backend → the save hit a foreign-key error). Previews/tests
-    /// pass a seed explicitly.
-    var items: [BuilderExercise]
+    var items: [BuilderExercise] = []
     var pickerPresented = false
     var isReordering = false
     var editingItemID: BuilderExercise.ID? = nil
     var saveState: SaveState = .idle
     /// The builder row currently being replaced (drives a single-select picker).
     var replacingItemID: BuilderExercise.ID? = nil
+    var loadState: LibraryLoadState = .loading
 
     // Exercise Picker state.
     var catalog: [BuilderCatalogGroup] = []
     var catalogLoading = false
     var catalogError: String? = nil
 
+    let workoutID: Workout.ID
+    /// Preserved verbatim across an in-place save (these are edited elsewhere — the
+    /// recurring weekdays on WorkoutDetail, the order by the library). The editor
+    /// only changes name / targets / exercises.
+    private var weekdays: [Int] = []
+    private var order: Int = 0
     private let catalogRepo: any ExerciseRepository
     private let workoutRepo: any WorkoutRepository
 
-    init(catalog: any ExerciseRepository, workouts: any WorkoutRepository,
-         items: [BuilderExercise] = []) {
+    init(workoutID: Workout.ID, catalog: any ExerciseRepository, workouts: any WorkoutRepository) {
+        self.workoutID = workoutID
         self.catalogRepo = catalog
         self.workoutRepo = workouts
-        self.items = items
+    }
+
+    /// Hydrates the editor from the persisted workout. The wizard creates an empty
+    /// workout first, so on first open this loads the wizard's name/targets and an
+    /// empty exercise list; for edit it loads the full graph.
+    func load() async {
+        loadState = .loading
+        guard let w = try? await workoutRepo.fetchWorkout(id: workoutID) else {
+            loadState = .error; return
+        }
+        name = w.name
+        targets = Set(w.targets)
+        weekdays = w.weekdays
+        order = w.order
+        items = w.exercises.map {
+            BuilderExercise(exercise: $0.exercise, variationID: $0.variationID,
+                            supersetGroup: $0.supersetGroup, sets: $0.sets)
+        }
+        loadState = .loaded
     }
 
     var totalSets: Int { items.reduce(0) { $0 + $1.sets.count } }
@@ -151,14 +172,15 @@ final class WorkoutBuilderModel {
         if targets.contains(m) { targets.remove(m) } else { targets.insert(m) }
     }
 
-    /// The draft persisted by `save()`. Targets are emitted in canonical
-    /// `MuscleGroup.allCases` order for deterministic storage/tests.
+    /// The draft persisted by `save()` — rebuilds the SAME workout (id, weekdays,
+    /// order preserved) so an in-place save never changes identity or scheduling.
+    /// Targets are emitted in canonical `MuscleGroup.allCases` order.
     func makeDraft() -> Workout {
         let workoutExercises = items.map {
             WorkoutExercise(exercise: $0.exercise, variationID: $0.variationID,
                             supersetGroup: $0.supersetGroup, sets: $0.sets)
         }
-        return Workout(name: name, order: 0,
+        return Workout(id: workoutID, name: name, weekdays: weekdays, order: order,
                        exercises: workoutExercises,
                        targets: MuscleGroup.allCases.filter { targets.contains($0) })
     }

@@ -13,57 +13,25 @@ struct WorkoutBuilderView: View {
 
     var body: some View {
         BuilderScaffold(
-            eyebrow: "NEW WORKOUT", primaryLabel: "Save workout →",
+            eyebrow: "EDIT WORKOUT", primaryLabel: "Save workout →",
             saving: model.saveState == .saving,
             onCancel: { dismiss() },
             onPrimary: { Task { await model.save() } }
         ) {
-            VStack(alignment: .leading, spacing: theme.spacing[4]) {
-                TextField("Workout name", text: $model.name)
-                    .font(.system(size: 30, weight: .bold))
-                    .foregroundStyle(theme.ink)
-                    .accessibilityIdentifier("workout-name")
-
-                targetRow
-
-                HStack {
-                    StatLabel("EXERCISES · \(model.items.count)")
-                        .accessibilityIdentifier("eyebrow-EXERCISES · \(model.items.count)")
-                    Spacer()
-                    if model.items.count > 1 {
-                        Button { model.isReordering.toggle() } label: {
-                            Text(model.isReordering ? "DONE" : "REORDER")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .tracking(1)
-                                .foregroundStyle(theme.accent)
-                        }
-                        .accessibilityIdentifier("reorder-toggle")
-                    }
-                    StatLabel("\(model.totalSets) SETS")
-                        .accessibilityIdentifier("eyebrow-\(model.totalSets) SETS")
-                }
-
-                if model.isReordering { reorderList } else { exerciseList }
-
-                Button { model.replacingItemID = nil; model.pickerPresented = true } label: {
-                    Text("+ ADD EXERCISE")
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(theme.accent)
-                        .frame(maxWidth: .infinity).padding(theme.spacing[4])
-                        .overlay(RoundedRectangle(cornerRadius: 14)
-                            .strokeBorder(theme.accent, style: StrokeStyle(lineWidth: 2, dash: [6])))
-                }
-                .accessibilityIdentifier("add-exercise")
-
-                Text("Tap ⛓ on an exercise to superset it with the one below.")
-                    .font(.system(size: 12)).foregroundStyle(theme.inkSoft)
-
-                if case let .error(msg) = model.saveState {
-                    Text(msg).foregroundStyle(theme.accent2).accessibilityIdentifier("save-error")
-                }
+            switch model.loadState {
+            case .loaded: loadedContent
+            case .error:
+                Text("Couldn't load this workout.")
+                    .font(.system(size: 15)).foregroundStyle(theme.inkSoft)
+                    .frame(maxWidth: .infinity).padding(.top, theme.spacing[5])
+                    .accessibilityIdentifier("editor.error")
+            case .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity).padding(.top, theme.spacing[5])
+                    .accessibilityIdentifier("editor.loading")
             }
-            .padding(.vertical, theme.spacing[3])
         }
+        .task { await model.load() }
         .sheet(item: Binding(get: { model.editingItemID.map { EditingItem(id: $0) } },
                              set: { model.editingItemID = $0?.id })) { box in
             SetEditorSheet(model: model, itemID: box.id)
@@ -94,6 +62,54 @@ struct WorkoutBuilderView: View {
             .task { if model.catalog.isEmpty { await model.loadCatalog() } }
         }
         .onChange(of: model.saveState) { _, new in if new == .saved { dismiss() } }
+    }
+
+    @ViewBuilder private var loadedContent: some View {
+        VStack(alignment: .leading, spacing: theme.spacing[4]) {
+            TextField("Workout name", text: $model.name)
+                .font(.system(size: 30, weight: .bold))
+                .foregroundStyle(theme.ink)
+                .accessibilityIdentifier("workout-name")
+
+            targetRow
+
+            HStack {
+                StatLabel("EXERCISES · \(model.items.count)")
+                    .accessibilityIdentifier("eyebrow-EXERCISES · \(model.items.count)")
+                Spacer()
+                if model.items.count > 1 {
+                    Button { model.isReordering.toggle() } label: {
+                        Text(model.isReordering ? "DONE" : "REORDER")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .tracking(1)
+                            .foregroundStyle(theme.accent)
+                    }
+                    .accessibilityIdentifier("reorder-toggle")
+                }
+                StatLabel("\(model.totalSets) SETS")
+                    .accessibilityIdentifier("eyebrow-\(model.totalSets) SETS")
+            }
+
+            if model.isReordering { reorderList } else { exerciseList }
+
+            Button { model.replacingItemID = nil; model.pickerPresented = true } label: {
+                Text("+ ADD EXERCISE")
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(theme.accent)
+                    .frame(maxWidth: .infinity).padding(theme.spacing[4])
+                    .overlay(RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(theme.accent, style: StrokeStyle(lineWidth: 2, dash: [6])))
+            }
+            .accessibilityIdentifier("add-exercise")
+
+            Text("Tap ⛓ on an exercise to superset it with the one below.")
+                .font(.system(size: 12)).foregroundStyle(theme.inkSoft)
+
+            if case let .error(msg) = model.saveState {
+                Text(msg).foregroundStyle(theme.accent2).accessibilityIdentifier("save-error")
+            }
+        }
+        .padding(.vertical, theme.spacing[3])
     }
 
     private var targetRow: some View {
@@ -264,11 +280,14 @@ struct WorkoutBuilderView: View {
 }
 
 #Preview {
-    let theme = Theme()
+    let store = MockStore(seeded: true)
+    let workouts = InMemoryWorkoutRepository(store: store)
+    let id = store.allWorkouts.first?.id ?? UUID()
     return NavigationStack {
         WorkoutBuilderView(model: WorkoutBuilderModel(
-            catalog: InMemoryExerciseRepository(store: MockStore()),
-            workouts: InMemoryWorkoutRepository(store: MockStore())))
+            workoutID: id,
+            catalog: InMemoryExerciseRepository(store: store),
+            workouts: workouts))
     }
-    .environment(theme)
+    .environment(Theme())
 }

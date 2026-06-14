@@ -183,13 +183,18 @@ struct LibraryView: View {
 
     @ViewBuilder private func destination(_ route: LibraryRoute) -> some View {
         switch route {
-        case .workoutBuilder:
+        case .createWizard:
+            CreateWizardView(
+                model: CreateWizardModel(workouts: repos.workouts,
+                                         folders: repos.folders,
+                                         folderID: createParentID),   // BAK-54: seed the current folder
+                onCreated: { id in
+                    if !path.isEmpty { path.removeLast() }            // pop the wizard…
+                    path.append(.workoutEditor(id: id))               // …land in the editor
+                })
+        case .workoutEditor(let id):
             WorkoutBuilderView(model: WorkoutBuilderModel(
-                catalog: repos.exercises, workouts: repos.workouts,
-                // A real new workout starts empty (sample exercises carry ids the
-                // backend doesn't know → save would FK-fail). The seed belongs to
-                // the mock/demo world, like all other SampleData.
-                items: RepositoryContainer.useMock() ? BuilderSampleData.defaultWorkoutItems : []))
+                workoutID: id, catalog: repos.exercises, workouts: repos.workouts))
         case .routineBuilder:
             RoutineBuilderView(model: RoutineBuilderModel(
                 routines: repos.programs, workouts: repos.workouts))
@@ -216,11 +221,13 @@ struct LibraryView: View {
                                    sessionRepo: repos.sessions, prRepo: repos.prs)
             } else { routeStub(route) }
         case .workoutDetail(let id, let name):
-            WorkoutDetailView(model: WorkoutDetailModel(
-                workoutID: id, title: name,
-                workoutRepo: repos.workouts,
-                scheduleRepo: repos.schedule,
-                onStart: onStartWorkout))
+            WorkoutDetailView(
+                model: WorkoutDetailModel(
+                    workoutID: id, title: name,
+                    workoutRepo: repos.workouts,
+                    scheduleRepo: repos.schedule,
+                    onStart: onStartWorkout),
+                onEdit: { editID in path.append(.workoutEditor(id: editID)) })
         default:
             routeStub(route)
         }
