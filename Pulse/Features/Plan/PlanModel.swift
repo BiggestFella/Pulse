@@ -183,8 +183,15 @@ final class PlanModel {
     private func mutate(day: Int, plan: DayPlan?) async {
         do {
             try await scheduleRepo.setPlan(plan, on: dateFor(day: day))
-            let fresh = try await scheduleRepo.plan(for: dateFor(day: day))
-            schedule[day] = mapDay(day: day, plan: fresh)
+            // Resolve the refreshed cell the same way buildSchedule does (specific
+            // entry → recurring weekday → empty), so clearing a recurring day shows
+            // its recurrence rather than a stale empty cell.
+            let date = dateFor(day: day)
+            let entry = try await scheduleRepo.plan(for: date)
+            let workouts = try await workoutRepo.fetchWorkouts()
+            let resolved = ScheduleResolver.plan(for: date, entry: entry,
+                                                 workouts: workouts, calendar: calendar)
+            schedule[day] = mapDay(day: day, plan: resolved)
             recomputeSummary()
             try await buildAgenda()
         } catch {
