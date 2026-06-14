@@ -25,7 +25,7 @@ struct CreateChooserSheet: View {
 
             option(icon: "bolt.fill", tile: theme.accent, glyph: theme.onAccent,
                    name: "Workout", sub: "A single session you can run",
-                   id: "create.workout") { onPick(.workoutBuilder) }
+                   id: "create.workout") { onPick(.createWizard) }
             option(icon: "calendar", tile: theme.accent2, glyph: theme.onAccent,
                    name: "Routine", sub: "A multi-week program of workouts",
                    id: "create.routine") { onPick(.routineBuilder) }

@@ -203,11 +203,11 @@ struct SetEditorSheet: View {
 }
 
 #Preview {
-    let theme = Theme()
+    let store = MockStore(seeded: true)
     let model = WorkoutBuilderModel(
-        catalog: InMemoryExerciseRepository(store: MockStore()),
-        workouts: InMemoryWorkoutRepository(store: MockStore()),
-        items: BuilderSampleData.defaultWorkoutItems)
-    return SetEditorSheet(model: model, itemID: model.items[0].id)
-        .environment(theme)
+        workoutID: store.allWorkouts.first?.id ?? UUID(),
+        catalog: InMemoryExerciseRepository(store: store),
+        workouts: InMemoryWorkoutRepository(store: store))
+    return SetEditorSheet(model: model, itemID: UUID())
+        .environment(Theme())
 }

@@ -15,7 +15,8 @@ import XCTest
 final class TargetsPickerAcceptanceTests: XCTestCase {
     private func model() -> WorkoutBuilderModel {
         let store = MockStore()
-        let m = WorkoutBuilderModel(catalog: InMemoryExerciseRepository(store: store),
+        let m = WorkoutBuilderModel(workoutID: UUID(),
+                                    catalog: InMemoryExerciseRepository(store: store),
                                     workouts: InMemoryWorkoutRepository(store: store))
         m.catalog = WorkoutBuilderModel.group(SampleData.exercises)
         return m

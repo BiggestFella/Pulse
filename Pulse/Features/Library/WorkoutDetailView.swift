@@ -4,11 +4,15 @@ import SwiftUI
 /// active session. Weekday repeats editor and schedule-on-date live here.
 struct WorkoutDetailView: View {
     @State private var model: WorkoutDetailModel
+    private let onEdit: (Workout.ID) -> Void
     @State private var showScheduleSheet = false
     @State private var schedulePicked = Date()
     @Environment(Theme.self) private var theme
 
-    init(model: WorkoutDetailModel) { _model = State(initialValue: model) }
+    init(model: WorkoutDetailModel, onEdit: @escaping (Workout.ID) -> Void = { _ in }) {
+        _model = State(initialValue: model)
+        self.onEdit = onEdit
+    }
 
     var body: some View {
         ScrollView {
@@ -27,6 +31,12 @@ struct WorkoutDetailView: View {
         .background(theme.bg.ignoresSafeArea())
         .safeAreaInset(edge: .bottom) { startBar }
         .task { await model.load() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Edit") { onEdit(model.workoutID) }
+                    .accessibilityIdentifier("workoutDetail.edit")
+            }
+        }
     }
 
     @ViewBuilder private var content: some View {

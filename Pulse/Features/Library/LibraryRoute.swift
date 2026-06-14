@@ -8,7 +8,8 @@ enum LibraryRoute: Hashable {
     case programDetail(folderID: String)
     case folderDetail(folderID: UUID, name: String)
     case workoutDetail(id: UUID, name: String)
-    case workoutBuilder
+    case createWizard
+    case workoutEditor(id: UUID)
     case routineBuilder
     case folderCreate
     case folderEdit(folderID: UUID, name: String, colorToken: String)
@@ -20,7 +21,8 @@ enum LibraryRoute: Hashable {
         case .programDetail(let id):  return "program:\(id)"
         case .folderDetail(let id, _): return "folder:\(id)"
         case .workoutDetail(let id, _): return "workoutDetail:\(id)"
-        case .workoutBuilder:         return "builder:workout"
+        case .createWizard:           return "wizard:workout"
+        case .workoutEditor(let id):  return "editor:\(id)"
         case .routineBuilder:         return "builder:routine"
         case .folderCreate:           return "builder:folder"
         case .folderEdit(let id, _, _): return "folderEdit:\(id)"

@@ -8,18 +8,61 @@ final class WorkoutBuilderModelTests: XCTestCase {
     // testNewBuilderStartsEmpty).
     private func makeModel(store: MockStore? = nil) -> WorkoutBuilderModel {
         let store = store ?? MockStore()
-        return WorkoutBuilderModel(
+        let m = WorkoutBuilderModel(
+            workoutID: UUID(),
             catalog: InMemoryExerciseRepository(store: store),
-            workouts: InMemoryWorkoutRepository(store: store),
-            items: BuilderSampleData.defaultWorkoutItems)
+            workouts: InMemoryWorkoutRepository(store: store))
+        // Seed the editor directly so the synchronous manipulation tests below have
+        // a non-empty, loaded builder without awaiting a repo round-trip.
+        m.items = BuilderSampleData.defaultWorkoutItems
+        m.loadState = .loaded
+        return m
     }
 
-    func testNewBuilderStartsEmpty() {
+    func testEditorIsEmptyBeforeHydration() {
         let store = MockStore()
         let model = WorkoutBuilderModel(
+            workoutID: UUID(),
             catalog: InMemoryExerciseRepository(store: store),
             workouts: InMemoryWorkoutRepository(store: store))
         XCTAssertTrue(model.items.isEmpty)
+    }
+
+    func testLoadHydratesNameTargetsAndExercises() async throws {
+        let store = MockStore(seeded: true)
+        let workouts = InMemoryWorkoutRepository(store: store)
+        let w = Workout(name: "Leg Day", weekdays: [2, 4], order: 3,
+                        exercises: BuilderSampleData.defaultWorkoutItems.map {
+                            WorkoutExercise(exercise: $0.exercise, variationID: $0.variationID,
+                                            supersetGroup: $0.supersetGroup, sets: $0.sets) },
+                        targets: [.legs])
+        _ = try await workouts.saveWorkout(w)
+        let m = WorkoutBuilderModel(workoutID: w.id,
+                                    catalog: InMemoryExerciseRepository(store: store),
+                                    workouts: workouts)
+        await m.load()
+        XCTAssertEqual(m.loadState, .loaded)
+        XCTAssertEqual(m.name, "Leg Day")
+        XCTAssertEqual(m.targets, [.legs])
+        XCTAssertEqual(m.items.count, BuilderSampleData.defaultWorkoutItems.count)
+    }
+
+    func testSavePreservesIDWeekdaysAndOrder() async throws {
+        let store = MockStore(seeded: true)
+        let workouts = InMemoryWorkoutRepository(store: store)
+        let w = Workout(name: "Keep Me", weekdays: [1, 5], order: 7, exercises: [], targets: [])
+        _ = try await workouts.saveWorkout(w)
+        let m = WorkoutBuilderModel(workoutID: w.id,
+                                    catalog: InMemoryExerciseRepository(store: store),
+                                    workouts: workouts)
+        await m.load()
+        m.name = "Renamed"
+        await m.save()
+        let saved = try await workouts.fetchWorkout(id: w.id)
+        XCTAssertEqual(saved?.id, w.id)
+        XCTAssertEqual(saved?.name, "Renamed")
+        XCTAssertEqual(saved?.weekdays, [1, 5])
+        XCTAssertEqual(saved?.order, 7)
     }
 
     func testSeededFixtureHasTwoItems() {
@@ -38,9 +81,10 @@ final class WorkoutBuilderModelTests: XCTestCase {
                                    sets: [SetSpec(reps: 8, rir: 2, type: .working)])
         let store = MockStore()
         let model = WorkoutBuilderModel(
+            workoutID: UUID(),
             catalog: InMemoryExerciseRepository(store: store),
-            workouts: InMemoryWorkoutRepository(store: store),
-            items: [item])
+            workouts: InMemoryWorkoutRepository(store: store))
+        model.items = [item]
         model.updateVariation(itemID: item.id, variationID: v2.id)
         XCTAssertEqual(model.items.first?.variationID, v2.id)
     }
@@ -143,7 +187,9 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let store = MockStore()
         let workouts = InMemoryWorkoutRepository(store: store)
         let model = WorkoutBuilderModel(
+            workoutID: UUID(),
             catalog: InMemoryExerciseRepository(store: store), workouts: workouts)
+        model.name = "Draft WO"
         await model.save()
         XCTAssertEqual(model.saveState, .saved)
         // The draft was persisted into the active program's workouts.
@@ -155,6 +201,7 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let store = MockStore()
         store.forceError = true
         let model = WorkoutBuilderModel(
+            workoutID: UUID(),
             catalog: InMemoryExerciseRepository(store: store),
             workouts: InMemoryWorkoutRepository(store: store))
         await model.save()
