@@ -48,21 +48,28 @@ final class ActiveWorkoutFlowTests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
     }
 
-    // AC6 / AC12 — Log-button label + failure rendering. BAK-30: failure sets now
-    // SHOW the entry controls so you can record the reps/weight you actually hit;
-    // the hero stays ∞ and the footer reads BODYWEIGHT until a weight is entered.
-    func testLogLabelAndFailureRendering() {
+    // AC6 / AC12 — the Log button reads "Log set" on a normal step and
+    // "Finish workout" on the final step. (Failure-set rendering — steppers + the
+    // BODYWEIGHT footer, BAK-30 — is unit-covered in ActiveWorkoutModelTests; the
+    // mock Start now launches the scheduled SampleData workout (BAK-57), which has
+    // no failure set, so it can't be exercised through this UI path. BAK-61.)
+    func testLogLabelOnNormalAndFinalStep() {
         let app = launch()
         startAndBegin(app)
         XCTAssertEqual(app.buttons["active.log"].label, "Log set")   // step 0 = warmup, non-superset
-        app.buttons["active.chip.jump"].tap()
-        XCTAssertTrue(app.buttons["jump.exercise.4"].waitForExistence(timeout: 3))
-        app.buttons["jump.exercise.4"].tap()                          // failure finisher = last step
-        XCTAssertTrue(app.buttons["active.log"].waitForExistence(timeout: 3))
-        XCTAssertEqual(app.buttons["active.log"].label, "Finish workout")
-        XCTAssertTrue(app.buttons["active.stepper.reps.inc"].exists)  // BAK-30: steppers shown on failure
-        XCTAssertTrue(app.buttons["active.stepper.weight.inc"].exists)
-        XCTAssertEqual(app.staticTexts["active.hero.footer"].label, "BODYWEIGHT")
+
+        // Drive to the end; the final set's Log button must read "Finish workout".
+        var sawFinish = false
+        for _ in 0..<40 {
+            if app.buttons["summary.done"].exists { break }
+            if app.buttons["active.log"].exists {
+                if app.buttons["active.log"].label == "Finish workout" { sawFinish = true }
+                app.buttons["active.log"].tap()
+            } else if app.buttons["rest.skip"].exists {
+                app.buttons["rest.skip"].tap()
+            }
+        }
+        XCTAssertTrue(sawFinish, "the final set's Log button should read 'Finish workout'")
     }
 
     // BAK-29 — the − stepper reliably decrements (regression for the slow/
