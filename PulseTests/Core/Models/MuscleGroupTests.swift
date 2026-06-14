@@ -13,7 +13,7 @@ final class MuscleGroupTests: XCTestCase {
     }
 
     func testWorkoutDefaultsToNoTargets() {
-        let w = Workout(name: "x", weekday: nil, order: 0, exercises: [])
+        let w = Workout(name: "x", order: 0, exercises: [])
         XCTAssertEqual(w.targets, [])
     }
 }

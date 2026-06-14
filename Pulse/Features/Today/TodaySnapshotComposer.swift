@@ -36,9 +36,11 @@ struct TodaySnapshotComposer {
                                      uniquingKeysWith: { first, _ in first })
 
         let card = try await composeCard(now: now, profile: profile,
-                                         completedCount: completed.count)
+                                         completedCount: completed.count,
+                                         allWorkouts: allWorkouts)
         let week = try await composeWeek(now: now, workoutName: workoutName,
-                                         sessions: history)
+                                         sessions: history,
+                                         allWorkouts: allWorkouts)
         let yesterday = composeRecap(completed.first, all: history,
                                      workoutName: workoutName)
 
@@ -54,15 +56,24 @@ struct TodaySnapshotComposer {
     // MARK: - Hero card
 
     private func composeCard(now: Date, profile: UserProfile,
-                             completedCount: Int) async throws -> TodayWorkoutCard? {
-        guard let workout = try await workouts.todaysWorkout(on: now) else { return nil }
-        // Respect the schedule (the same source the week strip reads): once today's
-        // session is logged the day reads as `.done`, so don't offer a startable
-        // hero that would contradict the strip. A nil card falls through to the
-        // rest/empty state.
-        if case .done? = try await schedule.plan(for: calendar.startOfDay(for: now)) {
-            return nil
-        }
+                             completedCount: Int,
+                             allWorkouts: [Workout]) async throws -> TodayWorkoutCard? {
+        let today = calendar.startOfDay(for: now)
+        let entry = try await schedule.plan(for: today)
+        // Resolve via ScheduleResolver so recurring weekdays surface the correct
+        // workout even when no explicit plan_entry exists for today.
+        guard case let .workout(id)? = ScheduleResolver.plan(for: today, entry: entry,
+                                                             workouts: allWorkouts,
+                                                             calendar: calendar)
+        else { return nil }
+        // Prefer the already-loaded list; fall back to a single fetch (rare: a workout
+        // was created after fetchWorkouts ran in compose).
+        let workout: Workout
+        if let found = allWorkouts.first(where: { $0.id == id }) {
+            workout = found
+        } else if let fetched = try await workouts.fetchWorkout(id: id) {
+            workout = fetched
+        } else { return nil }
         // Week/day are derived from how many sessions are already logged: the next
         // workout is "day N+1", and weeks advance every `workouts-per-week`.
         let perWeek = max(1, (try await programs.activeProgram())?.workouts.count ?? 1)
@@ -81,7 +92,8 @@ struct TodaySnapshotComposer {
     // MARK: - Week strip (always exactly 7 cells, Mon–Sun)
 
     private func composeWeek(now: Date, workoutName: [UUID: String],
-                             sessions: [WorkoutSession]) async throws -> [WeekDayCell] {
+                             sessions: [WorkoutSession],
+                             allWorkouts: [Workout]) async throws -> [WeekDayCell] {
         let today = calendar.startOfDay(for: now)
         let weekday = calendar.component(.weekday, from: today)   // 1=Sun…7=Sat
         let offsetFromMonday = (weekday + 5) % 7                  // Mon→0 … Sun→6
@@ -95,7 +107,11 @@ struct TodaySnapshotComposer {
             let day = calendar.date(byAdding: .day, value: i, to: monday)!
             let state: WeekDayCell.State
             let label: String
-            switch try await schedule.plan(for: day) {
+            // Resolve through ScheduleResolver so recurring weekdays fill the strip
+            // even when no explicit plan_entry exists in the schedule store.
+            switch ScheduleResolver.plan(for: day,
+                                         entry: try await schedule.plan(for: day),
+                                         workouts: allWorkouts, calendar: calendar) {
             case .done(let sessionID)?:
                 state = .done
                 label = sessionWorkout[sessionID].flatMap { workoutName[$0] } ?? "Done"

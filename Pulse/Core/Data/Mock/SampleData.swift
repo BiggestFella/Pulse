@@ -72,7 +72,7 @@ enum SampleData {
     private static let warmup = SetSpec(reps: 8, rir: 0, type: .warmup)
 
     static let pushWorkout = Workout(
-        name: "Push", weekday: 1, order: 0,
+        name: "Push", weekdays: [1], order: 0,
         exercises: [
             we("Bench Press", sets: [warmup, working(8, 2), working(8, 1), working(6, 0)]),
             we("Overhead Press", sets: [working(10, 2), working(10, 2)]),
@@ -82,7 +82,7 @@ enum SampleData {
         ])
 
     static let pullWorkout = Workout(
-        name: "Pull", weekday: 3, order: 1,
+        name: "Pull", weekdays: [3], order: 1,
         exercises: [
             we("Deadlift", sets: [warmup, working(5, 2), working(5, 1)]),
             we("Pull-Up", sets: [working(8, 2), working(8, 1)]),
@@ -92,7 +92,7 @@ enum SampleData {
         ])
 
     static let legsWorkout = Workout(
-        name: "Legs", weekday: 5, order: 2,
+        name: "Legs", weekdays: [5], order: 2,
         exercises: [
             we("Back Squat", sets: [warmup, working(6, 2), working(6, 1), working(5, 0)]),
             we("Romanian Deadlift", sets: [working(10, 2), working(10, 1)]),
@@ -174,7 +174,7 @@ enum SampleData {
                 // the same way the repository does, then pick the workout that owns it.
                 let appWeekday = ((weekday + 5) % 7) + 1
                 let w = [pushWorkout, pullWorkout, legsWorkout]
-                    .first { $0.weekday == appWeekday } ?? pushWorkout
+                    .first { $0.weekdays.contains(appWeekday) } ?? pushWorkout
                 out[day] = .workout(w.id)
             } else {
                 out[day] = .rest

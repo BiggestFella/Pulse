@@ -69,10 +69,13 @@ final class PlanModel {
     }
 
     private func buildSchedule() async throws {
+        let workouts = try await workoutRepo.fetchWorkouts()
         var map: [Int: ScheduledDay] = [:]
         for day in 1...month.daysInMonth {
             let date = dateFor(day: day)
-            let plan = try await scheduleRepo.plan(for: date)
+            let entry = try await scheduleRepo.plan(for: date)
+            let plan = ScheduleResolver.plan(for: date, entry: entry,
+                                             workouts: workouts, calendar: calendar)
             map[day] = mapDay(day: day, plan: plan)
         }
         schedule = map
@@ -93,17 +96,18 @@ final class PlanModel {
     }
 
     private func buildAgenda() async throws {
-        let upcoming = try await scheduleRepo.upcoming(from: startOfDay(now), days: 7)
-        let byDay = Dictionary(
-            upcoming.map { (calendar.component(.day, from: $0.date), $0.plan) },
-            uniquingKeysWith: { lhs, _ in lhs })
+        let workouts = try await workoutRepo.fetchWorkouts()
+        // Refresh workoutNames so agenda name lookups are up-to-date.
+        for w in workouts { workoutNames[w.id] = w.name }
         var rows: [AgendaEntry] = []
         for offset in 0..<7 {
             let date = calendar.date(byAdding: .day, value: offset, to: startOfDay(now))!
             let comps = calendar.dateComponents([.year, .month, .day], from: date)
             let day = comps.day!
             let isToday = offset == 0
-            let plan = byDay[day]
+            let entry = try await scheduleRepo.plan(for: date)
+            let plan = ScheduleResolver.plan(for: date, entry: entry,
+                                             workouts: workouts, calendar: calendar)
             switch plan {
             case .workout(let id):
                 let name = workoutNames[id]
@@ -179,8 +183,15 @@ final class PlanModel {
     private func mutate(day: Int, plan: DayPlan?) async {
         do {
             try await scheduleRepo.setPlan(plan, on: dateFor(day: day))
-            let fresh = try await scheduleRepo.plan(for: dateFor(day: day))
-            schedule[day] = mapDay(day: day, plan: fresh)
+            // Resolve the refreshed cell the same way buildSchedule does (specific
+            // entry → recurring weekday → empty), so clearing a recurring day shows
+            // its recurrence rather than a stale empty cell.
+            let date = dateFor(day: day)
+            let entry = try await scheduleRepo.plan(for: date)
+            let workouts = try await workoutRepo.fetchWorkouts()
+            let resolved = ScheduleResolver.plan(for: date, entry: entry,
+                                                 workouts: workouts, calendar: calendar)
+            schedule[day] = mapDay(day: day, plan: resolved)
             recomputeSummary()
             try await buildAgenda()
         } catch {

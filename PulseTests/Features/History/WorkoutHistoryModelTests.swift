@@ -67,7 +67,7 @@ final class WorkoutHistoryModelTests: XCTestCase {
     func testFilterWithNoMatchesIsEmptyAndProducesNoGroups() async {
         // A store whose only session is a one-off; .pr yields nothing for it.
         let store = MockStore(seeded: false)
-        let oneOffWorkout = Workout(name: "Solo", weekday: nil, order: 0, exercises: [])
+        let oneOffWorkout = Workout(name: "Solo", order: 0, exercises: [])
         store.programs = [Program(name: "Inactive", weeks: 1, isActive: false,
                                   workouts: [oneOffWorkout])]
         store.sessions = [WorkoutSession(workoutID: oneOffWorkout.id,

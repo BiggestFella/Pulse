@@ -102,7 +102,7 @@ final class LibraryModelTests: XCTestCase {
         let cal = SampleData.calendar
         let now = cal.date(from: DateComponents(year: 2026, month: 6, day: 11, hour: 12))!
         let wid = UUID()
-        let workout = Workout(id: wid, name: "Leg day", weekday: nil, order: 0, exercises: [])
+        let workout = Workout(id: wid, name: "Leg day", order: 0, exercises: [])
         let session = WorkoutSession(
             id: UUID(), workoutID: wid,
             startedAt: cal.date(byAdding: .day, value: -1, to: now)!, endedAt: nil,

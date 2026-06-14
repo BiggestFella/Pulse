@@ -53,7 +53,7 @@ final class InMemoryCatalogRepositoriesTests: XCTestCase {
     func testSaveWorkoutAppearsInFetch() async throws {
         let store = MockStore()
         let repo = InMemoryWorkoutRepository(store: store)
-        let new = Workout(name: "Arms Day", weekday: nil, order: 9, exercises: [])
+        let new = Workout(name: "Arms Day", order: 9, exercises: [])
         _ = try await repo.saveWorkout(new)
         let names = try await repo.fetchWorkouts().map(\.name)
         XCTAssertTrue(names.contains("Arms Day"))

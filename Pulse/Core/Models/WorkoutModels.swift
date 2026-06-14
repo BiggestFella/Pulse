@@ -36,7 +36,7 @@ struct WorkoutExercise: Codable, Equatable, Identifiable {
 struct Workout: Codable, Equatable, Identifiable {
     var id = UUID()
     var name: String
-    var weekday: Int?            // 1...7, nil = unscheduled
+    var weekdays: [Int] = []     // 1...7 (Mon…Sun), empty = unscheduled
     var order: Int
     var exercises: [WorkoutExercise]
     var targets: [MuscleGroup] = []

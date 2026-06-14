@@ -16,17 +16,8 @@ struct AppShell: View {
     private let container: RepositoryContainer
     /// Mirrors the Today snapshot to the widget App Group (BAK-19).
     private let widgetWriter: WidgetSnapshotWriter
-    /// The workout the active flow logs against. The mock / UI-test path uses the
-    /// superset-shaped sample (acceptance tests assert its structure); the live
-    /// path uses the seeded "Upper" day so logged sessions satisfy Supabase FKs.
-    /// (Active flow fetching today's workout from the repo is a BAK-27 follow-up.)
-    private let startWorkout: Workout
-
     init(container: RepositoryContainer) {
         self.container = container
-        let startWorkout = RepositoryContainer.useMock() ? ActiveWorkoutSample.workout
-                                                         : TodaysWorkout.workout
-        self.startWorkout = startWorkout
         // TODO(BAK-35): pass the persisted autoProgressWeight once async settings
         // load is wired into the shell; `SettingsRepository.load()` is async and the
         // session is built synchronously here, so seed from the default for now.
@@ -69,8 +60,12 @@ struct AppShell: View {
             sessions: container.sessions,
             user: container.user,
             now: todayNow,
-            // Start → launches the active flow with the path-appropriate workout.
-            onStartWorkout: { _ in session.startWorkout(startWorkout) },
+            // Start → fetches the scheduled workout by id and launches the active flow.
+            onStartWorkout: { id in Task { @MainActor in
+                if let w = try? await container.workouts.fetchWorkout(id: id) {
+                    session.startWorkout(w)
+                }
+            } },
             onOpenSession: { _ in /* handled by TodayView path push */ },
             // Mirror each fresh Today load into the widget snapshot, in the
             // user's persisted palette (BAK-19).
@@ -115,7 +110,15 @@ struct AppShell: View {
             switch WidgetDeepLink(url) {
             case .startToday:
                 selectedTab = .today
-                session.startWorkout(startWorkout)
+                Task { @MainActor in
+                    if let w = try? await TodayWorkoutResolver.workout(
+                        on: Date(),
+                        schedule: container.schedule,
+                        workouts: container.workouts,
+                        calendar: .current) {
+                        session.startWorkout(w)
+                    }
+                }
             case .today:
                 selectedTab = .today
             case nil:
@@ -144,7 +147,15 @@ struct AppShell: View {
             LibraryView(onStartWorkout: { session.startWorkout($0) })
                 .tabItem { Label("Library", systemImage: "square.stack.fill") }
                 .tag(Tab.library)
-            PlanView(onStartWorkout: { session.startWorkout(startWorkout) })
+            PlanView(onStartWorkout: { Task { @MainActor in
+                if let w = try? await TodayWorkoutResolver.workout(
+                    on: Date(),
+                    schedule: container.schedule,
+                    workouts: container.workouts,
+                    calendar: .current) {
+                    session.startWorkout(w)
+                }
+            } })
                 .tabItem { Label("Plan", systemImage: "calendar") }
                 .tag(Tab.plan)
             YouView()

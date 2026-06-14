@@ -20,7 +20,7 @@ final class PlanModelInteractionTests: XCTestCase {
         return (model, sched)
     }
     private func workout(_ name: String) -> Workout {
-        Workout(name: name, weekday: nil, order: 0, exercises: [])
+        Workout(name: name, order: 0, exercises: [])
     }
 
     func testSelectTodayLaunchesWorkoutAndDoesNotOpenSheet() async {

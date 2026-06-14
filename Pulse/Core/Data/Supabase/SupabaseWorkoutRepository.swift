@@ -30,7 +30,7 @@ struct SupabaseWorkoutRepository: WorkoutRepository {
         let appWeekday = ((greg + 5) % 7) + 1                          // Mon→1 … Sun→7
         let rows: [WorkoutRow] = try await client
             .from("workouts").select(Self.graphSelect)
-            .eq("weekday", value: appWeekday).limit(1)
+            .contains("weekdays", value: [appWeekday]).limit(1)
             .execute().value
         return rows.first?.toModel()
     }

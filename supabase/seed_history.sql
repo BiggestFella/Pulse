@@ -12,12 +12,12 @@ insert into programs (id, user_id, name, weeks, is_active) values
   ('35cd8ef8-bb7d-50f6-a771-00731977c596', '7816633c-c06f-476a-a8c5-08323c043d38', 'Imported', 8, false)
 on conflict (id) do nothing;
 
-insert into workouts (id, program_id, name, weekday, "order") values
-  ('09186b96-908b-5bbb-938a-44917c03da3d', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Legs', null, 0),
-  ('49849008-770e-5800-90ea-bf84b7869035', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Push', null, 1),
-  ('9a87905f-3742-5c45-8b51-3c58d26ca41e', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Pull', null, 2),
-  ('35dba8e3-cc54-57fe-a41d-c17947950032', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Sh+Arms', null, 3),
-  ('92e7e745-b3fd-5791-b577-a24d45b8f25d', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Chest & Back', null, 4)
+insert into workouts (id, program_id, name, "order") values
+  ('09186b96-908b-5bbb-938a-44917c03da3d', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Legs', 0),
+  ('49849008-770e-5800-90ea-bf84b7869035', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Push', 1),
+  ('9a87905f-3742-5c45-8b51-3c58d26ca41e', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Pull', 2),
+  ('35dba8e3-cc54-57fe-a41d-c17947950032', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Sh+Arms', 3),
+  ('92e7e745-b3fd-5791-b577-a24d45b8f25d', '35cd8ef8-bb7d-50f6-a771-00731977c596', 'Chest & Back', 4)
 on conflict (id) do nothing;
 
 insert into sessions (id, user_id, workout_id, started_at, ended_at) values
