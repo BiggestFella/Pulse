@@ -21,59 +21,10 @@ final class BuildersTests: XCTestCase {
         button.tap()
     }
 
-    private func openWorkoutBuilder(_ app: XCUIApplication) {
-        openCreate(app, "create.workout")
-        XCTAssertTrue(app.staticTexts["eyebrow-NEW WORKOUT"].waitForExistence(timeout: 5))
-    }
-
-    func testWorkoutBuilderShowsHeaderTagsAndSeededRows() { // AC1, AC2
-        let app = launch()
-        openWorkoutBuilder(app)
-        XCTAssertTrue(app.textFields["workout-name"].exists)
-        XCTAssertTrue(app.buttons["exercise-row-Flat bench"].exists)
-        XCTAssertTrue(app.buttons["exercise-row-Incline press"].exists)
-        XCTAssertTrue(app.staticTexts["eyebrow-EXERCISES · 2"].exists)
-        XCTAssertTrue(app.staticTexts["eyebrow-9 SETS"].exists)
-    }
-
-    func testTappingRowOpensSetEditor() { // AC3, AC6
-        let app = launch()
-        openWorkoutBuilder(app)
-        app.buttons["exercise-row-Flat bench"].tap()
-        XCTAssertTrue(app.buttons["set-editor-add"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["set-editor-done"].exists)
-        app.buttons["set-editor-add"].tap()        // clone a set
-        app.buttons["set-editor-done"].tap()
-    }
-
-    func testLinkGroupsTwoRows() { // AC4
-        let app = launch()
-        openWorkoutBuilder(app)
-        app.buttons["link-0"].tap()
-        // After linking, the superset card header appears.
-        XCTAssertTrue(app.staticTexts["SUPERSET · 2 MOVES"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["unlink-0"].exists)
-    }
-
-    func testAddExerciseOpensPickerAndAppends() { // AC5, AC7
-        let app = launch()
-        openWorkoutBuilder(app)
-        app.buttons["add-exercise"].tap()
-        XCTAssertTrue(app.staticTexts["eyebrow-ADD EXERCISE"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["picker-confirm"].exists)
-
-        // "Lat Pulldown" is in the Back group, below the fold of the catalog
-        // ScrollView, and XCUITest won't auto-scroll a SwiftUI ScrollView — so
-        // narrow the list with the functional muscle filter to bring it on-screen
-        // and hittable. (The row also needed `.contentShape` in the app so a tap
-        // on its center registers at all — see ExercisePickerSheet, BAK-26.)
-        app.buttons["picker-filter-Back"].tap()
-        let row = app.buttons["picker-row-Lat Pulldown"]
-        XCTAssertTrue(row.waitForExistence(timeout: 5))
-        row.tap()
-        app.buttons["picker-confirm"].tap()
-        XCTAssertTrue(app.buttons["exercise-row-Lat Pulldown"].waitForExistence(timeout: 5))
-    }
+    // The workout create/edit flow moved to the guided wizard + editor — its
+    // acceptance coverage (was the old single-screen builder's AC1–AC7: header,
+    // add-via-picker, set editor) now lives in CreateWizardUITests. Linking +
+    // set-editing are unit-tested in WorkoutBuilderModelTests.
 
     func testRoutineBuilderStepperAndSplit() { // AC8, AC9
         let app = launch()
