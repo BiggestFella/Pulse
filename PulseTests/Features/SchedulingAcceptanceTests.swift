@@ -16,13 +16,12 @@ final class SchedulingAcceptanceTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeModel(_ store: MockStore, _ w: Workout) -> WorkoutDetailModel {
-        WorkoutDetailModel(
+    private func settingsModel(_ store: MockStore, _ w: Workout) -> WorkoutSettingsModel {
+        WorkoutSettingsModel(
             workoutID: w.id,
-            title: w.name,
             workoutRepo: InMemoryWorkoutRepository(store: store),
             scheduleRepo: InMemoryScheduleRepository(store: store),
-            onStart: { _ in })
+            folderRepo: InMemoryFolderRepository(store: store))
     }
 
     // MARK: - (a) Weekday recurrence
@@ -33,8 +32,8 @@ final class SchedulingAcceptanceTests: XCTestCase {
 
         let cal = SampleData.calendar
 
-        // Set Push → Mon (1) + Fri (5) via WorkoutDetailModel
-        let m = makeModel(store, SampleData.pushWorkout)
+        // Set Push → Mon (1) + Fri (5) via the per-workout Settings model
+        let m = settingsModel(store, SampleData.pushWorkout)
         await m.load()
         // Push already has weekdays [1] (Mon); add Friday
         await m.toggleWeekday(5)

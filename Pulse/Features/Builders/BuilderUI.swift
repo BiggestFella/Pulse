@@ -51,6 +51,7 @@ struct BuilderScaffold<Content: View>: View {
     let eyebrow: String
     let primaryLabel: String
     let saving: Bool
+    var onOverflow: (() -> Void)? = nil
     let onCancel: () -> Void
     let onPrimary: () -> Void
     @ViewBuilder var content: Content
@@ -62,9 +63,11 @@ struct BuilderScaffold<Content: View>: View {
                 StatLabel(eyebrow)
                     .accessibilityIdentifier("eyebrow-\(eyebrow)")
                 Spacer()
-                Image(systemName: "ellipsis")
-                    .foregroundStyle(theme.inkSoft)
-                    .accessibilityIdentifier("builder-overflow") // inert per product decision
+                Button { onOverflow?() } label: {
+                    Image(systemName: "ellipsis").foregroundStyle(theme.inkSoft)
+                }
+                .disabled(onOverflow == nil)
+                .accessibilityIdentifier("builder-overflow")
             }
             .padding(.horizontal, theme.spacing[5])
             .padding(.vertical, theme.spacing[3])

@@ -99,4 +99,19 @@ final class WorkoutSettingsModelTests: XCTestCase {
         XCTAssertNil(fetched)
         XCTAssertTrue(m.deleted)
     }
+
+    func testScheduleOnDateWritesPlanEntry() async throws {
+        let store = MockStore(seeded: true)
+        let w = try await seedWorkout(store)
+        let schedule = InMemoryScheduleRepository(store: store)
+        let m = WorkoutSettingsModel(workoutID: w.id,
+                                     workoutRepo: InMemoryWorkoutRepository(store: store),
+                                     scheduleRepo: schedule,
+                                     folderRepo: InMemoryFolderRepository(store: store))
+        await m.load()
+        let date = SampleData.calendar.date(from: DateComponents(year: 2026, month: 6, day: 16))!
+        await m.scheduleOnDate(date)
+        let entry = try await schedule.plan(for: date)
+        XCTAssertEqual(entry, .workout(w.id))
+    }
 }
