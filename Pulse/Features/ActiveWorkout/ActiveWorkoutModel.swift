@@ -37,8 +37,10 @@ final class ActiveWorkoutModel {
     private(set) var saveState: SaveState = .idle
     private var pendingSession: WorkoutSession?
 
-    // rest state (absolute end is Live-Activity-friendly)
-    let restTotal: TimeInterval = 90
+    // rest state (absolute end is Live-Activity-friendly). The effective rest is the
+    // workout's own override, else the user's global default (synced by AppShell).
+    var defaultRestSeconds: Int = 90
+    var restTotal: TimeInterval { TimeInterval(workout.restSeconds ?? defaultRestSeconds) }
     private(set) var restEndsAt: Date?
     /// Mirrors `UserSettings.soundOnRestEnd`. When false, no cues fire (rest still
     /// advances normally). Settable so the app shell can sync it from settings.
