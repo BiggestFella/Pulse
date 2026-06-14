@@ -95,6 +95,12 @@ struct AppShell: View {
         .task {
             await container.bootstrap()
             await container.flushPending()   // BAK-32: drain any buffered session at launch
+            // BAK-63: sync the user's global default rest into the session engine
+            // (per-workout overrides come from the workout itself). Settings load is
+            // async; the session is built synchronously, so resolve it here on appear.
+            if let settings = try? await container.settings.load() {
+                session.defaultRestSeconds = settings.defaultRestSeconds
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             // Returning to the foreground is a good moment to retry a pending sync.
