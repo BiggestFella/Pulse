@@ -24,7 +24,7 @@ final class PlanModelLoadTests: XCTestCase {
     }
 
     private func workout(_ name: String) -> Workout {
-        Workout(name: name, weekday: nil, order: 0, exercises: [])
+        Workout(name: name, order: 0, exercises: [])
     }
 
     func testLoadPopulatesEverythingAndMarksLoaded() async {

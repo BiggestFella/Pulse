@@ -52,7 +52,7 @@ final class RoutineBuilderModel {
         let workouts = days.enumerated()
             .filter { !$0.element.isRest }
             .map { idx, day in
-                Workout(name: day.name, weekday: nil, order: idx, exercises: [])
+                Workout(name: day.name, order: idx, exercises: [])
             }
         let draft = Program(name: name, weeks: weeks, workouts: workouts)
         do {

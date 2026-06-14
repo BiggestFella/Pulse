@@ -109,12 +109,12 @@ struct WorkoutExerciseRow: Codable {
 struct WorkoutRow: Codable {
     let id: UUID
     let name: String
-    let weekday: Int?
+    let weekdays: [Int]?
     let order: Int
     let targets: [String]?
     let workoutExercises: [WorkoutExerciseRow]?   // embed: workout_exercises(...)
     func toModel() -> Workout {
-        Workout(id: id, name: name, weekday: weekday, order: order,
+        Workout(id: id, name: name, weekdays: weekdays ?? [], order: order,
                 exercises: (workoutExercises ?? [])
                     .sorted { $0.order < $1.order }
                     .compactMap { $0.toModel() },

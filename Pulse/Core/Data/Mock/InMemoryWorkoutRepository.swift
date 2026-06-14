@@ -14,7 +14,7 @@ struct InMemoryWorkoutRepository: WorkoutRepository {
         try await store.gate()
         let greg = SampleData.calendar.component(.weekday, from: date) // 1=Sun…7=Sat
         let appWeekday = ((greg + 5) % 7) + 1                          // Mon→1 … Sun→7
-        return store.allWorkouts.first { $0.weekday == appWeekday }
+        return store.allWorkouts.first { $0.weekdays.contains(appWeekday) }
     }
     func saveWorkout(_ workout: Workout) async throws -> Workout {
         try await store.gate()

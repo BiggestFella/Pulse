@@ -158,7 +158,7 @@ final class WorkoutBuilderModel {
             WorkoutExercise(exercise: $0.exercise, variationID: $0.variationID,
                             supersetGroup: $0.supersetGroup, sets: $0.sets)
         }
-        return Workout(name: name, weekday: nil, order: 0,
+        return Workout(name: name, order: 0,
                        exercises: workoutExercises,
                        targets: MuscleGroup.allCases.filter { targets.contains($0) })
     }

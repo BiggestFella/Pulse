@@ -44,7 +44,7 @@ enum TodaysWorkout {
 
         return Workout(
             id: uid("512251d0-5c9d-4018-a24e-87e9b639d2be"),
-            name: "Upper", weekday: nil, order: 0,
+            name: "Upper", order: 0,
             exercises: [
                 we(incline, working([12, 10, 8, 6])),
                 we(lat, working([12, 10, 8, 6])),

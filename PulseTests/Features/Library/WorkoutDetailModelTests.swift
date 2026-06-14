@@ -13,7 +13,7 @@ final class WorkoutDetailModelTests: XCTestCase {
     }
 
     private func workout(_ exercises: [WorkoutExercise]) -> Workout {
-        Workout(name: "Legs B", weekday: nil, order: 0, exercises: exercises)
+        Workout(name: "Legs B", order: 0, exercises: exercises)
     }
 
     func testLoadBuildsRowsFromWorkout() async {

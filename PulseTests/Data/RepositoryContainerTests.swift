@@ -20,7 +20,7 @@ final class RepositoryContainerTests: XCTestCase {
 
     func testMockReposShareOneStoreSoWritesAreVisibleAcrossRepos() async throws {
         let c = RepositoryContainer(useMock: true)
-        let new = Workout(name: "Mobility", weekday: nil, order: 99, exercises: [])
+        let new = Workout(name: "Mobility", order: 99, exercises: [])
         _ = try await c.workouts.saveWorkout(new)
         let activeOpt = try await c.programs.activeProgram()
         let active = try XCTUnwrap(activeOpt)

@@ -13,7 +13,7 @@ final class WorkoutStepTests: XCTestCase {
         )
     }
     private func workout(_ exercises: [WorkoutExercise]) -> Workout {
-        Workout(name: "W", weekday: nil, order: 0, exercises: exercises)
+        Workout(name: "W", order: 0, exercises: exercises)
     }
 
     func testNonSupersetOneStepPerSetAllRestExceptLast() {

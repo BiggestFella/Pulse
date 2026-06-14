@@ -21,7 +21,7 @@ final class SampleDataTests: XCTestCase {
         let program = SampleData.program
         XCTAssertTrue(program.isActive)
         XCTAssertEqual(program.weeks, 6)
-        XCTAssertEqual(Set(program.workouts.compactMap(\.weekday)), [1, 3, 5])
+        XCTAssertEqual(Set(program.workouts.flatMap(\.weekdays)), [1, 3, 5])
     }
 
     func testEveryWorkoutExerciseReferencesACatalogExercise() {

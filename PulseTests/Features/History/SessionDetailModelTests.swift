@@ -60,7 +60,7 @@ final class SessionDetailModelTests: XCTestCase {
         let store = MockStore(seeded: false)
         let pushup = SampleData.exercises.first { $0.name == "Push-Up" }!
         store.exercises = [pushup]
-        let workout = Workout(name: "Bodyweight", weekday: nil, order: 0,
+        let workout = Workout(name: "Bodyweight", order: 0,
                               exercises: [WorkoutExercise(exercise: pushup, variationID: nil,
                                                           supersetGroup: nil,
                                                           sets: [SetSpec(reps: 18, rir: 0, type: .failure)])])
@@ -82,7 +82,7 @@ final class SessionDetailModelTests: XCTestCase {
         let store = MockStore(seeded: false)
         let ex = SampleData.exercises.first!
         store.exercises = [ex]
-        let workout = Workout(name: "Warmups", weekday: nil, order: 0,
+        let workout = Workout(name: "Warmups", order: 0,
                               exercises: [WorkoutExercise(exercise: ex, variationID: nil,
                                                           supersetGroup: nil,
                                                           sets: [SetSpec(reps: 8, rir: 0, type: .warmup)])])

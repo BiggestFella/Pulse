@@ -26,7 +26,7 @@ enum ActiveWorkoutSample {
     }
 
     static let workout = Workout(
-        name: "Chest & Tris", weekday: 1, order: 0,
+        name: "Chest & Tris", weekdays: [1], order: 0,
         exercises: [
             WorkoutExercise(exercise: bench, variationID: bench.variations.first?.id,
                             supersetGroup: nil,
