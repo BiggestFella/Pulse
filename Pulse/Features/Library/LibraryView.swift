@@ -218,7 +218,9 @@ struct LibraryView: View {
         case .workoutDetail(let id, let name):
             WorkoutDetailView(model: WorkoutDetailModel(
                 workoutID: id, title: name,
-                workoutRepo: repos.workouts, onStart: onStartWorkout))
+                workoutRepo: repos.workouts,
+                scheduleRepo: repos.schedule,
+                onStart: onStartWorkout))
         default:
             routeStub(route)
         }

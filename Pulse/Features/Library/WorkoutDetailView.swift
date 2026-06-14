@@ -1,9 +1,11 @@
 import SwiftUI
 
 /// Read-only detail for a saved workout, with a Start button that launches the
-/// active session. Edit/Delete/Schedule will land here in a follow-up (scope C).
+/// active session. Weekday repeats editor and schedule-on-date live here.
 struct WorkoutDetailView: View {
     @State private var model: WorkoutDetailModel
+    @State private var showScheduleSheet = false
+    @State private var schedulePicked = Date()
     @Environment(Theme.self) private var theme
 
     init(model: WorkoutDetailModel) { _model = State(initialValue: model) }
@@ -39,6 +41,65 @@ struct WorkoutDetailView: View {
                 .accessibilityIdentifier("workoutDetail.error")
         case .loaded:
             VStack(alignment: .leading, spacing: 6) {
+                StatLabel("REPEATS ON")
+                    .padding(.top, 4)
+                let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(Array(zip(1...7, dayLabels)), id: \.0) { day, label in
+                            PillChip(
+                                label: label,
+                                selected: model.weekdays.contains(day),
+                                fill: theme.accent,
+                                onFill: theme.onAccent
+                            ) {
+                                Task { await model.toggleWeekday(day) }
+                            }
+                            .accessibilityIdentifier("repeat-day-\(day)")
+                        }
+                    }
+                }
+                .padding(.top, 2).padding(.bottom, 8)
+
+                Button {
+                    schedulePicked = Date()
+                    showScheduleSheet = true
+                } label: {
+                    Text("Schedule on a date")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.accent)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 10).padding(.horizontal, 14)
+                        .background(theme.surface, in: RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(theme.inkFaint, lineWidth: 1.5))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("workoutDetail.scheduleDate")
+                .sheet(isPresented: $showScheduleSheet) {
+                    NavigationStack {
+                        DatePicker("Pick a date", selection: $schedulePicked, displayedComponents: .date)
+                            .datePickerStyle(.graphical)
+                            .padding()
+                            .navigationTitle("Schedule Workout")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) {
+                                    Button("Cancel") { showScheduleSheet = false }
+                                }
+                                ToolbarItem(placement: .confirmationAction) {
+                                    Button("Add") {
+                                        showScheduleSheet = false
+                                        Task { await model.scheduleOnDate(schedulePicked) }
+                                    }
+                                    .fontWeight(.semibold)
+                                }
+                            }
+                    }
+                    .presentationDetents([.medium, .large])
+                    .environment(theme)
+                }
+                .padding(.bottom, 8)
+
                 StatLabel("EXERCISES · \(model.rows.count)")
                 ForEach(model.rows) { row in
                     VStack(alignment: .leading, spacing: 2) {
