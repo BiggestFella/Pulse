@@ -104,26 +104,29 @@ struct WorkoutGraphWriter {
 
     func insert(_ workouts: [Workout], programID: Program.ID) async throws {
         guard !workouts.isEmpty else { return }
-
         let workoutRows = workouts.map {
             WorkoutWriteRow(id: $0.id, programId: programID, name: $0.name,
                             weekdays: $0.weekdays, order: $0.order,
                             targets: $0.targets.map(\.rawValue))
         }
         try await client.from("workouts").insert(workoutRows).execute()
+        for workout in workouts { try await insertChildren(of: workout) }
+    }
 
+    /// Inserts just the exercise/set children for one already-persisted workout row
+    /// (FK order: workout_exercises → set_specs). Used by `saveWorkout`, which
+    /// upserts the parent row itself and replaces only the children.
+    func insertChildren(of workout: Workout) async throws {
         var exerciseRows: [WorkoutExerciseWriteRow] = []
         var setRows: [SetSpecWriteRow] = []
-        for workout in workouts {
-            for (exIndex, we) in workout.exercises.enumerated() {
-                exerciseRows.append(WorkoutExerciseWriteRow(
-                    id: we.id, workoutId: workout.id, exerciseId: we.exercise.id,
-                    variationId: we.variationID, supersetGroup: we.supersetGroup, order: exIndex))
-                for (setIndex, spec) in we.sets.enumerated() {
-                    setRows.append(SetSpecWriteRow(
-                        id: spec.id, workoutExerciseId: we.id, reps: spec.reps,
-                        rir: spec.rir, type: spec.type.rawValue, order: setIndex))
-                }
+        for (exIndex, we) in workout.exercises.enumerated() {
+            exerciseRows.append(WorkoutExerciseWriteRow(
+                id: we.id, workoutId: workout.id, exerciseId: we.exercise.id,
+                variationId: we.variationID, supersetGroup: we.supersetGroup, order: exIndex))
+            for (setIndex, spec) in we.sets.enumerated() {
+                setRows.append(SetSpecWriteRow(
+                    id: spec.id, workoutExerciseId: we.id, reps: spec.reps,
+                    rir: spec.rir, type: spec.type.rawValue, order: setIndex))
             }
         }
         if !exerciseRows.isEmpty {

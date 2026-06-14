@@ -37,9 +37,21 @@ struct SupabaseWorkoutRepository: WorkoutRepository {
 
     func saveWorkout(_ workout: Workout) async throws -> Workout {
         guard let programID = try await targetProgramID() else { throw RepositoryError.notFound }
-        // Replace this workout's graph: delete the row (cascades children) then re-insert.
-        try await client.from("workouts").delete().eq("id", value: workout.id.uuidString).execute()
-        try await WorkoutGraphWriter(client: client).insert([workout], programID: programID)
+        // Upsert the workout's OWN row in place. A delete+reinsert (the previous
+        // approach) reset folder_id (not carried by WorkoutWriteRow) and tripped
+        // plan_entries.workout_id's `on delete set null`, silently un-foldering the
+        // workout and wiping its specific-date schedule (BAK-60). Upsert touches only
+        // name/weekdays/order/targets; folder_id + plan_entries are left intact.
+        let row = WorkoutWriteRow(
+            id: workout.id, programId: programID, name: workout.name,
+            weekdays: workout.weekdays, order: workout.order,
+            targets: workout.targets.map(\.rawValue))
+        try await client.from("workouts").upsert(row).execute()
+        // Replace only the children: delete this workout's exercises (cascades
+        // set_specs) then re-insert the exercise/set graph.
+        try await client.from("workout_exercises")
+            .delete().eq("workout_id", value: workout.id.uuidString).execute()
+        try await WorkoutGraphWriter(client: client).insertChildren(of: workout)
         return try await fetchWorkout(id: workout.id) ?? workout
     }
 
