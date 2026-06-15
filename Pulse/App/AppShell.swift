@@ -18,9 +18,8 @@ struct AppShell: View {
     private let widgetWriter: WidgetSnapshotWriter
     init(container: RepositoryContainer) {
         self.container = container
-        // TODO(BAK-35): pass the persisted autoProgressWeight once async settings
-        // load is wired into the shell; `SettingsRepository.load()` is async and the
-        // session is built synchronously here, so seed from the default for now.
+        // Seed autoProgress from the default; the persisted value is applied once
+        // settings load asynchronously in `.task` (BAK-44), mirroring defaultRestSeconds.
         let session = ActiveWorkoutModel(
             exerciseRepo: MockSwapAlternativesRepository(),
             historyRepo: MockHistoryRepository(),
@@ -95,11 +94,12 @@ struct AppShell: View {
         .task {
             await container.bootstrap()
             await container.flushPending()   // BAK-32: drain any buffered session at launch
-            // BAK-63: sync the user's global default rest into the session engine
-            // (per-workout overrides come from the workout itself). Settings load is
-            // async; the session is built synchronously, so resolve it here on appear.
+            // BAK-63/BAK-44: apply the user's persisted preferences here on appear —
+            // settings load async but the session is built synchronously (per-workout
+            // rest overrides still come from the workout itself).
             if let settings = try? await container.settings.load() {
                 session.defaultRestSeconds = settings.defaultRestSeconds
+                session.autoProgress = settings.autoProgressWeight
             }
         }
         .onChange(of: scenePhase) { _, phase in

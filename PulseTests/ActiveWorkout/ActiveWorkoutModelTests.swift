@@ -19,6 +19,28 @@ final class ActiveWorkoutModelTests: XCTestCase {
         let m = makeModel(writer: writer); m.startWorkout(ActiveWorkoutSample.workout); return m
     }
 
+    // BAK-44 — `autoProgress` is settable after init (AppShell applies the user's
+    // persisted setting once async settings load) and is honored per-step: on →
+    // +increment after hitting target; off → repeat last.
+    func testAutoProgressIsSettableAfterInitAndHonored() throws {
+        let m = started()
+        let workout = ActiveWorkoutSample.workout
+        let step = try XCTUnwrap(m.steps.first {
+            workout.exercises[$0.exIdx].sets[$0.setIdx].type == .working
+        })
+        let target = workout.exercises[step.exIdx].sets[step.setIdx]
+        let history = [SessionSet(exerciseID: UUID(), order: step.setIdx,
+                                  reps: target.reps, weight: 60, type: .working)]
+
+        m.autoProgress = true
+        let on = try XCTUnwrap(m.suggestion(forStep: step, history: history))
+        XCTAssertEqual(on.weight, 62.5, accuracy: 0.001)   // hit target → +2.5
+
+        m.autoProgress = false
+        let off = try XCTUnwrap(m.suggestion(forStep: step, history: history))
+        XCTAssertEqual(off.weight, 60, accuracy: 0.001)    // off → repeat last
+    }
+
     // AC1
     func testStartWorkoutResetsState() {
         let m = makeModel()
