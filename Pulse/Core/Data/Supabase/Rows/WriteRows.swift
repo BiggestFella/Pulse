@@ -52,8 +52,10 @@ struct WorkoutWriteRow: Encodable {
     let weekdays: [Int]
     let order: Int
     let targets: [String]
+    let restSeconds: Int?
+    let notes: String
 
-    enum CodingKeys: String, CodingKey { case id, programId, name, weekdays, order, targets }
+    enum CodingKeys: String, CodingKey { case id, programId, name, weekdays, order, targets, restSeconds, notes }
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(id, forKey: .id)
@@ -62,6 +64,8 @@ struct WorkoutWriteRow: Encodable {
         try c.encode(weekdays, forKey: .weekdays)
         try c.encode(order, forKey: .order)
         try c.encode(targets, forKey: .targets)
+        try c.encode(restSeconds, forKey: .restSeconds)   // null when nil
+        try c.encode(notes, forKey: .notes)
     }
 }
 
@@ -107,7 +111,8 @@ struct WorkoutGraphWriter {
         let workoutRows = workouts.map {
             WorkoutWriteRow(id: $0.id, programId: programID, name: $0.name,
                             weekdays: $0.weekdays, order: $0.order,
-                            targets: $0.targets.map(\.rawValue))
+                            targets: $0.targets.map(\.rawValue),
+                            restSeconds: $0.restSeconds, notes: $0.notes)
         }
         try await client.from("workouts").insert(workoutRows).execute()
         for workout in workouts { try await insertChildren(of: workout) }

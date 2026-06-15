@@ -20,9 +20,7 @@ final class WorkoutDetailModelTests: XCTestCase {
         let w = workout([legExtension(reps: [12, 10, 8, 6])])
         let repo = FakeWorkoutRepository(workouts: [w])
         let model = WorkoutDetailModel(workoutID: w.id, title: "Legs B",
-                                       workoutRepo: repo,
-                                       scheduleRepo: FakeScheduleRepository(plansByDay: [:], calendar: SampleData.calendar),
-                                       onStart: { _ in })
+                                       workoutRepo: repo,                                       onStart: { _ in })
         await model.load()
         XCTAssertEqual(model.loadState, .loaded)
         XCTAssertEqual(model.rows.count, 1)
@@ -37,9 +35,7 @@ final class WorkoutDetailModelTests: XCTestCase {
         let repo = FakeWorkoutRepository(workouts: [w])
         var started: Workout?
         let model = WorkoutDetailModel(workoutID: w.id, title: "Legs B",
-                                       workoutRepo: repo,
-                                       scheduleRepo: FakeScheduleRepository(plansByDay: [:], calendar: SampleData.calendar),
-                                       onStart: { started = $0 })
+                                       workoutRepo: repo,                                       onStart: { started = $0 })
         await model.load()
         model.start()
         XCTAssertEqual(started?.id, w.id)
@@ -50,9 +46,7 @@ final class WorkoutDetailModelTests: XCTestCase {
         let repo = FakeWorkoutRepository(workouts: [w])
         var started: Workout?
         let model = WorkoutDetailModel(workoutID: w.id, title: "Empty",
-                                       workoutRepo: repo,
-                                       scheduleRepo: FakeScheduleRepository(plansByDay: [:], calendar: SampleData.calendar),
-                                       onStart: { started = $0 })
+                                       workoutRepo: repo,                                       onStart: { started = $0 })
         await model.load()
         XCTAssertFalse(model.canStart)
         model.start()
@@ -62,9 +56,7 @@ final class WorkoutDetailModelTests: XCTestCase {
     func testMissingWorkoutIsError() async {
         let repo = FakeWorkoutRepository(workouts: [])
         let model = WorkoutDetailModel(workoutID: UUID(), title: "Gone",
-                                       workoutRepo: repo,
-                                       scheduleRepo: FakeScheduleRepository(plansByDay: [:], calendar: SampleData.calendar),
-                                       onStart: { _ in })
+                                       workoutRepo: repo,                                       onStart: { _ in })
         await model.load()
         XCTAssertEqual(model.loadState, .error)
         XCTAssertFalse(model.canStart)
@@ -80,9 +72,7 @@ final class WorkoutDetailModelTests: XCTestCase {
         let w = workout([we])
         let repo = FakeWorkoutRepository(workouts: [w])
         let model = WorkoutDetailModel(workoutID: w.id, title: "Push",
-                                       workoutRepo: repo,
-                                       scheduleRepo: FakeScheduleRepository(plansByDay: [:], calendar: SampleData.calendar),
-                                       onStart: { _ in })
+                                       workoutRepo: repo,                                       onStart: { _ in })
         await model.load()
         XCTAssertEqual(model.rows.first?.variationName, "Hammer Strength")
     }

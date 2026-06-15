@@ -112,13 +112,17 @@ struct WorkoutRow: Codable {
     let weekdays: [Int]?
     let order: Int
     let targets: [String]?
+    let restSeconds: Int?     // rest_seconds
+    let notes: String?        // notes
     let workoutExercises: [WorkoutExerciseRow]?   // embed: workout_exercises(...)
     func toModel() -> Workout {
         Workout(id: id, name: name, weekdays: weekdays ?? [], order: order,
                 exercises: (workoutExercises ?? [])
                     .sorted { $0.order < $1.order }
                     .compactMap { $0.toModel() },
-                targets: (targets ?? []).map(MuscleGroup.from(catalog:)))
+                targets: (targets ?? []).map(MuscleGroup.from(catalog:)),
+                restSeconds: restSeconds,
+                notes: notes ?? "")
     }
 }
 

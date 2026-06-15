@@ -328,4 +328,22 @@ final class ActiveWorkoutModelTests: XCTestCase {
         await m.loadSuggestion(forStepIndex: m.stepIdx)
         XCTAssertNil(m.currentSuggestion)
     }
+
+    // BAK-63 — effective rest = the workout's override, else the global default.
+    func testEffectiveRestUsesPerWorkoutOverride() {
+        let m = makeModel()
+        var w = ActiveWorkoutSample.workout
+        w.restSeconds = 120
+        m.startWorkout(w)
+        XCTAssertEqual(m.restTotal, 120, accuracy: 0.001)
+    }
+
+    func testEffectiveRestFallsBackToGlobalDefault() {
+        let m = makeModel()
+        m.defaultRestSeconds = 75
+        var w = ActiveWorkoutSample.workout
+        w.restSeconds = nil
+        m.startWorkout(w)
+        XCTAssertEqual(m.restTotal, 75, accuracy: 0.001)
+    }
 }

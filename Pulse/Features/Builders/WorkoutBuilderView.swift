@@ -5,16 +5,22 @@ private struct EditingItem: Identifiable { let id: BuilderExercise.ID }
 
 struct WorkoutBuilderView: View {
     @State private var model: WorkoutBuilderModel
+    private let settingsModel: () -> WorkoutSettingsModel
+    @State private var showSettings = false
     @Environment(Theme.self) private var theme
     @Environment(\.dismiss) private var dismiss
     @ScaledMetric private var reorderRowHeight: CGFloat = 48
 
-    init(model: WorkoutBuilderModel) { _model = State(initialValue: model) }
+    init(model: WorkoutBuilderModel, settingsModel: @escaping () -> WorkoutSettingsModel) {
+        _model = State(initialValue: model)
+        self.settingsModel = settingsModel
+    }
 
     var body: some View {
         BuilderScaffold(
             eyebrow: "EDIT WORKOUT", primaryLabel: "Save workout →",
             saving: model.saveState == .saving,
+            onOverflow: { showSettings = true },
             onCancel: { dismiss() },
             onPrimary: { Task { await model.save() } }
         ) {
@@ -32,6 +38,11 @@ struct WorkoutBuilderView: View {
             }
         }
         .task { await model.load() }
+        .sheet(isPresented: $showSettings, onDismiss: { Task { await model.load() } }) {
+            WorkoutSettingsSheet(model: settingsModel(), title: model.name,
+                                 onDeleted: { dismiss() })
+                .environment(theme).presentationDetents([.large])
+        }
         .sheet(item: Binding(get: { model.editingItemID.map { EditingItem(id: $0) } },
                              set: { model.editingItemID = $0?.id })) { box in
             SetEditorSheet(model: model, itemID: box.id)
@@ -71,8 +82,6 @@ struct WorkoutBuilderView: View {
                 .foregroundStyle(theme.ink)
                 .accessibilityIdentifier("workout-name")
 
-            targetRow
-
             HStack {
                 StatLabel("EXERCISES · \(model.items.count)")
                     .accessibilityIdentifier("eyebrow-EXERCISES · \(model.items.count)")
@@ -110,23 +119,6 @@ struct WorkoutBuilderView: View {
             }
         }
         .padding(.vertical, theme.spacing[3])
-    }
-
-    private var targetRow: some View {
-        VStack(alignment: .leading, spacing: theme.spacing[2]) {
-            StatLabel("TARGETS").accessibilityIdentifier("eyebrow-TARGETS")
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: theme.spacing[1]) {
-                    ForEach(MuscleGroup.allCases) { m in
-                        PillChip(label: m.rawValue, selected: model.targets.contains(m),
-                                 fill: theme.accent, onFill: theme.onAccent) {
-                            model.toggleTarget(m)
-                        }
-                        .accessibilityIdentifier("target-\(m.rawValue)")
-                    }
-                }
-            }
-        }
     }
 
     // MARK: Exercise list — runs of linked rows render as one superset card.
@@ -284,10 +276,15 @@ struct WorkoutBuilderView: View {
     let workouts = InMemoryWorkoutRepository(store: store)
     let id = store.allWorkouts.first?.id ?? UUID()
     return NavigationStack {
-        WorkoutBuilderView(model: WorkoutBuilderModel(
-            workoutID: id,
-            catalog: InMemoryExerciseRepository(store: store),
-            workouts: workouts))
+        WorkoutBuilderView(
+            model: WorkoutBuilderModel(
+                workoutID: id,
+                catalog: InMemoryExerciseRepository(store: store),
+                workouts: workouts),
+            settingsModel: { WorkoutSettingsModel(
+                workoutID: id, workoutRepo: workouts,
+                scheduleRepo: InMemoryScheduleRepository(store: store),
+                folderRepo: InMemoryFolderRepository(store: store)) })
     }
     .environment(Theme())
 }

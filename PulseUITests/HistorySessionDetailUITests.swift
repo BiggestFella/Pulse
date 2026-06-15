@@ -38,8 +38,12 @@ final class HistorySessionDetailUITests: XCTestCase {
     // AC5/AC6 — recency group eyebrow + at least one row render.
     func testGroupedRowsRender() {
         let app = openHistory()
-        XCTAssertTrue(app.staticTexts["THIS WEEK"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["history.row.Push"].firstMatch.exists)
+        XCTAssertTrue(app.buttons["history.row.Push"].firstMatch.waitForExistence(timeout: 5))
+        // The freshest seeded session lands in THIS WEEK on most days, but in LAST WEEK
+        // when the suite runs on a Monday (BAK-64) — assert a recency eyebrow renders
+        // without coupling to the live week.
+        XCTAssertTrue(app.staticTexts["THIS WEEK"].exists || app.staticTexts["LAST WEEK"].exists,
+                      "a recency eyebrow (THIS WEEK or LAST WEEK) should render")
     }
 
     // AC4 — One-offs yields the filter-empty message (all seeded sessions are

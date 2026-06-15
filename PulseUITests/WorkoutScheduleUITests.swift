@@ -1,16 +1,12 @@
 import XCTest
 
-/// UI acceptance test for the weekday repeat chips on WorkoutDetailView (BAK-57).
+/// UI acceptance test for the weekday repeat chips — now inside the per-workout
+/// Settings sheet (BAK-63; they lived on WorkoutDetailView under BAK-57).
 ///
 /// Navigation path (mock Library):
-///   Library tab → root content section → "workout.Push" row (tap) →
-///   WorkoutDetailView (workoutDetail.title appears) → tap repeat-day-5 (Fri) →
+///   Library tab → "workout.Push" row → WorkoutDetailView → gear
+///   (workoutDetail.settings) → Settings sheet → tap settings.repeat-day-5 (Fri) →
 ///   assert the chip's isSelected trait becomes true.
-///
-/// Why this path works in the mock world:
-///   The mock store seeds Push/Pull/Legs with workoutFolderID = [:], so all three
-///   appear as root-level workouts in Library (folder.contents(of: nil)). The row
-///   accessibilityIdentifier is "workout.<name>" (LibraryWorkoutRow).
 final class WorkoutScheduleUITests: XCTestCase {
 
     private func launchLibrary() -> XCUIApplication {
@@ -22,8 +18,8 @@ final class WorkoutScheduleUITests: XCTestCase {
         return app
     }
 
-    /// AC: tapping a weekday chip on WorkoutDetailView toggles its selected state.
-    func testToggleFridayChipOnPushWorkout() {
+    /// AC: tapping a weekday chip in the Settings sheet toggles its selected state.
+    func testToggleFridayChipInSettingsSheet() {
         let app = launchLibrary()
 
         // The Library root lists workouts directly (Push/Pull/Legs all have
@@ -33,21 +29,22 @@ final class WorkoutScheduleUITests: XCTestCase {
                       "Push workout row should be visible at Library root in mock mode")
         workoutRow.tap()
 
-        // WorkoutDetailView should now be on screen
         XCTAssertTrue(app.staticTexts["workoutDetail.title"].waitForExistence(timeout: 5),
                       "WorkoutDetailView should appear after tapping the Push workout row")
 
-        // Friday chip (repeat-day-5) starts unselected: Push has weekdays [1] (Mon only)
-        let fridayChip = app.buttons["repeat-day-5"]
+        // Open the per-workout Settings sheet via the gear.
+        app.buttons["workoutDetail.settings"].tap()
+
+        // Friday chip starts unselected: Push has weekdays [1] (Mon only).
+        let fridayChip = app.buttons["settings.repeat-day-5"]
         XCTAssertTrue(fridayChip.waitForExistence(timeout: 5),
-                      "repeat-day-5 chip should exist on WorkoutDetailView")
+                      "settings.repeat-day-5 chip should exist in the Settings sheet")
         XCTAssertFalse(fridayChip.isSelected,
                        "Friday chip should start unselected for Push (weekdays [1])")
 
         fridayChip.tap()
 
-        // After tap, toggleWeekday(5) is called asynchronously; wait a moment for
-        // the view to re-render with the updated weekdays set.
+        // toggleWeekday(5) persists asynchronously; wait for the chip to re-render.
         let selected = XCTNSPredicateExpectation(
             predicate: NSPredicate(format: "isSelected == true"),
             object: fridayChip)

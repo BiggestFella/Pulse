@@ -193,8 +193,11 @@ struct LibraryView: View {
                     path.append(.workoutEditor(id: id))               // …land in the editor
                 })
         case .workoutEditor(let id):
-            WorkoutBuilderView(model: WorkoutBuilderModel(
-                workoutID: id, catalog: repos.exercises, workouts: repos.workouts))
+            WorkoutBuilderView(
+                model: WorkoutBuilderModel(workoutID: id, catalog: repos.exercises, workouts: repos.workouts),
+                settingsModel: { WorkoutSettingsModel(
+                    workoutID: id, workoutRepo: repos.workouts,
+                    scheduleRepo: repos.schedule, folderRepo: repos.folders) })
         case .routineBuilder:
             RoutineBuilderView(model: RoutineBuilderModel(
                 routines: repos.programs, workouts: repos.workouts))
@@ -225,9 +228,11 @@ struct LibraryView: View {
                 model: WorkoutDetailModel(
                     workoutID: id, title: name,
                     workoutRepo: repos.workouts,
-                    scheduleRepo: repos.schedule,
                     onStart: onStartWorkout),
-                onEdit: { editID in path.append(.workoutEditor(id: editID)) })
+                onEdit: { editID in path.append(.workoutEditor(id: editID)) },
+                settingsModel: { WorkoutSettingsModel(
+                    workoutID: id, workoutRepo: repos.workouts,
+                    scheduleRepo: repos.schedule, folderRepo: repos.folders) })
         default:
             routeStub(route)
         }

@@ -279,4 +279,24 @@ final class WorkoutBuilderModelTests: XCTestCase {
         let added = model.items.first { $0.exercise.id == ex.id }
         XCTAssertEqual(added?.variationID, ex.defaultVariationID)
     }
+
+    // BAK-63 — an editor save must not wipe the per-workout settings it doesn't edit.
+    func testSavePreservesRestSecondsAndNotes() async throws {
+        let store = MockStore(seeded: true)
+        let workouts = InMemoryWorkoutRepository(store: store)
+        var w = Workout(name: "Keep Settings", weekdays: [1], order: 0, exercises: [], targets: [])
+        w.restSeconds = 120
+        w.notes = "belt on"
+        _ = try await workouts.saveWorkout(w)
+        let m = WorkoutBuilderModel(workoutID: w.id,
+                                    catalog: InMemoryExerciseRepository(store: store),
+                                    workouts: workouts)
+        await m.load()
+        m.name = "Renamed"
+        await m.save()
+        let saved = try await workouts.fetchWorkout(id: w.id)
+        XCTAssertEqual(saved?.restSeconds, 120)     // preserved across the editor's in-place save
+        XCTAssertEqual(saved?.notes, "belt on")
+        XCTAssertEqual(saved?.name, "Renamed")
+    }
 }

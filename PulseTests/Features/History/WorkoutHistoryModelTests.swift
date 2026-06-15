@@ -57,10 +57,17 @@ final class WorkoutHistoryModelTests: XCTestCase {
     }
 
     func testFilteredGroupsHaveRecencyLabels() async {
-        let m = model(MockStore())
+        let store = MockStore()
+        // Date-independent (BAK-64): anchor `now` to the freshest seeded session so it
+        // deterministically lands in THIS WEEK regardless of which weekday the suite runs
+        // (a 1-day-ago session is "last week" once today rolls to Monday).
+        let freshest = store.sessions.map(\.startedAt).max() ?? Date()
+        let m = WorkoutHistoryModel(sessionRepo: InMemorySessionRepository(store: store),
+                                    workoutRepo: InMemoryWorkoutRepository(store: store),
+                                    programRepo: InMemoryProgramRepository(store: store),
+                                    now: freshest)
         await m.load()
         XCTAssertFalse(m.filteredGroups.isEmpty)
-        // The most-recent session (1 day ago) lands in THIS WEEK.
         XCTAssertEqual(m.filteredGroups.first?.label, "THIS WEEK")
     }
 

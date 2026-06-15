@@ -45,7 +45,8 @@ struct SupabaseWorkoutRepository: WorkoutRepository {
         let row = WorkoutWriteRow(
             id: workout.id, programId: programID, name: workout.name,
             weekdays: workout.weekdays, order: workout.order,
-            targets: workout.targets.map(\.rawValue))
+            targets: workout.targets.map(\.rawValue),
+            restSeconds: workout.restSeconds, notes: workout.notes)
         try await client.from("workouts").upsert(row).execute()
         // Replace only the children: delete this workout's exercises (cascades
         // set_specs) then re-insert the exercise/set graph.

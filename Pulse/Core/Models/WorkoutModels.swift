@@ -40,6 +40,8 @@ struct Workout: Codable, Equatable, Identifiable {
     var order: Int
     var exercises: [WorkoutExercise]
     var targets: [MuscleGroup] = []
+    var restSeconds: Int? = nil   // per-workout rest override; nil = global default
+    var notes: String = ""
 }
 
 struct Program: Codable, Equatable, Identifiable {
