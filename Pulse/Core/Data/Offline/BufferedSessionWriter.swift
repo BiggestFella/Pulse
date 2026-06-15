@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 /// Classifies a save failure as "offline" (worth showing the calm pending-sync
 /// state and finishing) vs a hard error (keep the blocking BAK-31 retry UI).
@@ -15,6 +16,22 @@ enum SaveClassification {
         default:
             return false
         }
+    }
+
+    /// A user-facing message for a hard (non-offline) save failure, naming the actual
+    /// cause instead of always blaming the connection. The full error is logged
+    /// separately for diagnosis (BAK-65).
+    static func failureMessage(for error: Error) -> String {
+        if isOffline(error) {
+            return "Couldn’t save — check your connection and try again."
+        }
+        if error is AuthError {
+            return "Couldn’t save — you may be signed out. Sign in again, then tap Retry."
+        }
+        if let pg = error as? PostgrestError {
+            return "Couldn’t save — the server rejected it: \(pg.message)"
+        }
+        return "Couldn’t save your workout — \(error.localizedDescription)"
     }
 }
 
