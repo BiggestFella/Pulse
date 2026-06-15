@@ -10,7 +10,7 @@ enum ActiveWorkoutSample {
     static let incline = Exercise(name: "Incline DB Press", muscleGroup: "Chest", variations: [])
     static let triCable = Exercise(name: "Tricep Cable Ext.", muscleGroup: "Triceps",
                                    variations: [Variation(name: "Rope", equipment: nil)])
-    static let latRaise = Exercise(name: "Single Arm Lateral Raise", muscleGroup: "Delts",
+    static let latRaise = Exercise(name: "Single Arm Lateral Raise", muscleGroup: "Shoulders",
                                    variations: [Variation(name: "Cable", equipment: nil)])
     static let pushup = Exercise(name: "Tricep Pushup", muscleGroup: "Triceps", variations: [])
 

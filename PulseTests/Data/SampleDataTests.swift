@@ -17,6 +17,16 @@ final class SampleDataTests: XCTestCase {
                       "need a single-variation exercise to exercise the hidden-switcher rule")
     }
 
+    // BAK-53: every catalog muscle string must be a canonical `MuscleGroup` raw
+    // value — a non-canonical string (e.g. "Arms"/"Delts") falls back to `.other`
+    // and leaves the real exercise-picker sections empty under -uiMock.
+    func testCatalogMuscleStringsAreCanonicalMuscleGroups() {
+        for ex in SampleData.exercises {
+            XCTAssertNotNil(MuscleGroup(rawValue: ex.muscleGroup),
+                            "\(ex.name): non-canonical muscle '\(ex.muscleGroup)'")
+        }
+    }
+
     func testActiveProgramIsPPLPinnedToMonWedFri() {
         let program = SampleData.program
         XCTAssertTrue(program.isActive)
