@@ -55,8 +55,10 @@ final class ActiveWorkoutModel {
 
     // progression
     /// Mirrors `UserSettings.autoProgressWeight`. Default true so existing call
-    /// sites compile; `AppShell` passes the persisted value (Task 4).
-    private let autoProgress: Bool
+    /// sites compile; `AppShell` seeds the default at init and overwrites it with
+    /// the user's persisted value once async settings load (BAK-44). Read per-step
+    /// in `suggestion(forStep:history:)`, so a late update takes effect.
+    var autoProgress: Bool
     /// Default kg increment for v1 (single value; per-movement is an Open Question).
     private let progressionIncrement: Double = 2.5
     /// Suggestion for the current step, loaded async from history. `nil` until
