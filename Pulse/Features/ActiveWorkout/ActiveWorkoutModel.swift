@@ -137,7 +137,7 @@ final class ActiveWorkoutModel {
                 pendingSession = nil
             } else {
                 print("[Pulse] session save failed: \(error)")
-                saveState = .failed("Couldn’t save your workout. Check your connection and try again.")
+                saveState = .failed(SaveClassification.failureMessage(for: error))
             }
         }
     }
