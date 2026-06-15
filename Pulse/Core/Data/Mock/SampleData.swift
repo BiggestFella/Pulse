@@ -49,9 +49,10 @@ enum SampleData {
         ex("Romanian Deadlift", "Legs", ["Barbell", "Dumbbell"]),
         ex("Leg Curl", "Legs", ["Seated", "Lying"]),
         ex("Calf Raise", "Legs", ["Standing", "Seated"]),
-        // Arms
-        ex("Barbell Curl", "Arms", ["Straight", "EZ-Bar"]),
-        ex("Triceps Pushdown", "Arms", ["Rope", "Bar"]),
+        // Arms — use the canonical Biceps / Triceps MuscleGroups (raw "Arms"
+        // falls back to .other and leaves the real picker sections empty).
+        ex("Barbell Curl", "Biceps", ["Straight", "EZ-Bar"]),
+        ex("Triceps Pushdown", "Triceps", ["Rope", "Bar"]),
     ]
 
     private static func byName(_ name: String) -> Exercise {
